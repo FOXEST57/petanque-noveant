@@ -4,138 +4,43 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="styles.css" />
-        <script src="index.js"></script>
+        <script src="index.js" defer></script>
 
         <title>loto</title>
-        <h1>Réservation place loto</h1>
-        <div class="supercontenaire">
-            <div class="contenaire">
-                <div class="banc">
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >1</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >2</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >3</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >4</a
-                        >
-                    </div>
-                </div>
-                <div class="table"><p>TABLE 1</p></div>
-                <div class="banc">
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >5</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >6</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >7</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >8</a
-                        >
-                    </div>
-                </div>
-            </div>
-            <div class="contenaire">
-                <div class="banc">
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >9</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >10</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >11</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >122</a
-                        >
-                    </div>
-                </div>
-                <div class="table"><p>TABLE 2</p></div>
-                <div class="banc">
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >5</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >13</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >14</a
-                        >
-                    </div>
-                    <div class="place">
-                        <a
-                            href="#"
-                            onclick="alert('Votre place est reservé !');"
-                            >15</a
-                        >
-                    </div>
-                </div>
-            </div>
-        </div>
     </head>
-    <body></body>
+    <body>
+        <h1>Réservation place loto</h1>
+
+        <div>
+            <label for="nbRange">Nombre de rangées :</label>
+            <input
+                type="number"
+                id="nbRange"
+                min="1"
+                placeholder="Entrez un nombre"
+            />
+        </div>
+        <div>
+            <label for="nbTable">Nombre de tables par rangée :</label>
+            <input
+                type="number"
+                id="nbTable"
+                min="1"
+                placeholder="Entrez un nombre"
+            />
+        </div>
+        <div>
+            <label for="nbPlace">Nombre de places par table :</label>
+            <input
+                type="number"
+                id="nbPlace"
+                min="2"
+                placeholder="Entrez un nombre"
+            />
+        </div>
+        <button id="generate">Créer</button>
+        <div id="ma-section"></div>
+
+        <section id="ma-section"></section>
+    </body>
 </html>
