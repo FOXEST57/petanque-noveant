@@ -7,7 +7,7 @@
 }
 
 body {
-    margin: 0 1em 0 1em;
+    margin: 0px;
     padding: 0px;
 }
 header {
@@ -32,6 +32,9 @@ h1 {
     color: black;
     display: flex;
     flex-direction: row;
+}
+.conect {
+    margin-right: 1em;
 }
 
 section {
