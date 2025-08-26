@@ -1,98 +1,22 @@
-<!DOCTYPE html>
-<html lang="fr">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Pétanque novéantaise</title>
-        <link rel="stylesheet" href="./styles.css" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Bungee+Tint&family=Quicksand:wght@300..700&family=Raleway:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Sono:wght@200..800&display=swap"
-            rel="stylesheet"
-        />
-        <script
-            src="https://kit.fontawesome.com/174ec50c33.js"
-            crossorigin="anonymous"
-        ></script>
-        <script src="./carousel.js" defer></script>
-    </head>
-    <body class="back">
-        <header>
-            <a href="#" class="burger">
-                <i class="fa-solid fa-bars"></i>
-                <p>Menu</p>
-            </a>
-            <a href="#" class="burger">
-                <i class="fa-regular fa-circle-user"></i>
-                <p class="conect">Connexion</p>
-            </a>
-        </header>
-
-        <section>
-            <img
-                class="logo"
-                src="image/AdobeStock_81771978 - Copie.jpeg"
-                alt=""
-            />
-        </section>
-
-        <h1>La pétanque novéantaise vous souhaite la bienvenue</h1>
-
-        <!-- Conteneur principal pour le carrousel -->
-        <div class="container">
-            <!-- Élément carrousel -->
-            <div class="carousel">
-                <!-- Conteneur interne pour les diapositives -->
-                <div class="carousel-inner">
-                    <!-- Première diapositive -->
-                    <div class="slide">
-                        <!-- Image de la première diapositive -->
-                        <img
-                            src="./image/AdobeStock_166802024 - Copie.jpeg"
-                            alt="Image 1"
-                        />
-                    </div>
-                    <!-- Deuxième diapositive -->
-                    <div class="slide">
-                        <!-- Image de la deuxième diapositive -->
-                        <img
-                            src="./image/AdobeStock_189048411.jpeg"
-                            alt="Image 2"
-                        />
-                    </div>
-                    <!-- Troisième diapositive -->
-                    <div class="slide">
-                        <!-- Image de la troisième diapositive -->
-                        <img
-                            src="./image/AdobeStock_645174 (1).jpeg"
-                            alt="Image 3"
-                        />
-                    </div>
-                    <!-- Quatrième diapositive -->
-                    <div class="slide">
-                        <!-- Image de la quatrième diapositive -->
-                        <img
-                            src="./image/AdobeStock_283120553.jpeg"
-                            alt="Image 4"
-                        />
-                    </div>
-                    <!-- Cinquième diapositive -->
-                    <div class="slide">
-                        <!-- Image de la cinquième diapositive -->
-                        <img src="./image/fond.jpeg" alt="Image 5" />
-                    </div>
-                </div>
-                <!-- Conteneur pour les boutons de navigation -->
-                <div class="carousel-controls">
-                    <!-- Bouton pour passer à la diapositive précédente -->
-                    <button id="prev">Précédent</button>
-                    <!-- Bouton pour passer à la diapositive suivante -->
-                    <button id="next">Suivant</button>
-                </div>
-                <!-- Conteneur pour les points de navigation -->
-                <div class="carousel-dots"></div>
-            </div>
-        </div>
-    </body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My React App</title>
+    <script type="module">
+      if (import.meta.hot?.on) {
+        import.meta.hot.on('vite:error', (error) => {
+          if (error.err) {
+            console.error([error.err.message, error.err.frame].filter(Boolean).join('\n'));
+          }
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

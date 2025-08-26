@@ -1,0 +1,271 @@
+/* Thème du Club de Pétanque de Noveant-sur-Moselle */
+
+:root {
+  /* Couleurs principales du club */
+  --petanque-green: #2E7D32;
+  --petanque-green-light: #4CAF50;
+  --petanque-green-dark: #1B5E20;
+  --sand-beige: #F5F5DC;
+  --sand-beige-dark: #E6E6C7;
+  --sand-beige-light: #FAFAF0;
+  
+  /* Couleurs complémentaires */
+  --accent-orange: #FF8F00;
+  --accent-orange-light: #FFB74D;
+  --text-dark: #2C3E50;
+  --text-light: #7F8C8D;
+  --white: #FFFFFF;
+  --gray-50: #F8F9FA;
+  --gray-100: #E9ECEF;
+  --gray-200: #DEE2E6;
+  --gray-300: #CED4DA;
+  --gray-400: #ADB5BD;
+  --gray-500: #6C757D;
+  --gray-600: #495057;
+  --gray-700: #343A40;
+  --gray-800: #212529;
+  --gray-900: #0D1117;
+}
+
+/* Classes utilitaires pour les couleurs du club */
+.bg-petanque-green {
+  background-color: var(--petanque-green);
+}
+
+.bg-petanque-green-light {
+  background-color: var(--petanque-green-light);
+}
+
+.bg-petanque-green-dark {
+  background-color: var(--petanque-green-dark);
+}
+
+.bg-sand-beige {
+  background-color: var(--sand-beige);
+}
+
+.bg-sand-beige-dark {
+  background-color: var(--sand-beige-dark);
+}
+
+.bg-sand-beige-light {
+  background-color: var(--sand-beige-light);
+}
+
+.text-petanque-green {
+  color: var(--petanque-green);
+}
+
+.text-petanque-green-light {
+  color: var(--petanque-green-light);
+}
+
+.text-petanque-green-dark {
+  color: var(--petanque-green-dark);
+}
+
+.text-sand-beige {
+  color: var(--sand-beige);
+}
+
+.text-accent-orange {
+  color: var(--accent-orange);
+}
+
+.border-petanque-green {
+  border-color: var(--petanque-green);
+}
+
+.border-sand-beige {
+  border-color: var(--sand-beige);
+}
+
+/* Boutons avec thème du club */
+.btn-petanque {
+  background-color: var(--petanque-green);
+  color: var(--white);
+  border: 2px solid var(--petanque-green);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-petanque:hover {
+  background-color: var(--petanque-green-dark);
+  border-color: var(--petanque-green-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+}
+
+.btn-petanque-outline {
+  background-color: transparent;
+  color: var(--petanque-green);
+  border: 2px solid var(--petanque-green);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-petanque-outline:hover {
+  background-color: var(--petanque-green);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+}
+
+.btn-sand {
+  background-color: var(--sand-beige-dark);
+  color: var(--text-dark);
+  border: 2px solid var(--sand-beige-dark);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-sand:hover {
+  background-color: var(--sand-beige);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(230, 230, 199, 0.5);
+}
+
+/* Cartes avec thème du club */
+.card-petanque {
+  background: linear-gradient(135deg, var(--sand-beige-light) 0%, var(--sand-beige) 100%);
+  border: 1px solid var(--sand-beige-dark);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card-petanque:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(46, 125, 50, 0.15);
+}
+
+/* Header avec thème du club */
+.header-petanque {
+  background: linear-gradient(135deg, var(--petanque-green) 0%, var(--petanque-green-dark) 100%);
+  box-shadow: 0 2px 10px rgba(46, 125, 50, 0.3);
+}
+
+/* Footer avec thème du club */
+.footer-petanque {
+  background: linear-gradient(135deg, var(--petanque-green-dark) 0%, var(--petanque-green) 100%);
+}
+
+/* Sections hero avec thème du club */
+.hero-petanque {
+  background: linear-gradient(
+    135deg,
+    var(--petanque-green) 0%,
+    var(--petanque-green-light) 50%,
+    var(--sand-beige) 100%
+  );
+}
+
+/* Animations et effets */
+.fade-in {
+  animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .btn-petanque,
+  .btn-petanque-outline,
+  .btn-sand {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Accessibilité */
+.btn-petanque:focus,
+.btn-petanque-outline:focus,
+.btn-sand:focus {
+  outline: 2px solid var(--accent-orange);
+  outline-offset: 2px;
+}
+
+/* États de survol pour les liens */
+a:hover {
+  transition: color 0.3s ease;
+}
+
+/* Styles pour les formulaires */
+.form-input-petanque {
+  border: 2px solid var(--sand-beige-dark);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.form-input-petanque:focus {
+  border-color: var(--petanque-green);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+  outline: none;
+}
+
+/* Styles pour les badges de rôle */
+.badge-admin {
+  background-color: #DC2626;
+  color: white;
+}
+
+.badge-responsable {
+  background-color: #2563EB;
+  color: white;
+}
+
+.badge-membre {
+  background-color: var(--petanque-green);
+  color: white;
+}
+
+.badge-visiteur {
+  background-color: var(--gray-500);
+  color: white;
+}
