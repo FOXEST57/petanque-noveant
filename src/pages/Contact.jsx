@@ -46,13 +46,13 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-green-600 text-white py-16">
+      <section className="bg-[#425e9b] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Nous Contacter
             </h1>
-            <p className="text-xl text-green-100 max-w-3xl mx-auto">
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
               Une question ? Envie de nous rejoindre ? N'hésitez pas à nous contacter !
             </p>
           </div>
@@ -73,16 +73,15 @@ const Contact = () => {
                 {/* Adresse */}
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <MapPin className="w-6 h-6 text-green-600 mt-1" />
+                    <MapPin className="w-6 h-6 text-[#425e9b] mt-1" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
                       Adresse
                     </h3>
                     <p className="text-gray-600">
-                      Terrain de Pétanque<br />
-                      Place de la Mairie<br />
-                      57680 Noveant-sur-Moselle
+                      Veloroute Charles le téméraire<br />
+                      57680 Novéant-sur-Moselle, France
                     </p>
                   </div>
                 </div>
@@ -90,15 +89,15 @@ const Contact = () => {
                 {/* Téléphone */}
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <Phone className="w-6 h-6 text-green-600 mt-1" />
+                    <Phone className="w-6 h-6 text-[#425e9b] mt-1" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
                       Téléphone
                     </h3>
                     <p className="text-gray-600">
-                      <a href="tel:+33387520123" className="hover:text-green-600 transition-colors">
-                        03 87 52 01 23
+                      <a href="tel:+33645206600" className="hover:text-[#425e9b] transition-colors">
+                        06 45 20 66 XX
                       </a>
                     </p>
                   </div>
@@ -107,14 +106,14 @@ const Contact = () => {
                 {/* Email */}
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <Mail className="w-6 h-6 text-green-600 mt-1" />
+                    <Mail className="w-6 h-6 text-[#425e9b] mt-1" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
                       Email
                     </h3>
                     <p className="text-gray-600">
-                      <a href="mailto:contact@petanque-noveant.fr" className="hover:text-green-600 transition-colors">
+                      <a href="mailto:contact@petanque-noveant.fr" className="hover:text-[#425e9b] transition-colors">
                         contact@petanque-noveant.fr
                       </a>
                     </p>
@@ -124,7 +123,7 @@ const Contact = () => {
                 {/* Horaires */}
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <Clock className="w-6 h-6 text-green-600 mt-1" />
+                    <Clock className="w-6 h-6 text-[#425e9b] mt-1" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -148,7 +147,7 @@ const Contact = () => {
                   <div className="text-center text-gray-500">
                     <MapPin className="w-12 h-12 mx-auto mb-2" />
                     <p>Carte interactive</p>
-                    <p className="text-sm">Place de la Mairie, Noveant-sur-Moselle</p>
+                    <p className="text-sm">Veloroute Charles le téméraire, Novéant-sur-Moselle</p>
                   </div>
                 </div>
               </div>
@@ -161,12 +160,12 @@ const Contact = () => {
               </h2>
               
               {isSubmitted ? (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-                  <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-green-800 mb-2">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                  <CheckCircle className="w-12 h-12 text-[#425e9b] mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-blue-800 mb-2">
                     Message envoyé avec succès !
                   </h3>
-                  <p className="text-green-700">
+                  <p className="text-blue-700">
                     Nous vous répondrons dans les plus brefs délais.
                   </p>
                 </div>
@@ -184,7 +183,7 @@ const Contact = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
                         placeholder="Votre nom"
                       />
                     </div>
@@ -200,7 +199,7 @@ const Contact = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
                         placeholder="votre@email.com"
                       />
                     </div>
@@ -216,7 +215,7 @@ const Contact = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
                       placeholder="Votre numéro de téléphone"
                     />
                   </div>
@@ -231,7 +230,7 @@ const Contact = () => {
                       value={formData.subject}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
                     >
                       <option value="">Sélectionnez un sujet</option>
                       <option value="adhesion">Adhésion au club</option>
@@ -253,7 +252,7 @@ const Contact = () => {
                       onChange={handleInputChange}
                       required
                       rows={6}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent resize-none"
                       placeholder="Votre message..."
                     ></textarea>
                   </div>
@@ -261,7 +260,7 @@ const Contact = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-[#425e9b] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#3a5287] focus:ring-2 focus:ring-[#425e9b] focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <>
@@ -297,8 +296,8 @@ const Contact = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="w-8 h-8 text-green-600" />
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MapPin className="w-8 h-8 text-[#425e9b]" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Accès facile
@@ -309,8 +308,8 @@ const Contact = () => {
             </div>
             
             <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-8 h-8 text-green-600" />
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Clock className="w-8 h-8 text-[#425e9b]" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Horaires flexibles
@@ -321,8 +320,8 @@ const Contact = () => {
             </div>
             
             <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Phone className="w-8 h-8 text-green-600" />
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Phone className="w-8 h-8 text-[#425e9b]" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Contact rapide

@@ -82,7 +82,7 @@ const Galerie = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#425e9b] mx-auto mb-4"></div>
           <p className="text-gray-600">Chargement de la galerie...</p>
         </div>
       </div>
@@ -92,13 +92,13 @@ const Galerie = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-green-600 text-white py-16">
+      <section className="bg-[#425e9b] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Galerie Photos
             </h1>
-            <p className="text-xl text-green-100 max-w-3xl mx-auto">
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
               Revivez les meilleurs moments de la vie du club à travers nos albums photos
             </p>
           </div>
@@ -153,7 +153,7 @@ const Galerie = () => {
                       </div>
                       
                       <div className="p-6">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors duration-200">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
                           {album.title}
                         </h3>
                         
@@ -181,7 +181,7 @@ const Galerie = () => {
               <div className="mb-8">
                 <button
                   onClick={handleBackToAlbums}
-                  className="text-green-600 hover:text-green-700 font-medium mb-4 flex items-center"
+                  className="text-[#425e9b] hover:text-[#3a5287] font-medium mb-4 flex items-center"
                 >
                   ← Retour aux albums
                 </button>
@@ -197,7 +197,7 @@ const Galerie = () => {
               
               {photosLoading ? (
                 <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#425e9b] mx-auto mb-4"></div>
                   <p className="text-gray-600">Chargement des photos...</p>
                 </div>
               ) : photos.length === 0 ? (

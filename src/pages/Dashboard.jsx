@@ -101,7 +101,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#425e9b] mx-auto mb-4"></div>
           <p className="text-gray-600">Chargement de votre tableau de bord...</p>
         </div>
       </div>
@@ -144,7 +144,7 @@ const Dashboard = () => {
                     onClick={() => setActiveTab('profile')}
                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md text-left transition-colors ${
                       activeTab === 'profile'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-blue-100 text-blue-700'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
@@ -157,7 +157,7 @@ const Dashboard = () => {
                     onClick={() => setActiveTab('events')}
                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md text-left transition-colors ${
                       activeTab === 'events'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-blue-100 text-blue-700'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
@@ -170,7 +170,7 @@ const Dashboard = () => {
                     onClick={() => setActiveTab('teams')}
                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md text-left transition-colors ${
                       activeTab === 'teams'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-blue-100 text-blue-700'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
@@ -183,7 +183,7 @@ const Dashboard = () => {
                     onClick={() => setActiveTab('matches')}
                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md text-left transition-colors ${
                       activeTab === 'matches'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-blue-100 text-blue-700'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
@@ -208,7 +208,7 @@ const Dashboard = () => {
                     {!editingProfile && (
                       <button
                         onClick={() => setEditingProfile(true)}
-                        className="flex items-center space-x-2 text-green-600 hover:text-green-700"
+                        className="flex items-center space-x-2 text-[#425e9b] hover:text-[#3a5287]"
                       >
                         <Edit3 className="w-4 h-4" />
                         <span>Modifier</span>
@@ -227,7 +227,7 @@ const Dashboard = () => {
                             type="text"
                             value={profileData.firstName}
                             onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#425e9b] focus:border-[#425e9b]"
                           />
                         ) : (
                           <p className="text-gray-900">{user?.user_metadata?.firstName || 'Non renseigné'}</p>
@@ -243,7 +243,7 @@ const Dashboard = () => {
                             type="text"
                             value={profileData.lastName}
                             onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#425e9b] focus:border-[#425e9b]"
                           />
                         ) : (
                           <p className="text-gray-900">{user?.user_metadata?.lastName || 'Non renseigné'}</p>
@@ -267,7 +267,7 @@ const Dashboard = () => {
                           type="tel"
                           value={profileData.phone}
                           onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#425e9b] focus:border-[#425e9b]"
                         />
                       ) : (
                         <p className="text-gray-900">{user?.user_metadata?.phone || 'Non renseigné'}</p>
@@ -279,7 +279,7 @@ const Dashboard = () => {
                         <button
                           onClick={handleProfileUpdate}
                           disabled={saving}
-                          className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+                          className="flex items-center space-x-2 bg-[#425e9b] text-white px-4 py-2 rounded-md hover:bg-[#3a5287] disabled:opacity-50"
                         >
                           <Save className="w-4 h-4" />
                           <span>{saving ? 'Enregistrement...' : 'Enregistrer'}</span>
@@ -332,7 +332,7 @@ const Dashboard = () => {
                             </span>
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               registration.status === 'confirmed' 
-                                ? 'bg-green-100 text-green-800'
+                                ? 'bg-blue-100 text-blue-800'
                                 : 'bg-yellow-100 text-yellow-800'
                             }`}>
                               {registration.status === 'confirmed' ? 'Confirmé' : 'En attente'}
@@ -374,7 +374,7 @@ const Dashboard = () => {
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               membership.role === 'captain' 
                                 ? 'bg-blue-100 text-blue-800'
-                                : 'bg-gray-100 text-gray-800'
+                                : 'bg-blue-100 text-blue-800'
                             }`}>
                               {membership.role === 'captain' ? 'Capitaine' : 'Membre'}
                             </span>
@@ -413,7 +413,7 @@ const Dashboard = () => {
                             </div>
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               match.status === 'completed' 
-                                ? 'bg-green-100 text-green-800'
+                                ? 'bg-blue-100 text-blue-800'
                                 : match.status === 'in_progress'
                                 ? 'bg-blue-100 text-blue-800'
                                 : 'bg-gray-100 text-gray-800'

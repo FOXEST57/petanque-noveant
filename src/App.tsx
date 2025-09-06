@@ -1,22 +1,29 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './hooks/useAuth.jsx'
+import { CartProvider } from './contexts/CartContext.jsx'
+import { DrinksProvider } from './contexts/DrinksContext.jsx'
+import { Toaster } from 'sonner'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
+import Bar from './pages/Bar'
+import Admin from './pages/Admin'
+import Animations from './pages/Animations'
 
 // Placeholder components for other pages
 const Equipes = () => <div className="min-h-screen bg-gray-50 py-12"><div className="max-w-7xl mx-auto px-4 text-center"><h1 className="text-3xl font-bold mb-4">Nos Équipes</h1><p className="text-gray-600">Page en cours de développement...</p></div></div>
-const Animations = () => <div className="min-h-screen bg-gray-50 py-12"><div className="max-w-7xl mx-auto px-4 text-center"><h1 className="text-3xl font-bold mb-4">Animations</h1><p className="text-gray-600">Page en cours de développement...</p></div></div>
 const Galerie = () => <div className="min-h-screen bg-gray-50 py-12"><div className="max-w-7xl mx-auto px-4 text-center"><h1 className="text-3xl font-bold mb-4">Galerie Photos</h1><p className="text-gray-600">Page en cours de développement...</p></div></div>
 const Contact = () => <div className="min-h-screen bg-gray-50 py-12"><div className="max-w-7xl mx-auto px-4 text-center"><h1 className="text-3xl font-bold mb-4">Contact</h1><p className="text-gray-600">Page en cours de développement...</p></div></div>
 const Login = () => <div className="min-h-screen bg-gray-50 py-12"><div className="max-w-7xl mx-auto px-4 text-center"><h1 className="text-3xl font-bold mb-4">Connexion</h1><p className="text-gray-600">Page en cours de développement...</p></div></div>
 const Dashboard = () => <div className="min-h-screen bg-gray-50 py-12"><div className="max-w-7xl mx-auto px-4 text-center"><h1 className="text-3xl font-bold mb-4">Tableau de bord</h1><p className="text-gray-600">Page en cours de développement...</p></div></div>
-const Admin = () => <div className="min-h-screen bg-gray-50 py-12"><div className="max-w-7xl mx-auto px-4 text-center"><h1 className="text-3xl font-bold mb-4">Administration</h1><p className="text-gray-600">Page en cours de développement...</p></div></div>
+
 
 export default function App() {
   return (
     <AuthProvider>
-      <Router>
+      <DrinksProvider>
+        <CartProvider>
+          <Router>
         <div className="min-h-screen flex flex-col">
           <Header />
           <main className="flex-grow">
@@ -25,6 +32,7 @@ export default function App() {
               <Route path="/equipes" element={<Equipes />} />
               <Route path="/animations" element={<Animations />} />
               <Route path="/galerie" element={<Galerie />} />
+              <Route path="/bar" element={<Bar />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />
@@ -33,7 +41,10 @@ export default function App() {
           </main>
           <Footer />
         </div>
-      </Router>
+          <Toaster position="top-right" richColors />
+          </Router>
+        </CartProvider>
+      </DrinksProvider>
     </AuthProvider>
   )
 }

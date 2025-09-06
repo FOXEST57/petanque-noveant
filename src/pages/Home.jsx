@@ -21,7 +21,7 @@ const Home = () => {
             <div className="space-x-4">
               <Link
                 to="/equipes"
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
+                className="bg-[#425e9b] hover:bg-[#3a5287] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
               >
                 Découvrir nos équipes
               </Link>
@@ -41,20 +41,19 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="w-8 h-8 text-green-600" />
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MapPin className="w-8 h-8 text-[#425e9b]" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Notre Localisation</h3>
               <p className="text-gray-600">
-                Terrain municipal<br />
-                Rue des Sports<br />
-                57680 Noveant-sur-Moselle
+                Veloroute Charles le téméraire<br />
+                57680 Novéant-sur-Moselle, France
               </p>
             </div>
             
             <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-8 h-8 text-green-600" />
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-[#425e9b]" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Horaires d'ouverture</h3>
               <p className="text-gray-600">
@@ -65,8 +64,8 @@ const Home = () => {
             </div>
             
             <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-green-600" />
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-[#425e9b]" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Nos Membres</h3>
               <p className="text-gray-600">
@@ -96,10 +95,10 @@ const Home = () => {
             <Link to="/equipes" className="group">
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="p-6">
-                  <div className="bg-green-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors duration-200">
-                    <Users className="w-6 h-6 text-green-600" />
+                  <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200">
+                  <Users className="w-6 h-6 text-[#425e9b]" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 group-hover:text-green-600 transition-colors duration-200">
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
                     Nos Équipes
                   </h3>
                   <p className="text-gray-600">
@@ -113,11 +112,11 @@ const Home = () => {
             <Link to="/animations" className="group">
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="p-6">
-                  <div className="bg-green-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors duration-200">
-                    <Calendar className="w-6 h-6 text-green-600" />
+                  <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200">
+                  <Calendar className="w-6 h-6 text-[#425e9b]" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 group-hover:text-green-600 transition-colors duration-200">
-                    Animations
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
+                     Nos Animations
                   </h3>
                   <p className="text-gray-600">
                     Tournois, événements spéciaux et animations pour tous les âges.
@@ -130,11 +129,11 @@ const Home = () => {
             <Link to="/competitions" className="group">
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="p-6">
-                  <div className="bg-green-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors duration-200">
-                    <Trophy className="w-6 h-6 text-green-600" />
+                  <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200">
+                  <Trophy className="w-6 h-6 text-[#425e9b]" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 group-hover:text-green-600 transition-colors duration-200">
-                    Compétitions
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
+                     Nos Tournois
                   </h3>
                   <p className="text-gray-600">
                     Suivez nos résultats et classements dans les championnats régionaux.
@@ -147,11 +146,11 @@ const Home = () => {
             <Link to="/galerie" className="group">
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="p-6">
-                  <div className="bg-green-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors duration-200">
-                    <Camera className="w-6 h-6 text-green-600" />
+                  <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200">
+                  <Camera className="w-6 h-6 text-[#425e9b]" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 group-hover:text-green-600 transition-colors duration-200">
-                    Galerie Photos
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
+                     Galerie Photos
                   </h3>
                   <p className="text-gray-600">
                     Revivez les meilleurs moments de la vie du club en images.
@@ -181,7 +180,7 @@ const Home = () => {
                 className="w-full h-48 object-cover"
               />
               <div className="p-6">
-                <div className="text-sm text-green-600 font-semibold mb-2">
+                <div className="text-sm text-[#425e9b] font-semibold mb-2">
                   15 Juin 2024
                 </div>
                 <h3 className="text-xl font-semibold mb-3">
@@ -192,7 +191,7 @@ const Home = () => {
                 </p>
                 <Link 
                   to="/animations" 
-                  className="text-green-600 hover:text-green-700 font-semibold"
+                  className="text-[#425e9b] hover:text-[#3a5287] font-semibold"
                 >
                   En savoir plus →
                 </Link>
@@ -207,9 +206,9 @@ const Home = () => {
                 className="w-full h-48 object-cover"
               />
               <div className="p-6">
-                <div className="text-sm text-green-600 font-semibold mb-2">
-                  10 Juin 2024
-                </div>
+                <div className="text-sm text-[#425e9b] font-semibold mb-2">
+                   20 Mai 2024
+                 </div>
                 <h3 className="text-xl font-semibold mb-3">
                   Nouveaux Équipements
                 </h3>
@@ -218,7 +217,7 @@ const Home = () => {
                 </p>
                 <Link 
                   to="/contact" 
-                  className="text-green-600 hover:text-green-700 font-semibold"
+                  className="text-[#425e9b] hover:text-[#3a5287] font-semibold"
                 >
                   En savoir plus →
                 </Link>
@@ -233,9 +232,9 @@ const Home = () => {
                 className="w-full h-48 object-cover"
               />
               <div className="p-6">
-                <div className="text-sm text-green-600 font-semibold mb-2">
-                  5 Juin 2024
-                </div>
+                <div className="text-sm text-[#425e9b] font-semibold mb-2">
+                   10 Mai 2024
+                 </div>
                 <h3 className="text-xl font-semibold mb-3">
                   Assemblée Générale
                 </h3>
@@ -244,10 +243,10 @@ const Home = () => {
                 </p>
                 <Link 
                   to="/contact" 
-                  className="text-green-600 hover:text-green-700 font-semibold"
-                >
-                  En savoir plus →
-                </Link>
+                  className="text-[#425e9b] hover:text-[#3a5287] font-semibold"
+                 >
+                   En savoir plus →
+                 </Link>
               </div>
             </article>
           </div>
@@ -255,17 +254,17 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-green-600">
+      <section className="py-16 bg-[#425e9b]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Rejoignez notre club !
           </h2>
-          <p className="text-xl text-green-100 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
             Que vous soyez débutant ou joueur confirmé, notre club vous accueille dans une ambiance conviviale et sportive.
           </p>
           <Link
             to="/contact"
-            className="bg-white text-green-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 inline-block"
+            className="bg-white text-[#425e9b] hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 inline-block"
           >
             Nous contacter
           </Link>

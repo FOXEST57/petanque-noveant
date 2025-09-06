@@ -36,6 +36,7 @@ const Header = () => {
     { path: '/equipes', label: 'Équipes' },
     { path: '/animations', label: 'Animations' },
     { path: '/galerie', label: 'Galerie' },
+    { path: '/bar', label: 'Bar' },
     { path: '/contact', label: 'Contact' }
   ]
 
@@ -45,7 +46,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2" onClick={closeMenus}>
-            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#425e9b] rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-lg">P</span>
             </div>
             <div className="hidden sm:block">
@@ -62,13 +63,23 @@ const Header = () => {
                 to={item.path}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   isActive(item.path)
-                    ? 'text-green-600 bg-green-50'
-                    : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                    ? 'text-[#425e9b] bg-blue-50'
+                : 'text-gray-700 hover:text-[#425e9b] hover:bg-blue-50'
                 }`}
               >
                 {item.label}
               </Link>
             ))}
+            <Link 
+              to="/admin" 
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                isActive('/admin')
+                  ? 'text-[#425e9b] bg-blue-50'
+                  : 'text-gray-700 hover:text-[#425e9b] hover:bg-blue-50'
+              }`}
+            >
+              Admin
+            </Link>
           </nav>
 
           {/* User Menu & Mobile Menu Button */}
@@ -78,7 +89,7 @@ const Header = () => {
               <div className="relative">
                 <button
                   onClick={toggleUserMenu}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-green-600 transition-colors duration-200"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-[#425e9b] transition-colors duration-200"
                 >
                   <User className="w-5 h-5" />
                   <span className="hidden sm:inline text-sm font-medium">
@@ -88,7 +99,7 @@ const Header = () => {
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       userProfile.role === 'admin' ? 'bg-red-100 text-red-800' :
                       userProfile.role === 'responsable' ? 'bg-blue-100 text-blue-800' :
-                      userProfile.role === 'membre' ? 'bg-green-100 text-green-800' :
+                      userProfile.role === 'membre' ? 'bg-blue-100 text-blue-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {userProfile.role}
@@ -129,7 +140,7 @@ const Header = () => {
             ) : (
               <Link
                 to="/login"
-                className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors duration-200"
+                className="bg-[#425e9b] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#3a5287] transition-colors duration-200"
               >
                 Connexion
               </Link>
@@ -138,7 +149,7 @@ const Header = () => {
             {/* Mobile menu button */}
             <button
               onClick={toggleMenu}
-              className="md:hidden p-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition-colors duration-200"
+              className="md:hidden p-2 rounded-md text-gray-700 hover:text-[#425e9b] hover:bg-gray-100 transition-colors duration-200"
               aria-label="Menu principal"
             >
               {isMenuOpen ? (
@@ -160,14 +171,25 @@ const Header = () => {
                   to={item.path}
                   className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                     isActive(item.path)
-                      ? 'text-green-600 bg-green-50'
-                      : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                      ? 'text-[#425e9b] bg-blue-50'
+                  : 'text-gray-700 hover:text-[#425e9b] hover:bg-blue-50'
                   }`}
                   onClick={closeMenus}
                 >
                   {item.label}
                 </Link>
               ))}
+              <Link 
+                to="/admin" 
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                  isActive('/admin')
+                    ? 'text-[#425e9b] bg-blue-50'
+                    : 'text-gray-700 hover:text-[#425e9b] hover:bg-blue-50'
+                }`} 
+                onClick={closeMenus}
+              >
+                Admin
+              </Link>
             </nav>
           </div>
         )}

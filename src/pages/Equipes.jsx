@@ -36,7 +36,7 @@ const Equipes = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#425e9b] mx-auto mb-4"></div>
           <p className="text-gray-600">Chargement des équipes...</p>
         </div>
       </div>
@@ -46,13 +46,13 @@ const Equipes = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-green-600 text-white py-16">
+      <section className="bg-[#425e9b] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Nos Équipes
             </h1>
-            <p className="text-xl text-green-100 max-w-3xl mx-auto">
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
               Découvrez les équipes de notre club et leurs performances dans les différents championnats
             </p>
           </div>
@@ -81,8 +81,8 @@ const Equipes = () => {
                       <h3 className="text-xl font-semibold text-gray-900">
                         {team.name}
                       </h3>
-                      <div className="bg-green-100 p-2 rounded-full">
-                        <Users className="w-5 h-5 text-green-600" />
+                      <div className="bg-blue-100 p-2 rounded-full">
+                    <Users className="w-5 h-5 text-[#425e9b]" />
                       </div>
                     </div>
                     
@@ -148,13 +148,13 @@ const Equipes = () => {
           <div className="space-x-4">
             <a
               href="/contact"
-              className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200 inline-block"
+              className="bg-[#425e9b] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#3a5287] transition-colors duration-200 inline-block"
             >
               Nous contacter
             </a>
             <a
               href="/login"
-              className="bg-transparent border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
+              className="bg-transparent border-2 border-[#425e9b] text-[#425e9b] hover:bg-[#425e9b] hover:text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
             >
               S'inscrire
             </a>
