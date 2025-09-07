@@ -4,7 +4,7 @@ import CartSummary from '../components/CartSummary'
 import { useDrinks } from '../contexts/DrinksContext'
 
 export default function Bar() {
-  const { drinks } = useDrinks();
+  const { drinks, loading } = useDrinks();
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -30,11 +30,18 @@ export default function Bar() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {drinks.map((drink) => (
-              <DrinkCard key={drink.id} drink={drink} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#425e9b]"></div>
+              <span className="ml-3 text-gray-600">Chargement des boissons...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              {drinks.map((drink) => (
+                <DrinkCard key={drink.id} drink={drink} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

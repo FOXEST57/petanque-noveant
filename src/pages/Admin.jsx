@@ -467,11 +467,15 @@ const Admin = () => {
         setShowDeleteConfirm(true);
     };
 
-    const confirmDelete = () => {
-        deleteDrink(drinkToDelete.id);
-        setShowDeleteConfirm(false);
-        setDrinkToDelete(null);
-        toast.success('Boisson supprimée avec succès');
+    const confirmDelete = async () => {
+        try {
+            await deleteDrink(drinkToDelete.id);
+            setShowDeleteConfirm(false);
+            setDrinkToDelete(null);
+            toast.success('Boisson supprimée avec succès');
+        } catch (error) {
+            toast.error('Erreur lors de la suppression de la boisson');
+        }
     };
 
     // Fonction pour gérer la sélection d'image
@@ -536,7 +540,7 @@ const Admin = () => {
         setMemberFormData({...memberFormData, photo: ''});
     };
 
-    const handleSaveDrink = () => {
+    const handleSaveDrink = async () => {
         if (!formData.name || !formData.price) {
             toast.error('Veuillez remplir tous les champs obligatoires');
             return;
@@ -548,17 +552,21 @@ const Admin = () => {
             stock: parseInt(formData.stock)
         };
 
-        if (modalMode === 'add') {
-            addDrink(drinkData);
-            toast.success('Boisson ajoutée avec succès');
-        } else {
-            updateDrink(selectedDrink.id, drinkData);
-            toast.success('Boisson modifiée avec succès');
-        }
+        try {
+            if (modalMode === 'add') {
+                await addDrink(drinkData);
+                toast.success('Boisson ajoutée avec succès');
+            } else {
+                await updateDrink(selectedDrink.id, drinkData);
+                toast.success('Boisson modifiée avec succès');
+            }
 
-        setShowBarModal(false);
-        setSelectedImageFile(null);
-        setImagePreview(null);
+            setShowBarModal(false);
+            setSelectedImageFile(null);
+            setImagePreview(null);
+        } catch (error) {
+            toast.error('Erreur lors de la sauvegarde de la boisson');
+        }
     };
 
     // Fonctions de gestion des membres
@@ -1502,11 +1510,15 @@ const Admin = () => {
         };
     }, [isDropdownOpen]);
 
-    const handleAdjustStock = (drinkId, change) => {
+    const handleAdjustStock = async (drinkId, change) => {
         const drink = drinks.find(d => d.id === drinkId);
         if (drink) {
             const newStock = Math.max(0, drink.stock + change);
-            updateDrink(drinkId, { stock: newStock });
+            try {
+                await updateDrink(drinkId, { ...drink, stock: newStock });
+            } catch (error) {
+                toast.error('Erreur lors de la mise à jour du stock');
+            }
         }
     };
 
@@ -1729,7 +1741,7 @@ const Admin = () => {
                                                                     <div className="flex-shrink-0 w-10 h-10">
                                                                         <img
                                                                             className="object-cover w-10 h-10 rounded-full"
-                                                                            src={drink.image}
+                                                                            src={drink.image_url}
                                                                             alt={drink.name}
                                                                             onError={(e) => {
                                                                                 e.target.src = 'https://via.placeholder.com/40x40?text=?';

@@ -14,7 +14,7 @@ const DrinkCard = ({ drink }) => {
       {/* Image Section */}
       <div className="h-48 overflow-hidden">
         <img 
-          src={drink.image} 
+          src={drink.image_url || drink.image} 
           alt={drink.name}
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
           onError={(e) => {
@@ -31,7 +31,7 @@ const DrinkCard = ({ drink }) => {
         {/* Price and Button */}
         <div className="flex items-center justify-between">
           <div className="text-2xl font-bold text-[#425e9b]">
-            {drink.price.toFixed(2)}€
+            {parseFloat(drink.price).toFixed(2)}€
           </div>
           <button
             onClick={handleAddToCart}

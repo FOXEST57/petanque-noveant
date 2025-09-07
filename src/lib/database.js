@@ -205,17 +205,34 @@ export const getDrinks = async () => {
 
 export const createDrink = async (drinkData) => {
   const { name, price, description, image_url, stock } = drinkData;
+  // Convertir les valeurs undefined en null pour éviter l'erreur MySQL
+  const params = [
+    name ?? null,
+    price ?? null,
+    description ?? null,
+    image_url ?? null,
+    stock ?? 0
+  ];
   return await runQuery(
     'INSERT INTO drinks (name, price, description, image_url, stock, updated_at) VALUES (?, ?, ?, ?, ?, NOW())',
-    [name, price, description, image_url, stock || 0]
+    params
   );
 };
 
 export const updateDrink = async (id, drinkData) => {
   const { name, price, description, image_url, stock } = drinkData;
+  // Convertir les valeurs undefined en null pour éviter l'erreur MySQL
+  const params = [
+    name ?? null,
+    price ?? null,
+    description ?? null,
+    image_url ?? null,
+    stock ?? null,
+    id
+  ];
   return await runQuery(
     'UPDATE drinks SET name = ?, price = ?, description = ?, image_url = ?, stock = ?, updated_at = NOW() WHERE id = ?',
-    [name, price, description, image_url, stock, id]
+    params
   );
 };
 

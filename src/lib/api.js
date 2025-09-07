@@ -99,6 +99,34 @@ export const membersAPI = {
   },
 };
 
+// API des boissons
+export const drinksAPI = {
+  getAll: async () => {
+    const response = await apiCall('/drinks');
+    return response.data;
+  },
+  create: async (drinkData) => {
+    const response = await apiCall('/drinks', {
+      method: 'POST',
+      body: JSON.stringify(drinkData)
+    });
+    return response.data;
+  },
+  update: async (id, drinkData) => {
+    const response = await apiCall(`/drinks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(drinkData)
+    });
+    return response.data;
+  },
+  delete: async (id) => {
+    const response = await apiCall(`/drinks/${id}`, {
+      method: 'DELETE'
+    });
+    return response.data;
+  }
+};
+
 // API des équipes
 export const teamsAPI = {
   // Récupérer toutes les équipes

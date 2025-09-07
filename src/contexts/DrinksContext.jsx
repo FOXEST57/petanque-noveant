@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
-import { drinks as initialDrinks } from '../data/drinks';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { drinksAPI } from '../lib/api';
 
 const DrinksContext = createContext();
 
@@ -12,28 +12,62 @@ export const useDrinks = () => {
 };
 
 export const DrinksProvider = ({ children }) => {
-  const [drinks, setDrinks] = useState(
-    initialDrinks.map(drink => ({ ...drink, stock: 50 }))
-  );
+  const [drinks, setDrinks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const addDrink = (drinkData) => {
-    const newDrink = {
-      ...drinkData,
-      id: Math.max(...drinks.map(d => d.id)) + 1,
-      stock: drinkData.stock || 50
+  // Charger les boissons depuis la base de données
+  useEffect(() => {
+    const loadDrinks = async () => {
+      try {
+        const drinksData = await drinksAPI.getAll();
+        setDrinks(drinksData);
+      } catch (error) {
+        console.error('Erreur lors du chargement des boissons:', error);
+        // En cas d'erreur, utiliser les données par défaut
+        const { drinks: fallbackDrinks } = await import('../data/drinks');
+        setDrinks(fallbackDrinks.map(drink => ({ ...drink, stock: 50 })));
+      } finally {
+        setLoading(false);
+      }
     };
-    setDrinks([...drinks, newDrink]);
-    return newDrink;
+    loadDrinks();
+  }, []);
+
+  const addDrink = async (drinkData) => {
+    try {
+      const newDrink = await drinksAPI.create(drinkData);
+      // Recharger les données depuis la base
+      const updatedDrinks = await drinksAPI.getAll();
+      setDrinks(updatedDrinks);
+      return newDrink;
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout de la boisson:', error);
+      throw error;
+    }
   };
 
-  const updateDrink = (drinkId, drinkData) => {
-    setDrinks(drinks.map(d => 
-      d.id === drinkId ? { ...d, ...drinkData } : d
-    ));
+  const updateDrink = async (drinkId, drinkData) => {
+    try {
+      await drinksAPI.update(drinkId, drinkData);
+      // Recharger les données depuis la base
+      const updatedDrinks = await drinksAPI.getAll();
+      setDrinks(updatedDrinks);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la boisson:', error);
+      throw error;
+    }
   };
 
-  const deleteDrink = (drinkId) => {
-    setDrinks(drinks.filter(d => d.id !== drinkId));
+  const deleteDrink = async (drinkId) => {
+    try {
+      await drinksAPI.delete(drinkId);
+      // Recharger les données depuis la base
+      const updatedDrinks = await drinksAPI.getAll();
+      setDrinks(updatedDrinks);
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la boisson:', error);
+      throw error;
+    }
   };
 
   const adjustStock = (drinkId, change) => {
@@ -46,6 +80,7 @@ export const DrinksProvider = ({ children }) => {
 
   const value = {
     drinks,
+    loading,
     addDrink,
     updateDrink,
     deleteDrink,
