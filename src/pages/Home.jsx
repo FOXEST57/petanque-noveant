@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Calendar, Users, Trophy, Camera, MapPin, Clock } from 'lucide-react'
+import { Calendar, Users, Trophy, MapPin, Clock } from 'lucide-react'
 import Carousel from '../components/Carousel'
 
 const Home = () => {
@@ -57,9 +57,7 @@ const Home = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2">Horaires d'ouverture</h3>
               <p className="text-gray-600">
-                Mardi et Jeudi : 14h - 18h<br />
-                Samedi : 14h - 19h<br />
-                Dimanche : 9h - 12h
+                Ouvert tous les jours
               </p>
             </div>
             
@@ -95,7 +93,7 @@ const Home = () => {
             <Link to="/equipes" className="group">
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="p-6">
-                  <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:from-blue-100 group-hover:to-blue-200 transition-colors duration-200">
                   <Users className="w-6 h-6 text-[#425e9b]" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
@@ -112,7 +110,7 @@ const Home = () => {
             <Link to="/animations" className="group">
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="p-6">
-                  <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:from-blue-100 group-hover:to-blue-200 transition-colors duration-200">
                   <Calendar className="w-6 h-6 text-[#425e9b]" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
@@ -142,22 +140,7 @@ const Home = () => {
               </div>
             </Link>
 
-            {/* Galerie */}
-            <Link to="/galerie" className="group">
-              <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                <div className="p-6">
-                  <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200">
-                  <Camera className="w-6 h-6 text-[#425e9b]" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
-                     Galerie Photos
-                  </h3>
-                  <p className="text-gray-600">
-                    Revivez les meilleurs moments de la vie du club en images.
-                  </p>
-                </div>
-              </div>
-            </Link>
+
           </div>
         </div>
       </section>

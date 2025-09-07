@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Users, Trophy, Calendar } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { teamsAPI } from '../lib/api'
 
 const Equipes = () => {
   const [teams, setTeams] = useState([])
@@ -12,18 +12,7 @@ const Equipes = () => {
 
   const fetchTeams = async () => {
     try {
-      const { data, error } = await supabase
-        .from('teams')
-        .select(`
-          *,
-          team_members(
-            id,
-            users(first_name, last_name)
-          )
-        `)
-        .order('name')
-
-      if (error) throw error
+      const data = await teamsAPI.getAll()
       setTeams(data || [])
     } catch (error) {
       console.error('Erreur lors du chargement des équipes:', error)
@@ -86,6 +75,14 @@ const Equipes = () => {
                       </div>
                     </div>
                     
+                    {team.category && (
+                      <div className="mb-2">
+                        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">
+                          {team.category}
+                        </span>
+                      </div>
+                    )}
+                    
                     <p className="text-gray-600 mb-4">
                       {team.description || 'Équipe de compétition du club'}
                     </p>
@@ -94,40 +91,23 @@ const Equipes = () => {
                       <div className="flex items-center text-sm text-gray-600">
                         <Users className="w-4 h-4 mr-2" />
                         <span>
-                          {team.team_members?.length || 0} membre{team.team_members?.length !== 1 ? 's' : ''}
+                          {team.member_count || 0} membre{team.member_count !== 1 ? 's' : ''}
                         </span>
                       </div>
                       
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Trophy className="w-4 h-4 mr-2" />
-                        <span>Championnat régional</span>
-                      </div>
+                      {team.competition && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Trophy className="w-4 h-4 mr-2" />
+                          <span>{team.competition}</span>
+                        </div>
+                      )}
                       
                       <div className="flex items-center text-sm text-gray-600">
                         <Calendar className="w-4 h-4 mr-2" />
                         <span>Créée le {new Date(team.created_at).toLocaleDateString('fr-FR')}</span>
                       </div>
                     </div>
-                    
-                    {team.team_members && team.team_members.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                          Membres de l'équipe :
-                        </h4>
-                        <div className="space-y-1">
-                          {team.team_members.slice(0, 3).map((member) => (
-                            <div key={member.id} className="text-sm text-gray-600">
-                              {member.users?.first_name} {member.users?.last_name}
-                            </div>
-                          ))}
-                          {team.team_members.length > 3 && (
-                            <div className="text-sm text-gray-500">
-                              +{team.team_members.length - 3} autre{team.team_members.length - 3 !== 1 ? 's' : ''}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
+
                   </div>
                 </div>
               ))}
@@ -148,7 +128,7 @@ const Equipes = () => {
           <div className="space-x-4">
             <a
               href="/contact"
-              className="bg-[#425e9b] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#3a5287] transition-colors duration-200 inline-block"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 inline-block"
             >
               Nous contacter
             </a>

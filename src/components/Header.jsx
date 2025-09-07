@@ -35,7 +35,7 @@ const Header = () => {
     { path: '/', label: 'Accueil' },
     { path: '/equipes', label: 'Équipes' },
     { path: '/animations', label: 'Animations' },
-    { path: '/galerie', label: 'Galerie' },
+
     { path: '/bar', label: 'Bar' },
     { path: '/contact', label: 'Contact' }
   ]
@@ -74,8 +74,8 @@ const Header = () => {
               to="/admin" 
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                 isActive('/admin')
-                  ? 'text-[#425e9b] bg-blue-50'
-                  : 'text-gray-700 hover:text-[#425e9b] hover:bg-blue-50'
+                  ? 'text-[#425e9b] bg-gradient-to-br from-blue-50 to-blue-100'
+                  : 'text-gray-700 hover:text-[#425e9b] hover:from-blue-50 hover:to-blue-100'
               }`}
             >
               Admin
@@ -171,8 +171,8 @@ const Header = () => {
                   to={item.path}
                   className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                     isActive(item.path)
-                      ? 'text-[#425e9b] bg-blue-50'
-                  : 'text-gray-700 hover:text-[#425e9b] hover:bg-blue-50'
+                      ? 'text-[#425e9b] bg-gradient-to-br from-blue-50 to-blue-100'
+                  : 'text-gray-700 hover:text-[#425e9b] hover:from-blue-50 hover:to-blue-100'
                   }`}
                   onClick={closeMenus}
                 >

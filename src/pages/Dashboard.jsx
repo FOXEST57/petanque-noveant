@@ -332,7 +332,7 @@ const Dashboard = () => {
                             </span>
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               registration.status === 'confirmed' 
-                                ? 'bg-blue-100 text-blue-800'
+                                ? 'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800'
                                 : 'bg-yellow-100 text-yellow-800'
                             }`}>
                               {registration.status === 'confirmed' ? 'Confirmé' : 'En attente'}
@@ -373,8 +373,8 @@ const Dashboard = () => {
                             </span>
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               membership.role === 'captain' 
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-blue-100 text-blue-800'
+                                ? 'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800'
+                                : 'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800'
                             }`}>
                               {membership.role === 'captain' ? 'Capitaine' : 'Membre'}
                             </span>

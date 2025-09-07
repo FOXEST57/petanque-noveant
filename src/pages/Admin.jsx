@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Users, Calendar, Trophy, BarChart3, Camera, Wine, Plus, Minus, Edit, Trash2, Search, Filter, X, Save, UserPlus, Phone, Mail, MapPin, Calendar as CalendarIcon, CreditCard, Shield, Gift, Euro } from "lucide-react";
+import { Users, Calendar, Trophy, BarChart3, Wine, Plus, Minus, Edit, Trash2, Search, Filter, X, Save, UserPlus, Phone, Mail, MapPin, Calendar as CalendarIcon, CreditCard, Shield, Gift, Euro } from "lucide-react";
 import { useDrinks } from "../contexts/DrinksContext";
 import { toast } from "sonner";
-import { eventsAPI, statsAPI } from "../lib/api";
+import { eventsAPI, statsAPI, teamsAPI } from "../lib/api";
+import { membersAPI } from "../lib/membersAPI";
 
 // Styles pour les animations
 const styles = `
@@ -39,13 +40,12 @@ const Admin = () => {
         users: 0,
         teams: 0,
         events: 0,
-        albums: 0,
         drinks: 0,
         results: 0
     });
 
     // État pour la gestion des modales
-    const [activeModal, setActiveModal] = useState(null); // 'bar', 'membre', 'evenement', 'equipe', 'resultat', 'galerie'
+    const [activeModal, setActiveModal] = useState(null); // 'bar', 'membre', 'evenement', 'equipe', 'resultat'
     const [showBarModal, setShowBarModal] = useState(false);
     const [modalMode, setModalMode] = useState('add'); // 'add' ou 'edit'
     const [selectedDrink, setSelectedDrink] = useState(null);
@@ -55,39 +55,9 @@ const Admin = () => {
     const [drinkToDelete, setDrinkToDelete] = useState(null);
 
     // États pour la gestion des membres
-    const [members, setMembers] = useState([
-        {
-            id: 1,
-            nom: 'Dupont',
-            prenom: 'Jean',
-            adresse: '123 Rue de la Paix, 75001 Paris',
-            telephone: '0123456789',
-            email: 'jean.dupont@email.com',
-            numeroLicence: 'LIC001',
-            dateEntree: '2023-01-15',
-            dateNaissance: '1980-05-20',
-            typeMembreId: 1
-        },
-        {
-            id: 2,
-            nom: 'Martin',
-            prenom: 'Marie',
-            adresse: '456 Avenue des Fleurs, 69000 Lyon',
-            telephone: '0987654321',
-            email: 'marie.martin@email.com',
-            numeroLicence: 'LIC002',
-            dateEntree: '2023-02-10',
-            dateNaissance: '1975-08-12',
-            typeMembreId: 2
-        }
-    ]);
+    const [members, setMembers] = useState([]);
     
-    const [memberTypes, setMemberTypes] = useState([
-        { id: 1, nom: 'Président', droits: ['admin', 'gestion', 'consultation'] },
-        { id: 2, nom: 'Secrétaire', droits: ['gestion', 'consultation'] },
-        { id: 3, nom: 'Trésorier', droits: ['gestion', 'consultation'] },
-        { id: 4, nom: 'Membre actif', droits: ['consultation'] }
-    ]);
+    const [memberTypes, setMemberTypes] = useState([]);
     
     const [showMemberModal, setShowMemberModal] = useState(false);
     const [memberModalMode, setMemberModalMode] = useState('add');
@@ -190,6 +160,9 @@ const Admin = () => {
     const [eventFormData, setEventFormData] = useState({
         titre: '',
         date: '',
+        heure: '',
+        lieu: '',
+        publicCible: '',
         description: '',
         photos: []
     });
@@ -203,10 +176,76 @@ const Admin = () => {
         (e.description && e.description.toLowerCase().includes(eventSearchTerm.toLowerCase()))
     );
 
+    // États pour la gestion des équipes
+    const [showTeamModal, setShowTeamModal] = useState(false);
+    const [teamModalMode, setTeamModalMode] = useState('add');
+    const [selectedTeam, setSelectedTeam] = useState(null);
+    const [teams, setTeams] = useState([]);
+    const [teamToDelete, setTeamToDelete] = useState(null);
+    const [showTeamDeleteConfirm, setShowTeamDeleteConfirm] = useState(false);
+    const [teamSearchTerm, setTeamSearchTerm] = useState('');
+    const [selectedTeamCategory, setSelectedTeamCategory] = useState('');
+    const [teamFormData, setTeamFormData] = useState({
+        name: '',
+        category: '',
+        description: '',
+        photo_url: '',
+        teamPhoto: null,
+        competition: '',
+        teamMembers: []
+    });
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    // Variables calculées pour le filtrage des équipes
+    const filteredTeams = teams.filter(team => {
+        const matchesSearch = 
+            (team.name && team.name.toLowerCase().includes(teamSearchTerm.toLowerCase())) ||
+            (team.category && team.category.toLowerCase().includes(teamSearchTerm.toLowerCase())) ||
+            (team.description && team.description.toLowerCase().includes(teamSearchTerm.toLowerCase()));
+        
+        const matchesCategory = selectedTeamCategory === '' || team.category === selectedTeamCategory;
+        
+        return matchesSearch && matchesCategory;
+    });
+
+    // Variables calculées pour le filtrage des types de membres
+    const filteredTypeMember = memberTypes.filter(type => 
+        type && type.nom &&
+        (type.nom.toLowerCase().includes(typeMemberSearchTerm.toLowerCase()) ||
+        (type.description && type.description.toLowerCase().includes(typeMemberSearchTerm.toLowerCase())))
+    );
+    
+
+
     useEffect(() => {
+        loadMembers();
+        loadMemberTypes();
         loadStats();
         loadEvents();
+        loadTeams();
     }, []);
+
+    // Fonction pour charger les membres depuis la base de données
+    const loadMembers = async () => {
+        try {
+            const membersData = await membersAPI.getAll();
+            setMembers(membersData);
+        } catch (error) {
+            console.error('Erreur lors du chargement des membres:', error);
+            toast.error('Erreur lors du chargement des membres');
+        }
+    };
+
+    // Fonction pour charger les types de membres depuis la base de données
+    const loadMemberTypes = async () => {
+        try {
+            const typesData = await membersAPI.getTypes();
+            setMemberTypes(typesData);
+        } catch (error) {
+            console.error('Erreur lors du chargement des types de membres:', error);
+            toast.error('Erreur lors du chargement des types de membres');
+        }
+    };
 
     const loadEvents = async () => {
         try {
@@ -217,7 +256,7 @@ const Admin = () => {
                 eventsData.map(async (event) => {
                     try {
                         // Récupérer les photos de l'événement
-                        const response = await fetch(`http://localhost:5555/api/events/${event.id}/photos`);
+                        const response = await fetch(`http://localhost:5556/api/events/${event.id}/photos`);
                         const photos = response.ok ? await response.json() : [];
                         
                         return {
@@ -243,14 +282,25 @@ const Admin = () => {
         }
     };
 
+    const loadTeams = async () => {
+        try {
+            const teamsData = await teamsAPI.getAll();
+            setTeams(teamsData || []);
+        } catch (error) {
+            console.error('Erreur lors du chargement des équipes:', error);
+            toast.error('Erreur lors du chargement des équipes');
+        }
+    };
+
     const loadStats = async () => {
         try {
             setLoading(true);
             const eventsCount = await eventsAPI.getCount();
+            const teamsCount = await teamsAPI.getCount();
             
             setStats({
-                users: 0, // TODO: Implémenter l'API des utilisateurs
-                teams: 0, // TODO: Implémenter l'API des équipes
+                users: members.length, // Nombre de membres
+                teams: teamsCount,
                 events: eventsCount,
                 albums: 0, // TODO: Implémenter l'API des albums
                 drinks: drinks.length,
@@ -377,10 +427,11 @@ const Admin = () => {
             adresse: member.adresse,
             telephone: member.telephone,
             email: member.email,
-            numeroLicence: member.numeroLicence,
-            dateEntree: member.dateEntree,
-            dateNaissance: member.dateNaissance,
-            typeMembreId: member.typeMembreId.toString()
+            numeroLicence: member.numero_licence || '',
+            dateEntree: member.date_entree || '',
+            dateNaissance: member.date_naissance || '',
+            typeMembreId: member.type_membre_id ? member.type_membre_id.toString() : '',
+            photo: member.photo_url || ''
         });
         setShowMemberModal(true);
     };
@@ -390,11 +441,20 @@ const Admin = () => {
         setShowMemberDeleteConfirm(true);
     };
 
-    const confirmDeleteMember = () => {
-        setMembers(members.filter(m => m.id !== memberToDelete.id));
-        setShowMemberDeleteConfirm(false);
-        setMemberToDelete(null);
-        toast.success('Membre supprimé avec succès');
+    const confirmDeleteMember = async () => {
+        try {
+            await membersAPI.delete(memberToDelete.id);
+            toast.success('Membre supprimé avec succès');
+            
+            // Recharger les données
+            await loadMembers();
+            await loadStats();
+            setShowMemberDeleteConfirm(false);
+            setMemberToDelete(null);
+        } catch (error) {
+            console.error('Erreur lors de la suppression du membre:', error);
+            toast.error('Erreur lors de la suppression du membre');
+        }
     };
 
     const validateMemberForm = () => {
@@ -419,31 +479,41 @@ const Admin = () => {
         return true;
     };
 
-    const handleSaveMember = () => {
+    const handleSaveMember = async () => {
         if (!validateMemberForm()) {
             return;
         }
 
         const memberData = {
-            ...memberFormData,
-            typeMembreId: parseInt(memberFormData.typeMembreId)
+            nom: memberFormData.nom,
+            prenom: memberFormData.prenom,
+            adresse: memberFormData.adresse,
+            telephone: memberFormData.telephone,
+            email: memberFormData.email,
+            numero_licence: memberFormData.numeroLicence,
+            date_entree: memberFormData.dateEntree,
+            date_naissance: memberFormData.dateNaissance,
+            type_membre_id: parseInt(memberFormData.typeMembreId),
+            photo_url: memberFormData.photo || null
         };
 
-        if (memberModalMode === 'add') {
-            const newMember = {
-                ...memberData,
-                id: Math.max(...members.map(m => m.id), 0) + 1
-            };
-            setMembers([...members, newMember]);
-            toast.success('Membre ajouté avec succès');
-        } else {
-            setMembers(members.map(m => 
-                m.id === selectedMember.id ? { ...memberData, id: selectedMember.id } : m
-            ));
-            toast.success('Membre modifié avec succès');
+        try {
+            if (memberModalMode === 'add') {
+                await membersAPI.create(memberData);
+                toast.success('Membre ajouté avec succès');
+            } else {
+                await membersAPI.update(selectedMember.id, memberData);
+                toast.success('Membre modifié avec succès');
+            }
+            
+            // Recharger les données
+            await loadMembers();
+            await loadStats();
+            setShowMemberModal(false);
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde du membre:', error);
+            toast.error('Erreur lors de la sauvegarde du membre');
         }
-
-        setShowMemberModal(false);
     };
 
     const getMemberTypeName = (typeId) => {
@@ -457,10 +527,148 @@ const Admin = () => {
             member.prenom.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
             member.email.toLowerCase().includes(memberSearchTerm.toLowerCase());
         
-        const matchesType = selectedMemberType === '' || member.typeMembreId.toString() === selectedMemberType;
+        const matchesType = selectedMemberType === '' || (member.type_membre_id && member.type_membre_id.toString() === selectedMemberType);
         
         return matchesSearch && matchesType;
     });
+
+    // Fonctions de gestion des équipes
+    const handleAddTeam = () => {
+        setTeamModalMode('add');
+        setSelectedTeam(null);
+        setTeamFormData({
+            name: '',
+            category: '',
+            description: '',
+            photo_url: '',
+            teamPhoto: null,
+            competition: '',
+            teamMembers: []
+        });
+        setShowTeamModal(true);
+    };
+
+    const handleEditTeam = (team) => {
+        setTeamModalMode('edit');
+        setSelectedTeam(team);
+        setTeamFormData({
+            name: team.name || '',
+            category: team.category || '',
+            description: team.description || '',
+            photo_url: team.photo_url || '',
+            teamPhoto: null,
+            competition: team.competition || '',
+            teamMembers: team.members || []
+        });
+        setShowTeamModal(true);
+    };
+
+    const handleDeleteTeam = (team) => {
+        setTeamToDelete(team);
+        setShowTeamDeleteConfirm(true);
+    };
+
+    const confirmDeleteTeam = async () => {
+        try {
+            await teamsAPI.delete(teamToDelete.id);
+            await loadTeams();
+            await loadStats();
+            setShowTeamDeleteConfirm(false);
+            setTeamToDelete(null);
+            toast.success('Équipe supprimée avec succès');
+        } catch (error) {
+            console.error('Erreur lors de la suppression de l\'équipe:', error);
+            toast.error('Erreur lors de la suppression de l\'équipe');
+        }
+    };
+
+    const validateTeamForm = () => {
+        if (!teamFormData.name.trim()) {
+            toast.error('Veuillez saisir un nom pour l\'équipe');
+            return false;
+        }
+        if (!teamFormData.category.trim()) {
+            toast.error('Veuillez saisir une catégorie');
+            return false;
+        }
+        return true;
+    };
+
+    // Fonction pour gérer le changement de photo d'équipe
+    const handleTeamPhotoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setTeamFormData({...teamFormData, teamPhoto: file});
+        }
+    };
+
+    // Fonction pour supprimer la photo d'équipe
+    const removeTeamPhoto = () => {
+        setTeamFormData({...teamFormData, teamPhoto: null, photo_url: ''});
+    };
+
+    // Fonction pour ajouter un membre à l'équipe
+    const addMemberToTeam = (member, role) => {
+        const existingMember = teamFormData.teamMembers.find(m => m.id === member.id);
+        if (!existingMember) {
+            setTeamFormData({
+                ...teamFormData,
+                teamMembers: [...teamFormData.teamMembers, { ...member, role }]
+            });
+        }
+    };
+
+    // Fonction pour supprimer un membre de l'équipe
+    const removeMemberFromTeam = (memberId) => {
+        setTeamFormData({
+            ...teamFormData,
+            teamMembers: teamFormData.teamMembers.filter(m => m.id !== memberId)
+        });
+    };
+
+    // Fonction pour changer le rôle d'un membre
+    const changeMemberRole = (memberId, newRole) => {
+        setTeamFormData({
+            ...teamFormData,
+            teamMembers: teamFormData.teamMembers.map(m => 
+                m.id === memberId ? { ...m, role: newRole } : m
+            )
+        });
+    };
+
+    const handleSaveTeam = async () => {
+        if (!validateTeamForm()) return;
+
+        try {
+            const formData = new FormData();
+            formData.append('name', teamFormData.name);
+            formData.append('category', teamFormData.category);
+            formData.append('description', teamFormData.description);
+            formData.append('competition', teamFormData.competition);
+            formData.append('members', JSON.stringify(teamFormData.teamMembers));
+            
+            if (teamFormData.teamPhoto) {
+                formData.append('teamPhoto', teamFormData.teamPhoto);
+            } else if (teamFormData.photo_url) {
+                formData.append('photo_url', teamFormData.photo_url);
+            }
+
+            if (teamModalMode === 'add') {
+                await teamsAPI.create(formData);
+                toast.success('Équipe ajoutée avec succès');
+            } else {
+                await teamsAPI.update(selectedTeam.id, formData);
+                toast.success('Équipe modifiée avec succès');
+            }
+            
+            await loadTeams();
+            await loadStats();
+            setShowTeamModal(false);
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde de l\'équipe:', error);
+            toast.error('Erreur lors de la sauvegarde de l\'équipe');
+        }
+    };
 
     // Fonctions de gestion des types de membres
     const handleAddTypeMember = () => {
@@ -480,7 +688,7 @@ const Admin = () => {
         setTypeMemberFormData({
             nom: typeMember.nom,
             description: typeMember.description,
-            droits: [...typeMember.droits]
+            droits: Array.isArray(typeMember.droits) ? [...typeMember.droits] : []
         });
         setShowTypeMemberModal(true);
     };
@@ -497,27 +705,31 @@ const Admin = () => {
         toast.success('Type de membre supprimé avec succès');
     };
 
-    const handleSaveTypeMember = () => {
+    const handleSaveTypeMember = async () => {
         if (!typeMemberFormData.nom.trim()) {
             toast.error('Veuillez saisir un nom pour le type de membre');
             return;
         }
 
-        if (typeMemberModalMode === 'add') {
-            const newTypeMember = {
-                ...typeMemberFormData,
-                id: Math.max(...memberTypes.map(t => t.id), 0) + 1
-            };
-            setMemberTypes([...memberTypes, newTypeMember]);
-            toast.success('Type de membre ajouté avec succès');
-        } else {
-            setMemberTypes(memberTypes.map(t => 
-                t.id === selectedTypeMember.id ? { ...typeMemberFormData, id: selectedTypeMember.id } : t
-            ));
-            toast.success('Type de membre modifié avec succès');
+        setLoading(true);
+        try {
+            if (typeMemberModalMode === 'add') {
+                const newTypeMember = await membersAPI.createType(typeMemberFormData);
+                toast.success('Type de membre ajouté avec succès');
+            } else {
+                await membersAPI.updateType(selectedTypeMember.id, typeMemberFormData);
+                toast.success('Type de membre modifié avec succès');
+            }
+            
+            // Rafraîchir la liste des types de membres
+            await loadMemberTypes();
+            setShowTypeMemberModal(false);
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde du type de membre:', error);
+            toast.error('Erreur lors de la sauvegarde: ' + error.message);
+        } finally {
+            setLoading(false);
         }
-
-        setShowTypeMemberModal(false);
     };
 
     const toggleTypeMemberRight = (right) => {
@@ -543,11 +755,6 @@ const Admin = () => {
         { id: 'view_stats', label: 'Consultation des statistiques', description: 'Accès aux rapports et statistiques' },
         { id: 'manage_teams', label: 'Gestion des équipes', description: 'Créer et gérer les équipes' }
     ];
-
-    const filteredTypeMember = memberTypes.filter(type => 
-        type.nom.toLowerCase().includes(typeMemberSearchTerm.toLowerCase()) ||
-        type.description.toLowerCase().includes(typeMemberSearchTerm.toLowerCase())
-    );
 
     // Fonctions de gestion des concours
     const handleAddConcours = () => {
@@ -690,7 +897,6 @@ const Admin = () => {
 
     // Fonctions de gestion des événements
     const handleAddEvent = () => {
-        console.log('handleAddEvent appelé, activeModal actuel:', activeModal);
         // Ouvrir directement le modal principal des événements ET le modal d'ajout
         setActiveModal('evenement');
         setEventModalMode('add');
@@ -698,18 +904,19 @@ const Admin = () => {
         setEventFormData({
             titre: '',
             date: '',
+            heure: '',
+            lieu: '',
+            publicCible: '',
             description: '',
             photos: []
         });
         setSelectedEventPhotos([]);
         setEventPhotosPreviews([]);
         setExistingEventPhotos([]);
-        console.log("Ouverture du modal d'ajout d'événement");
         setShowEventModal(true);
     };
 
     const handleEditEvent = async (event) => {
-        console.log('handleEditEvent appelé pour événement:', event.id, 'activeModal actuel:', activeModal);
         // Ouvrir directement le modal principal des événements ET le modal de modification
         setActiveModal('evenement');
         setEventModalMode('edit');
@@ -717,6 +924,9 @@ const Admin = () => {
         setEventFormData({
             titre: event.titre || event.title, // Support des deux formats
             date: event.date,
+            heure: event.heure || '',
+            lieu: event.lieu || '',
+            publicCible: event.publicCible || '',
             description: event.description,
             photos: []
         });
@@ -734,16 +944,13 @@ const Admin = () => {
             console.error('Erreur lors du chargement des photos:', error);
         }
         
-        console.log("Ouverture du modal de modification d'événement");
         setShowEventModal(true);
     };
 
     const handleDeleteEvent = (event) => {
-        console.log('handleDeleteEvent appelé pour événement:', event.id, 'activeModal actuel:', activeModal);
         // Ouvrir directement le modal principal des événements ET le modal de suppression
         setActiveModal('evenement');
         setEventToDelete(event);
-        console.log('Ouverture du modal de confirmation de suppression');
         setShowEventDeleteConfirm(true);
     };
 
@@ -912,6 +1119,23 @@ const Admin = () => {
         };
     }, [activeModal]);
 
+    // Gestion des clics à l'extérieur du dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isDropdownOpen && !event.target.closest('.member-dropdown-container')) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        if (isDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isDropdownOpen]);
+
     const handleAdjustStock = (drinkId, change) => {
         const drink = drinks.find(d => d.id === drinkId);
         if (drink) {
@@ -925,11 +1149,17 @@ const Admin = () => {
         return matchesSearch;
     });
 
-    const ManagementCard = ({ title, icon: Icon, count, description, modalKey }) => (
-        <div 
-            className="p-6 bg-white rounded-lg shadow-md transition-all duration-200 transform cursor-pointer hover:shadow-lg hover:scale-105"
-            onClick={() => setActiveModal(modalKey)}
-        >
+    const ManagementCard = ({ title, icon: Icon, count, description, modalKey }) => {
+        const handleCardClick = (e) => {
+            setActiveModal(modalKey);
+        };
+        
+        return (
+            <div 
+                className="p-6 bg-white rounded-lg shadow-md transition-all duration-200 transform cursor-pointer hover:shadow-lg hover:scale-105"
+                onClick={handleCardClick}
+                style={{ pointerEvents: 'auto' }}
+            >
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center space-x-3">
                     <div className="p-2 bg-[#425e9b] bg-opacity-10 rounded-lg">
@@ -949,6 +1179,7 @@ const Admin = () => {
             </div>
         </div>
     );
+    };
 
     if (loading) {
         return (
@@ -1019,13 +1250,7 @@ const Admin = () => {
                         modalKey="resultat"
                     />
 
-                    <ManagementCard
-                        title="Galerie"
-                        icon={Camera}
-                        count={stats.albums}
-                        description="Gestion des photos et médias"
-                        modalKey="galerie"
-                    />
+
 
                     <ManagementCard
                         title="Concours"
@@ -1065,7 +1290,7 @@ const Admin = () => {
                                 {activeModal === 'evenement' && 'Gestion des Événements'}
                                 {activeModal === 'equipe' && 'Gestion des Équipes'}
                                 {activeModal === 'resultat' && 'Gestion des Résultats'}
-                                {activeModal === 'galerie' && 'Gestion de la Galerie'}
+
                                 {activeModal === 'concours' && 'Gestion des Concours'}
                                 {activeModal === 'loto' && 'Gestion des Lotos'}
                             </h2>
@@ -1254,6 +1479,53 @@ const Admin = () => {
                                     />
                                 </div>
 
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                        Heure de l'événement
+                                    </label>
+                                    <input
+                                        type="time"
+                                        value={eventFormData.heure}
+                                        onChange={(e) => setEventFormData({...eventFormData, heure: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                        <MapPin className="inline mr-1 w-4 h-4" />
+                                        Lieu de l'événement
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={eventFormData.lieu}
+                                        onChange={(e) => setEventFormData({...eventFormData, lieu: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        placeholder="Lieu de l'événement"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                        Public cible
+                                    </label>
+                                    <select
+                                        value={eventFormData.publicCible}
+                                        onChange={(e) => setEventFormData({...eventFormData, publicCible: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    >
+                                        <option value="">Sélectionner le public</option>
+                                        <option value="Ouvert à tous">Ouvert à tous</option>
+                                        <option value="Membres uniquement">Membres uniquement</option>
+                                        <option value="Licenciés uniquement">Licenciés uniquement</option>
+                                        <option value="Comité uniquement">Comité uniquement</option>
+                                        <option value="Réservation obligatoire">Réservation obligatoire</option>
+                                        <option value="Réservation conseillée">Réservation conseillée</option>
+                                        <option value="Sur invitation">Sur invitation</option>
+                                        <option value="Sur demande">Sur demande</option>
+                                    </select>
+                                </div>
+
                                 <div className="md:col-span-2">
                                     <label className="block mb-1 text-sm font-medium text-gray-700">
                                         Description
@@ -1292,7 +1564,7 @@ const Admin = () => {
                                             {existingEventPhotos.map((photo) => (
                                                 <div key={photo.id} className="relative group">
                                                     <img
-                                                        src={`http://localhost:5555/api/events/photos/${photo.filename}`}
+                                                        src={`http://localhost:5556/api/events/photos/${photo.filename}`}
                                                         alt={photo.filename}
                                                         className="object-cover w-full h-24 rounded-lg border border-gray-200"
                                                     />
@@ -2365,7 +2637,7 @@ const Admin = () => {
                             )}
 
                             {activeModal === 'typeMembre' && (
-                                <div className="space-y-6">
+                <div className="space-y-6" style={{minHeight: '200px', padding: '20px'}}>
                                     {/* Barre de recherche et bouton d'ajout */}
                                     <div className="flex flex-col gap-4 mb-6 sm:flex-row">
                                         <div className="flex-1">
@@ -2422,7 +2694,7 @@ const Admin = () => {
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 <div className="flex flex-wrap gap-1">
-                                                                    {type.droits.map(droit => {
+                                                                    {(Array.isArray(type.droits) ? type.droits : []).map(droit => {
                                                                         const rightInfo = availableRights.find(r => r.id === droit);
                                                                         return (
                                                                             <span key={droit} className="px-2 py-1 bg-[#425e9b] bg-opacity-10 text-[#425e9b] rounded-full text-xs font-medium">
@@ -2430,7 +2702,7 @@ const Admin = () => {
                                                                             </span>
                                                                         );
                                                                     })}
-                                                                    {type.droits.length === 0 && (
+                                                                    {(!Array.isArray(type.droits) || type.droits.length === 0) && (
                                                                         <span className="text-xs italic text-gray-500">Aucun droit défini</span>
                                                                     )}
                                                                 </div>
@@ -2467,23 +2739,138 @@ const Admin = () => {
                                 </div>
                             )}
 
-                            {/* Modales vides pour les autres sections */}
-                            {activeModal !== 'bar' && activeModal !== 'membre' && activeModal !== 'typeMembre' && (
-                                <div className="py-12 text-center">
-                                    <div className="mx-auto mb-4 w-12 h-12 text-gray-400">
-                                        {activeModal === 'evenement' && <Calendar className="w-12 h-12" />}
-                                        {activeModal === 'equipe' && <Trophy className="w-12 h-12" />}
-                                        {activeModal === 'resultat' && <BarChart3 className="w-12 h-12" />}
-                                        {activeModal === 'galerie' && <Camera className="w-12 h-12" />}
-                                    </div>
-                                    <h3 className="mb-2 text-lg font-medium text-gray-900">
-                                        Fonctionnalités à venir
-                                    </h3>
-                                    <p className="text-gray-600">
-                                        Cette section sera bientôt disponible avec toutes les fonctionnalités de gestion.
-                                    </p>
+                            {activeModal === 'equipe' && (
+                <div className="space-y-6" style={{minHeight: '200px', padding: '20px'}}>
+                    {/* Barre de recherche et filtres */}
+                    <div className="flex flex-col gap-4 mb-6 sm:flex-row">
+                        <div className="flex-1">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 w-4 h-4 text-gray-400 transform -translate-y-1/2" />
+                                <input
+                                    type="text"
+                                    placeholder="Rechercher une équipe..."
+                                    value={teamSearchTerm}
+                                    onChange={(e) => setTeamSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <select
+                                value={selectedTeamCategory}
+                                onChange={(e) => setSelectedTeamCategory(e.target.value)}
+                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                            >
+                                <option value="">Toutes les catégories</option>
+                                <option value="Senior">Senior</option>
+                                <option value="Vétéran">Vétéran</option>
+                                <option value="Jeune">Jeune</option>
+                                <option value="Mixte">Mixte</option>
+                            </select>
+                            <button
+                                onClick={handleAddTeam}
+                                className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                            >
+                                <Trophy className="w-4 h-4" />
+                                Ajouter une équipe
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Statistiques */}
+                    <div className="mb-6">
+                        <div className="text-sm text-gray-600">
+                            {filteredTeams.length} équipe{filteredTeams.length > 1 ? 's' : ''} trouvée{filteredTeams.length > 1 ? 's' : ''}
+                        </div>
+                    </div>
+
+                    {/* Tableau des équipes */}
+                    <div className="overflow-hidden bg-white rounded-lg shadow">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Équipe</th>
+                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Catégorie</th>
+                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Description</th>
+                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Compétition</th>
+                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {filteredTeams.map(team => (
+                                        <tr key={team.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    {team.photo_url ? (
+                                                        <img className="h-10 w-10 rounded-full mr-3" src={team.photo_url} alt={team.name} />
+                                                    ) : (
+                                                        <div className="h-10 w-10 rounded-full bg-[#425e9b] flex items-center justify-center mr-3">
+                                                            <Trophy className="h-5 w-5 text-white" />
+                                                        </div>
+                                                    )}
+                                                    <span className="text-sm font-medium text-gray-900">{team.name}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="px-2 py-1 bg-[#425e9b] bg-opacity-10 text-[#425e9b] rounded-full text-xs font-medium">
+                                                    {team.category || 'Non définie'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm text-gray-900">{team.description || 'Aucune description'}</span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="text-sm text-gray-900">{team.competition || 'Non définie'}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                                <div className="flex space-x-2">
+                                                    <button
+                                                        onClick={() => handleEditTeam(team)}
+                                                        className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                        title="Modifier"
+                                                    >
+                                                        <Edit className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteTeam(team)}
+                                                        className="text-red-600 transition-colors hover:text-red-800"
+                                                        title="Supprimer"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {filteredTeams.length === 0 && (
+                                <div className="py-8 text-center text-gray-500">
+                                    Aucune équipe trouvée
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modales vides pour les autres sections */}
+            {activeModal !== 'bar' && activeModal !== 'membre' && activeModal !== 'typeMembre' && activeModal !== 'equipe' && (
+                <div className="py-12 text-center">
+                    <div className="mx-auto mb-4 w-12 h-12 text-gray-400">
+                        {activeModal === 'evenement' && <Calendar className="w-12 h-12" />}
+                        {activeModal === 'resultat' && <BarChart3 className="w-12 h-12" />}
+                        {activeModal === 'galerie' && <Camera className="w-12 h-12" />}
+                    </div>
+                    <h3 className="mb-2 text-lg font-medium text-gray-900">
+                        Fonctionnalités à venir
+                    </h3>
+                    <p className="text-gray-600">
+                        Cette section sera bientôt disponible avec toutes les fonctionnalités de gestion.
+                    </p>
+                </div>
+            )}
                         </div>
                     </div>
                 </div>
@@ -2914,6 +3301,318 @@ const Admin = () => {
                                 </button>
                                 <button
                                     onClick={confirmDeleteMember}
+                                    className="flex items-center px-4 py-2 space-x-2 text-white bg-red-600 rounded-lg transition-colors hover:bg-red-700"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    <span>Supprimer</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal d'ajout/modification d'équipe */}
+            {showTeamModal && (
+                <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
+                    <div className="w-full max-w-2xl bg-white rounded-lg max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-semibold text-gray-900">
+                                    {teamModalMode === 'add' ? 'Ajouter une équipe' : 'Modifier l\'équipe'}
+                                </h3>
+                                <button
+                                    onClick={() => setShowTeamModal(false)}
+                                    className="p-2 rounded-lg transition-colors hover:bg-gray-100"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="md:col-span-2">
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                        Nom de l'équipe *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={teamFormData.name}
+                                        onChange={(e) => setTeamFormData({...teamFormData, name: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        placeholder="Nom de l'équipe"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                        Catégorie *
+                                    </label>
+                                    <select
+                                        value={teamFormData.category}
+                                        onChange={(e) => setTeamFormData({...teamFormData, category: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    >
+                                        <option value="">Sélectionner une catégorie</option>
+                                        <option value="senior">Senior</option>
+                                        <option value="veteran">Vétéran</option>
+                                        <option value="junior">Junior</option>
+                                        <option value="mixte">Mixte</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                        Compétition
+                                    </label>
+                                    <select
+                                        value={teamFormData.competition}
+                                        onChange={(e) => setTeamFormData({...teamFormData, competition: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    >
+                                        <option value="">Aucune compétition</option>
+                                        <option value="championnat">Championnat</option>
+                                        <option value="coupe">Coupe</option>
+                                        <option value="tournoi">Tournoi</option>
+                                    </select>
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                        Description
+                                    </label>
+                                    <textarea
+                                        value={teamFormData.description}
+                                        onChange={(e) => setTeamFormData({...teamFormData, description: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        rows="3"
+                                        placeholder="Description de l'équipe"
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                        Photo de l'équipe
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleTeamPhotoChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    />
+                                    {(teamFormData.teamPhoto || teamFormData.photo_url) && (
+                                        <div className="mt-2 relative inline-block">
+                                            <img
+                                                src={teamFormData.teamPhoto ? URL.createObjectURL(teamFormData.teamPhoto) : teamFormData.photo_url}
+                                                alt="Aperçu"
+                                                className="w-32 h-32 object-cover rounded-lg border"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={removeTeamPhoto}
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Section de sélection des membres */}
+                                <div className="md:col-span-2">
+                                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                                        Membres de l'équipe
+                                    </label>
+                                    
+                                    {/* Sélection d'un nouveau membre */}
+                                    <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                                        <h4 className="text-sm font-medium text-gray-700 mb-2">Ajouter un membre</h4>
+                                        
+                                        {/* Input avec dropdown */}
+                                        <div className="relative member-dropdown-container">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <Search className="h-4 w-4 text-gray-400" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="Rechercher par nom ou prénom..."
+                                                value={memberSearchTerm}
+                                                onChange={(e) => {
+                                                    setMemberSearchTerm(e.target.value);
+                                                    setIsDropdownOpen(e.target.value.trim() !== '');
+                                                }}
+                                                onFocus={() => {
+                                                    if (memberSearchTerm.trim() !== '') {
+                                                        setIsDropdownOpen(true);
+                                                    }
+                                                }}
+                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                            />
+                                            
+                                            {/* Dropdown avec les résultats */}
+                                            {isDropdownOpen && memberSearchTerm.trim() !== '' && (() => {
+                                                // Filtrer les membres disponibles (pas déjà dans l'équipe)
+                                                const availableMembers = members.filter(member => 
+                                                    !teamFormData.teamMembers.find(tm => tm.id === member.id)
+                                                );
+                                                
+                                                // Appliquer le filtre de recherche
+                                                const filteredMembers = availableMembers.filter(member => {
+                                                    const searchTerm = memberSearchTerm.toLowerCase();
+                                                    const fullName = `${member.prenom} ${member.nom}`.toLowerCase();
+                                                    const firstName = member.prenom?.toLowerCase() || '';
+                                                    const lastName = member.nom?.toLowerCase() || '';
+                                                    
+                                                    return fullName.includes(searchTerm) ||
+                                                           firstName.includes(searchTerm) ||
+                                                           lastName.includes(searchTerm);
+                                                });
+                                                
+                                                // Limiter à 10 résultats
+                                                const limitedMembers = filteredMembers.slice(0, 10);
+                                                
+                                                return (
+                                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto animate-fadeIn" style={{boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'}}>
+                                                        {limitedMembers.length === 0 ? (
+                                                            <div className="px-4 py-4 text-gray-500 text-sm text-center">
+                                                                <div className="flex flex-col items-center space-y-2">
+                                                                    <Search className="w-5 h-5 text-gray-400" />
+                                                                    <span>Aucun membre trouvé</span>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <div className="py-2">
+                                                                    {limitedMembers.map((member, index) => (
+                                                                        <div
+                                                                            key={member.id}
+                                                                            className="px-4 py-3 hover:bg-gradient-to-r hover:from-[#425e9b]/5 hover:to-[#425e9b]/10 cursor-pointer transition-all duration-200 ease-in-out border-b border-gray-50 last:border-b-0 group"
+                                                                            onClick={() => {
+                                                                                addMemberToTeam(member, 'Joueur');
+                                                                                setMemberSearchTerm('');
+                                                                                setIsDropdownOpen(false);
+                                                                            }}
+                                                                        >
+                                                                            <div className="flex items-center space-x-3">
+                                                                                <div className="w-8 h-8 bg-gradient-to-br from-[#425e9b] to-[#364a82] rounded-full flex items-center justify-center text-white text-sm font-medium group-hover:scale-110 transition-transform duration-200">
+                                                                                    {member.prenom?.charAt(0)?.toUpperCase()}{member.nom?.charAt(0)?.toUpperCase()}
+                                                                                </div>
+                                                                                <div>
+                                                                                    <div className="font-medium text-gray-900 group-hover:text-[#425e9b] transition-colors duration-200">
+                                                                                        {member.prenom} {member.nom}
+                                                                                    </div>
+                                                                                    {member.email && (
+                                                                                        <div className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors duration-200">
+                                                                                            {member.email}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                                {filteredMembers.length > 10 && (
+                                                                    <div className="px-4 py-3 text-xs text-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 text-center">
+                                                                        <span className="inline-flex items-center space-x-1">
+                                                                            <span className="w-2 h-2 bg-[#425e9b] rounded-full"></span>
+                                                                            <span>{filteredMembers.length} membres trouvés (10 premiers affichés)</span>
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+
+                                    {/* Liste des membres sélectionnés */}
+                                    {teamFormData.teamMembers.length > 0 && (
+                                        <div className="space-y-2">
+                                            <h4 className="text-sm font-medium text-gray-700">Membres sélectionnés</h4>
+                                            {teamFormData.teamMembers.map((member, index) => (
+                                                <div key={member.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                                                    <div className="flex items-center space-x-3">
+                                                        <span className="font-medium text-gray-900">
+                                                            {member.prenom} {member.nom}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <select
+                                                            value={member.role}
+                                                            onChange={(e) => changeMemberRole(member.id, e.target.value)}
+                                                            className="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        >
+                                                            <option value="Capitaine">Capitaine</option>
+                                                            <option value="Joueur">Joueur</option>
+                                                            <option value="Remplaçant">Remplaçant</option>
+                                                        </select>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeMemberFromTeam(member.id)}
+                                                            className="text-red-600 hover:text-red-800 transition-colors"
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end mt-6 space-x-3">
+                                <button
+                                    onClick={() => setShowTeamModal(false)}
+                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg transition-colors hover:bg-gray-200"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    onClick={handleSaveTeam}
+                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                >
+                                    <Save className="w-4 h-4" />
+                                    <span>{teamModalMode === 'add' ? 'Ajouter' : 'Modifier'}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de confirmation de suppression équipe */}
+            {showTeamDeleteConfirm && (
+                <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
+                    <div className="w-full max-w-md bg-white rounded-lg">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Confirmer la suppression
+                                </h3>
+                                <button
+                                    onClick={() => setShowTeamDeleteConfirm(false)}
+                                    className="p-2 rounded-lg transition-colors hover:bg-gray-100"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
+                            </div>
+
+                            <p className="mb-6 text-gray-600">
+                                Êtes-vous sûr de vouloir supprimer l'équipe "{teamToDelete?.name}" ?
+                                Cette action est irréversible.
+                            </p>
+
+                            <div className="flex justify-end space-x-3">
+                                <button
+                                    onClick={() => setShowTeamDeleteConfirm(false)}
+                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg transition-colors hover:bg-gray-200"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    onClick={confirmDeleteTeam}
                                     className="flex items-center px-4 py-2 space-x-2 text-white bg-red-600 rounded-lg transition-colors hover:bg-red-700"
                                 >
                                     <Trash2 className="w-4 h-4" />

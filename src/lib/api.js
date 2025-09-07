@@ -1,5 +1,5 @@
 // Service API pour communiquer avec le backend Express
-const API_BASE_URL = 'http://localhost:5555/api';
+const API_BASE_URL = 'http://localhost:5556/api';
 
 // Fonction utilitaire pour les appels API
 const apiCall = async (endpoint, options = {}) => {
@@ -46,6 +46,9 @@ export const eventsAPI = {
         title: eventData.titre,
         description: eventData.description,
         date: eventData.date,
+        heure: eventData.heure,
+        lieu: eventData.lieu,
+        publicCible: eventData.publicCible,
         photos: JSON.stringify(eventData.photos || [])
       }),
     });
@@ -60,6 +63,9 @@ export const eventsAPI = {
         title: eventData.titre,
         description: eventData.description,
         date: eventData.date,
+        heure: eventData.heure,
+        lieu: eventData.lieu,
+        publicCible: eventData.publicCible,
         photos: JSON.stringify(eventData.photos || [])
       }),
     });
@@ -87,11 +93,82 @@ export const membersAPI = {
   },
 };
 
-// API des équipes (pour plus tard)
+// API des équipes
 export const teamsAPI = {
+  // Récupérer toutes les équipes
+  getAll: async () => {
+    const response = await apiCall('/teams');
+    return response.data;
+  },
+
+  // Récupérer le nombre d'équipes
   getCount: async () => {
-    // TODO: Implémenter quand les routes équipes seront créées
-    return 0;
+    const teams = await teamsAPI.getAll();
+    return teams.length;
+  },
+
+  // Récupérer une équipe par ID
+  getById: async (id) => {
+    const response = await apiCall(`/teams/${id}`);
+    return response.data;
+  },
+
+  // Créer une nouvelle équipe
+  create: async (teamData) => {
+    const response = await apiCall('/teams', {
+      method: 'POST',
+      body: JSON.stringify(teamData),
+    });
+    return response.data;
+  },
+
+  // Mettre à jour une équipe
+  update: async (id, teamData) => {
+    const response = await apiCall(`/teams/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(teamData),
+    });
+    return response.data;
+  },
+
+  // Supprimer une équipe
+  delete: async (id) => {
+    const response = await apiCall(`/teams/${id}`, {
+      method: 'DELETE',
+    });
+    return response;
+  },
+
+  // Récupérer les membres d'une équipe
+  getMembers: async (teamId) => {
+    const response = await apiCall(`/teams/${teamId}/members`);
+    return response.data;
+  },
+
+  // Ajouter un membre à une équipe
+  addMember: async (teamId, memberId, role = 'membre') => {
+    const response = await apiCall(`/teams/${teamId}/members`, {
+      method: 'POST',
+      body: JSON.stringify({ memberId, role }),
+    });
+    return response.data;
+  },
+
+  // Retirer un membre d'une équipe
+  removeMember: async (teamId, memberId) => {
+    const response = await apiCall(`/teams/${teamId}/members/${memberId}`, {
+      method: 'DELETE',
+    });
+    return response;
+  },
+
+  // Mettre à jour le rôle d'un membre
+  updateMemberRole: async (teamId, memberId, role) => {
+    const response = await apiCall(`/teams/${teamId}/members/${memberId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    });
+    return response.data;
   },
 };
 
@@ -99,16 +176,16 @@ export const teamsAPI = {
 export const statsAPI = {
   getAll: async () => {
     try {
-      const [eventsCount] = await Promise.all([
+      const [eventsCount, teamsCount] = await Promise.all([
         eventsAPI.getCount(),
+        teamsAPI.getCount(),
         // membersAPI.getCount(),
-        // teamsAPI.getCount(),
       ]);
 
       return {
         events: eventsCount,
         users: 0, // TODO: Implémenter
-        teams: 0, // TODO: Implémenter
+        teams: teamsCount,
         albums: 0, // TODO: Implémenter
         drinks: 0, // TODO: Implémenter
         results: 0, // TODO: Implémenter

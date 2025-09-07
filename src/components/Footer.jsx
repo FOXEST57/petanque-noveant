@@ -51,14 +51,7 @@ const Footer = () => {
                   Animations
                 </Link>
               </li>
-              <li>
-                <Link 
-                  to="/galerie" 
-                  className="text-gray-400 transition-colors duration-200 hover:text-white"
-                >
-                  Galerie
-                </Link>
-              </li>
+
               <li>
                 <Link 
                   to="/contact" 
@@ -98,9 +91,7 @@ const Footer = () => {
             <div className="flex items-start mb-4 space-x-3">
               <Clock className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-gray-400">
-                <p className="mb-1"><span className="font-medium">Mardi & Jeudi :</span> 14h - 18h</p>
-                <p className="mb-1"><span className="font-medium">Samedi :</span> 14h - 19h</p>
-                <p><span className="font-medium">Dimanche :</span> 9h - 12h</p>
+                <p>Ouvert tous les jours</p>
               </div>
             </div>
             

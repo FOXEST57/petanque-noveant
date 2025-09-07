@@ -9,6 +9,9 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.js';
 import eventsRoutes from './routes/events.js';
+import membersRoutes from './routes/members.js';
+import contactRoutes from './routes/contact.js';
+import teamsRoutes from './routes/teams.js';
 
 // for esm mode
 const __filename = fileURLToPath(import.meta.url);
@@ -29,6 +32,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
  */
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/members', membersRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/teams', teamsRoutes);
 
 /**
  * health

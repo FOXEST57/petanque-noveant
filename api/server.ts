@@ -6,7 +6,7 @@ import app from './app.js';
 /**
  * start server with port
  */
-const PORT = process.env.PORT || 5555;
+const PORT = process.env.PORT || 5556;
 
 const server = app.listen(PORT, () => {
   console.log(`Server ready on port ${PORT}`);
@@ -32,3 +32,4 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+

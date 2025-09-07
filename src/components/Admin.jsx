@@ -392,6 +392,91 @@ const Admin = () => {
     </form>
   );
 
+  const renderTeamForm = () => (
+    <form onSubmit={handleFormSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Nom de l'équipe</label>
+          <input
+            type="text"
+            value={formData.name || ''}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Catégorie</label>
+          <select
+            value={formData.category || ''}
+            onChange={(e) => setFormData({...formData, category: e.target.value})}
+            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+          >
+            <option value="">Sélectionner une catégorie</option>
+            <option value="Seniors">Seniors</option>
+            <option value="Vétérans">Vétérans</option>
+            <option value="Juniors">Juniors</option>
+            <option value="Mixte">Mixte</option>
+          </select>
+        </div>
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Compétition</label>
+        <input
+          type="text"
+          value={formData.competition || ''}
+          onChange={(e) => setFormData({...formData, competition: e.target.value})}
+          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+          placeholder="Ex: Championnat Départemental, Coupe Vétérans..."
+        />
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Description</label>
+        <textarea
+          value={formData.description || ''}
+          onChange={(e) => setFormData({...formData, description: e.target.value})}
+          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+          rows="3"
+          placeholder="Description de l'équipe..."
+        />
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700">URL de la photo</label>
+        <input
+          type="url"
+          value={formData.photo_url || ''}
+          onChange={(e) => setFormData({...formData, photo_url: e.target.value})}
+          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+          placeholder="https://exemple.com/photo.jpg"
+        />
+      </div>
+      
+      <div className="flex justify-end space-x-4">
+        <button
+          type="button"
+          onClick={() => {
+            setShowForm(false);
+            setEditingItem(null);
+            setFormData({});
+          }}
+          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Annuler
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+        >
+          {loading ? 'Enregistrement...' : (editingItem ? 'Modifier' : 'Créer')}
+        </button>
+      </div>
+    </form>
+  );
+
   const renderGenericTable = (data, columns, actions = true) => (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white border border-gray-300">
@@ -494,6 +579,9 @@ const Admin = () => {
           data: teams,
           columns: [
             { key: 'name', label: 'Nom' },
+            { key: 'category', label: 'Catégorie' },
+            { key: 'competition', label: 'Compétition' },
+            { key: 'member_count', label: 'Membres', render: (count) => `${count || 0} membre(s)` },
             { key: 'description', label: 'Description' }
           ]
         };
@@ -565,7 +653,8 @@ const Admin = () => {
               <h2 className="text-lg font-medium text-gray-900 mb-4">
                 {editingItem ? 'Modifier' : 'Ajouter'} {tabs.find(t => t.id === activeTab)?.label.slice(0, -1)}
               </h2>
-              {activeTab === 'membres' ? renderMemberForm() : (
+              {activeTab === 'membres' ? renderMemberForm() : 
+               activeTab === 'equipes' ? renderTeamForm() : (
                 <div className="text-gray-500">Formulaire générique à implémenter pour {activeTab}</div>
               )}
             </div>

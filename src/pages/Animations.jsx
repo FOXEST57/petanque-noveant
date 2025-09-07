@@ -16,7 +16,7 @@ const Animations = () => {
 
   const fetchEventPhotos = async (eventId) => {
     try {
-      const response = await fetch(`http://localhost:5555/api/events/${eventId}/photos`)
+      const response = await fetch(`http://localhost:5556/api/events/${eventId}/photos`)
       if (response.ok) {
         const photos = await response.json()
         return photos
@@ -107,11 +107,11 @@ const Animations = () => {
             <div key={photo.id} className="relative group">
               <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img
-                  src={`http://localhost:5555/api/events/photos/${photo.filename}`}
+                  src={`http://localhost:5556/api/events/photos/${photo.filename}`}
                   alt={`${eventTitle} - Photo ${index + 1}`}
                   className="w-full h-full object-cover cursor-pointer transition-transform group-hover:scale-105"
                   onClick={() => setSelectedPhoto({
-                    src: `http://localhost:5555/api/events/photos/${photo.filename}`,
+                    src: `http://localhost:5556/api/events/photos/${photo.filename}`,
                     alt: `${eventTitle} - Photo ${index + 1}`,
                     title: eventTitle
                   })}
@@ -271,21 +271,18 @@ const Animations = () => {
                             
                             <div className="flex items-center">
                               <Clock className="w-4 h-4 mr-2 text-[#425e9b]" />
-                              <span>{formatTime(event.date)}</span>
+                              <span>{event.heure || formatTime(event.date)}</span>
                             </div>
                             
                             <div className="flex items-center">
                               <MapPin className="w-4 h-4 mr-2 text-[#425e9b]" />
-                              <span>{event.location || 'Terrain du club'}</span>
+                              <span>{event.lieu || 'Terrain du club'}</span>
                             </div>
                             
                             <div className="flex items-center">
                               <Users className="w-4 h-4 mr-2 text-[#425e9b]" />
                               <span>
-                                {event.max_participants 
-                                  ? `Max ${event.max_participants} participants`
-                                  : 'Ouvert à tous'
-                                }
+                                {event.publicCible || 'Ouvert à tous'}
                               </span>
                             </div>
                           </div>
