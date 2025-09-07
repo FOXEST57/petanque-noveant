@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Users, Trophy, Calendar } from 'lucide-react'
+import { Users, Trophy, Calendar, Image } from 'lucide-react'
 import { teamsAPI } from '../lib/api'
 
 const Equipes = () => {
@@ -65,6 +65,26 @@ const Equipes = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {teams.map((team) => (
                 <div key={team.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                  {/* Photo de l'équipe */}
+                  <div className="h-48 bg-gray-200 flex items-center justify-center">
+                    {team.photo_url ? (
+                      <img 
+                        src={`http://localhost:8080/${team.photo_url}`} 
+                        alt={`Photo de l'équipe ${team.name}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className={`flex flex-col items-center justify-center text-gray-400 ${team.photo_url ? 'hidden' : 'flex'}`}>
+                      <Image className="h-12 w-12 mb-2" />
+                      <span className="text-sm">Aucune photo</span>
+                    </div>
+                  </div>
+                  
+                  {/* Contenu de la carte */}
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-xl font-semibold text-gray-900">
