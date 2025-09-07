@@ -1,12 +1,18 @@
 // Service API pour communiquer avec le backend Express
-const API_BASE_URL = 'http://localhost:5556/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 // Fonction utilitaire pour les appels API
 const apiCall = async (endpoint, options = {}) => {
   try {
+    // Don't set Content-Type for FormData - let the browser set it automatically
+    const headers = {};
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
-        'Content-Type': 'application/json',
+        ...headers,
         ...options.headers,
       },
       ...options,
@@ -117,7 +123,7 @@ export const teamsAPI = {
   create: async (teamData) => {
     const response = await apiCall('/teams', {
       method: 'POST',
-      body: JSON.stringify(teamData),
+      body: teamData, // FormData should not be stringified
     });
     return response.data;
   },
@@ -126,7 +132,7 @@ export const teamsAPI = {
   update: async (id, teamData) => {
     const response = await apiCall(`/teams/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(teamData),
+      body: teamData, // FormData should not be stringified
     });
     return response.data;
   },

@@ -1,5 +1,5 @@
 // API client pour les membres
-const API_BASE_URL = 'http://localhost:5556/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 // Fonction utilitaire pour gérer les réponses API
 const handleResponse = async (response) => {
@@ -21,24 +21,28 @@ export const membersAPI = {
 
   // Créer un nouveau membre
   create: async (memberData) => {
+    const isFormData = memberData instanceof FormData;
+    
     const response = await fetch(`${API_BASE_URL}/members`, {
       method: 'POST',
-      headers: {
+      headers: isFormData ? {} : {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(memberData),
+      body: isFormData ? memberData : JSON.stringify(memberData),
     });
     return handleResponse(response);
   },
 
   // Mettre à jour un membre
   update: async (id, memberData) => {
+    const isFormData = memberData instanceof FormData;
+    
     const response = await fetch(`${API_BASE_URL}/members/${id}`, {
       method: 'PUT',
-      headers: {
+      headers: isFormData ? {} : {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(memberData),
+      body: isFormData ? memberData : JSON.stringify(memberData),
     });
     return handleResponse(response);
   },

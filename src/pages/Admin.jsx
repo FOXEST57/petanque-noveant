@@ -1,9 +1,85 @@
-import React, { useState, useEffect } from "react";
-import { Users, Calendar, Trophy, BarChart3, Wine, Plus, Minus, Edit, Trash2, Search, Filter, X, Save, UserPlus, Phone, Mail, MapPin, Calendar as CalendarIcon, CreditCard, Shield, Gift, Euro } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Users, Calendar, Trophy, BarChart3, Wine, Plus, Minus, Edit, Trash2, Search, Filter, X, Save, UserPlus, Phone, Mail, MapPin, Calendar as CalendarIcon, CreditCard, Shield, Gift, Euro, Camera } from "lucide-react";
 import { useDrinks } from "../contexts/DrinksContext";
 import { toast } from "sonner";
 import { eventsAPI, statsAPI, teamsAPI } from "../lib/api";
 import { membersAPI } from "../lib/membersAPI";
+
+// Fonctions utilitaires pour la gestion des dates
+const formatDateToFrench = (isoDate) => {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    if (isNaN(date.getTime())) return '';
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+};
+
+const formatDateToISO = (frenchDate) => {
+    if (!frenchDate) return '';
+    const parts = frenchDate.split('/');
+    if (parts.length !== 3) return '';
+    const [day, month, year] = parts;
+    if (!day || !month || !year) return '';
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
+// Fonction pour générer un avatar avec les initiales
+const generateAvatar = (prenom, nom) => {
+    const initials = `${prenom?.charAt(0) || ''}${nom?.charAt(0) || ''}`.toUpperCase();
+    const colors = [
+        '#425e9b', '#e74c3c', '#3498db', '#2ecc71', '#f39c12',
+        '#9b59b6', '#1abc9c', '#34495e', '#e67e22', '#95a5a6'
+    ];
+    const colorIndex = (prenom?.charCodeAt(0) || 0 + nom?.charCodeAt(0) || 0) % colors.length;
+    const backgroundColor = colors[colorIndex];
+    
+    return {
+        initials,
+        backgroundColor
+    };
+};
+
+const validateFrenchDate = (dateString) => {
+    if (!dateString) return { isValid: false, error: '' };
+    
+    const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+    const match = dateString.match(dateRegex);
+    
+    if (!match) {
+        return { isValid: false, error: 'Format invalide. Utilisez jj/mm/aaaa' };
+    }
+    
+    const [, day, month, year] = match;
+    const dayNum = parseInt(day, 10);
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
+    
+    if (monthNum < 1 || monthNum > 12) {
+        return { isValid: false, error: 'Mois invalide (1-12)' };
+    }
+    
+    if (dayNum < 1 || dayNum > 31) {
+        return { isValid: false, error: 'Jour invalide (1-31)' };
+    }
+    
+    // Vérification plus précise des jours selon le mois
+    const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
+    if (dayNum > daysInMonth) {
+        return { isValid: false, error: `Ce mois n'a que ${daysInMonth} jours` };
+    }
+    
+    // Vérification que la date n'est pas dans le futur (pour les dates de naissance)
+    const inputDate = new Date(yearNum, monthNum - 1, dayNum);
+    const today = new Date();
+    
+    if (isNaN(inputDate.getTime())) {
+        return { isValid: false, error: 'Date invalide' };
+    }
+    
+    return { isValid: true, error: '' };
+};
 
 // Styles pour les animations
 const styles = `
@@ -93,6 +169,19 @@ const Admin = () => {
         typeMembreId: '',
         photo: ''
     });
+    
+    // États pour la validation des dates
+    const [dateErrors, setDateErrors] = useState({
+        dateNaissance: '',
+        dateEntree: ''
+    });
+    
+    // États pour les composants de date séparés
+    const [dateComponents, setDateComponents] = useState({
+        dateNaissance: { day: '', month: '', year: '' },
+        dateEntree: { day: '', month: '', year: '' }
+    });
+    const dateRefs = useRef({});
     const [formData, setFormData] = useState({
         name: '',
         price: '',
@@ -102,6 +191,10 @@ const Admin = () => {
     });
     const [selectedImageFile, setSelectedImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    
+    // États pour la gestion des photos de membres
+    const [selectedMemberImageFile, setSelectedMemberImageFile] = useState(null);
+    const [memberImagePreview, setMemberImagePreview] = useState(null);
 
     // États pour la gestion des concours
     const [showConcoursModal, setShowConcoursModal] = useState(false);
@@ -218,9 +311,8 @@ const Admin = () => {
 
 
     useEffect(() => {
-        loadMembers();
+        loadMembers(); // Les stats seront mises à jour automatiquement après le chargement des membres
         loadMemberTypes();
-        loadStats();
         loadEvents();
         loadTeams();
     }, []);
@@ -230,9 +322,35 @@ const Admin = () => {
         try {
             const membersData = await membersAPI.getAll();
             setMembers(membersData);
+            // Mettre à jour les stats après avoir chargé les membres
+            updateMemberStats(membersData);
         } catch (error) {
             console.error('Erreur lors du chargement des membres:', error);
             toast.error('Erreur lors du chargement des membres');
+        }
+    };
+
+    // Fonction pour mettre à jour les statistiques des membres
+    const updateMemberStats = async (membersData) => {
+        try {
+            setLoading(true);
+            const eventsCount = await eventsAPI.getCount();
+            const teamsCount = await teamsAPI.getCount();
+            
+            setStats(prevStats => ({
+                ...prevStats,
+                users: membersData.length, // Utiliser les données des membres passées en paramètre
+                teams: teamsCount,
+                events: eventsCount,
+                albums: 0, // TODO: Implémenter l'API des albums
+                drinks: drinks.length,
+                results: 0 // TODO: Implémenter l'API des résultats
+            }));
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour des statistiques des membres:", error);
+            toast.error("Erreur lors de la mise à jour des statistiques");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -256,7 +374,7 @@ const Admin = () => {
                 eventsData.map(async (event) => {
                     try {
                         // Récupérer les photos de l'événement
-                        const response = await fetch(`http://localhost:5556/api/events/${event.id}/photos`);
+                        const response = await fetch(`http://localhost:8080/api/events/${event.id}/photos`);
                         const photos = response.ok ? await response.json() : [];
                         
                         return {
@@ -376,6 +494,48 @@ const Admin = () => {
         }
     };
 
+    // Fonction pour gérer la sélection d'image de membre
+    const handleMemberImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validation du type de fichier
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                toast.error('Type de fichier non supporté. Utilisez JPG, PNG, GIF ou WebP.');
+                e.target.value = ''; // Reset input
+                return;
+            }
+            
+            // Validation de la taille (max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB en bytes
+            if (file.size > maxSize) {
+                toast.error('La taille du fichier ne doit pas dépasser 5MB.');
+                e.target.value = ''; // Reset input
+                return;
+            }
+            
+            setSelectedMemberImageFile(file);
+            
+            // Créer une prévisualisation
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setMemberImagePreview(e.target.result);
+            };
+            reader.onerror = () => {
+                toast.error('Erreur lors de la lecture du fichier.');
+                setSelectedMemberImageFile(null);
+                setMemberImagePreview(null);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeMemberPhoto = () => {
+        setSelectedMemberImageFile(null);
+        setMemberImagePreview(null);
+        setMemberFormData({...memberFormData, photo: ''});
+    };
+
     const handleSaveDrink = () => {
         if (!formData.name || !formData.price) {
             toast.error('Veuillez remplir tous les champs obligatoires');
@@ -404,6 +564,7 @@ const Admin = () => {
     // Fonctions de gestion des membres
     const handleAddMember = () => {
         setMemberModalMode('add');
+        const todayFormatted = formatDateToFrench(new Date().toISOString().split('T')[0]);
         setMemberFormData({
             nom: '',
             prenom: '',
@@ -411,16 +572,38 @@ const Admin = () => {
             telephone: '',
             email: '',
             numeroLicence: '',
-            dateEntree: new Date().toISOString().split('T')[0],
+            dateEntree: todayFormatted,
             dateNaissance: '',
-            typeMembreId: ''
+            typeMembreId: '',
+            photo: ''
         });
+        
+        // Réinitialiser les états des photos
+        setSelectedMemberImageFile(null);
+        setMemberImagePreview(null);
+        
+        // Initialiser les composants de date
+        const todayParts = todayFormatted.split('/');
+        setDateComponents({
+            dateNaissance: { day: '', month: '', year: '' },
+            dateEntree: { 
+                day: todayParts[0] || '', 
+                month: todayParts[1] || '', 
+                year: todayParts[2] || '' 
+            }
+        });
+        
+        setDateErrors({ dateNaissance: '', dateEntree: '' });
         setShowMemberModal(true);
     };
 
     const handleEditMember = (member) => {
         setMemberModalMode('edit');
         setSelectedMember(member);
+        
+        const dateEntreeFormatted = member.date_entree ? formatDateToFrench(member.date_entree) : '';
+        const dateNaissanceFormatted = member.date_naissance ? formatDateToFrench(member.date_naissance) : '';
+        
         setMemberFormData({
             nom: member.nom,
             prenom: member.prenom,
@@ -428,11 +611,42 @@ const Admin = () => {
             telephone: member.telephone,
             email: member.email,
             numeroLicence: member.numero_licence || '',
-            dateEntree: member.date_entree || '',
-            dateNaissance: member.date_naissance || '',
+            dateEntree: dateEntreeFormatted,
+            dateNaissance: dateNaissanceFormatted,
             typeMembreId: member.type_membre_id ? member.type_membre_id.toString() : '',
             photo: member.photo_url || ''
         });
+        
+        // Gérer l'affichage de la photo existante
+        setSelectedMemberImageFile(null);
+        
+        // Validation robuste de la photo_url avant de l'utiliser comme preview
+        // Prévisualisation simple de la photo (chemin de fichier uniquement)
+        if (member.photo_url && (member.photo_url.startsWith('/uploads/') || member.photo_url.startsWith('uploads/'))) {
+            // Construire l'URL complète pour servir la photo depuis le backend
+            setMemberImagePreview(`http://localhost:8080/api/members/photos/${member.photo_url.split('/').pop()}`);
+        } else {
+            setMemberImagePreview(null);
+        }
+        
+        // Initialiser les composants de date
+        const dateEntreeParts = dateEntreeFormatted ? dateEntreeFormatted.split('/') : ['', '', ''];
+        const dateNaissanceParts = dateNaissanceFormatted ? dateNaissanceFormatted.split('/') : ['', '', ''];
+        
+        setDateComponents({
+            dateNaissance: { 
+                day: dateNaissanceParts[0] || '', 
+                month: dateNaissanceParts[1] || '', 
+                year: dateNaissanceParts[2] || '' 
+            },
+            dateEntree: { 
+                day: dateEntreeParts[0] || '', 
+                month: dateEntreeParts[1] || '', 
+                year: dateEntreeParts[2] || '' 
+            }
+        });
+        
+        setDateErrors({ dateNaissance: '', dateEntree: '' });
         setShowMemberModal(true);
     };
 
@@ -448,7 +662,6 @@ const Admin = () => {
             
             // Recharger les données
             await loadMembers();
-            await loadStats();
             setShowMemberDeleteConfirm(false);
             setMemberToDelete(null);
         } catch (error) {
@@ -484,41 +697,194 @@ const Admin = () => {
             return;
         }
 
-        const memberData = {
-            nom: memberFormData.nom,
-            prenom: memberFormData.prenom,
-            adresse: memberFormData.adresse,
-            telephone: memberFormData.telephone,
-            email: memberFormData.email,
-            numero_licence: memberFormData.numeroLicence,
-            date_entree: memberFormData.dateEntree,
-            date_naissance: memberFormData.dateNaissance,
-            type_membre_id: parseInt(memberFormData.typeMembreId),
-            photo_url: memberFormData.photo || null
-        };
+        // Vérifier les erreurs de date avant la sauvegarde
+        if (dateErrors.dateNaissance || dateErrors.dateEntree) {
+            toast.error('Veuillez corriger les erreurs de format de date');
+            return;
+        }
 
         try {
+            const formData = new FormData();
+            formData.append('nom', memberFormData.nom);
+            formData.append('prenom', memberFormData.prenom);
+            formData.append('adresse', memberFormData.adresse);
+            formData.append('telephone', memberFormData.telephone);
+            formData.append('email', memberFormData.email);
+            formData.append('numero_licence', memberFormData.numeroLicence);
+            formData.append('date_entree', memberFormData.dateEntree ? formatDateToISO(memberFormData.dateEntree) : '');
+            formData.append('date_naissance', memberFormData.dateNaissance ? formatDateToISO(memberFormData.dateNaissance) : '');
+            formData.append('type_membre_id', memberFormData.typeMembreId);
+            
+            // Ajouter la photo si elle existe
+            if (selectedMemberImageFile) {
+                // Validation finale avant upload
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(selectedMemberImageFile.type)) {
+                    toast.error('Type de fichier non supporté pour la photo.');
+                    return;
+                }
+                
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (selectedMemberImageFile.size > maxSize) {
+                    toast.error('La photo est trop volumineuse (max 5MB).');
+                    return;
+                }
+                
+                formData.append('photo', selectedMemberImageFile);
+            }
+
             if (memberModalMode === 'add') {
-                await membersAPI.create(memberData);
+                await membersAPI.create(formData);
                 toast.success('Membre ajouté avec succès');
             } else {
-                await membersAPI.update(selectedMember.id, memberData);
+                await membersAPI.update(selectedMember.id, formData);
                 toast.success('Membre modifié avec succès');
             }
             
             // Recharger les données
             await loadMembers();
-            await loadStats();
             setShowMemberModal(false);
+            
+            // Réinitialiser les états des photos
+            setSelectedMemberImageFile(null);
+            setMemberImagePreview(null);
         } catch (error) {
             console.error('Erreur lors de la sauvegarde du membre:', error);
-            toast.error('Erreur lors de la sauvegarde du membre');
+            
+            // Gestion d'erreurs spécifiques
+            if (error.message && error.message.includes('file')) {
+                toast.error('Erreur lors de l\'upload de la photo. Veuillez réessayer.');
+            } else if (error.message && error.message.includes('network')) {
+                toast.error('Erreur de connexion. Vérifiez votre connexion internet.');
+            } else if (error.response && error.response.status === 413) {
+                toast.error('Le fichier est trop volumineux pour être uploadé.');
+            } else if (error.response && error.response.status === 415) {
+                toast.error('Type de fichier non supporté par le serveur.');
+            } else {
+                toast.error('Erreur lors de la sauvegarde du membre. Veuillez réessayer.');
+            }
+        }
+    };
+
+    // Fonctions pour la gestion des composants de date
+    const handleDateComponentChange = (dateField, component, value) => {
+        // Ne permettre que les chiffres
+        if (!/^\d*$/.test(value)) return;
+        
+        // Limiter la longueur selon le composant
+        const maxLength = component === 'year' ? 4 : 2;
+        if (value.length > maxLength) return;
+        
+        // Validation des valeurs
+        if (component === 'day' && value.length === 2) {
+            const dayNum = parseInt(value);
+            if (dayNum < 1 || dayNum > 31) return;
+        }
+        
+        if (component === 'month' && value.length === 2) {
+            const monthNum = parseInt(value);
+            if (monthNum < 1 || monthNum > 12) return;
+        }
+        
+        // Mettre à jour l'état des composants
+        setDateComponents(prev => ({
+            ...prev,
+            [dateField]: {
+                ...prev[dateField],
+                [component]: value
+            }
+        }));
+        
+        // Auto-navigation et conversion d'année
+        if (component === 'day' && value.length === 2) {
+            // Passer au champ mois
+            setTimeout(() => {
+                if (dateRefs.current[dateField]?.month) {
+                    dateRefs.current[dateField].month.focus();
+                }
+            }, 0);
+        } else if (component === 'month' && value.length === 2) {
+            // Passer au champ année
+            setTimeout(() => {
+                if (dateRefs.current[dateField]?.year) {
+                    dateRefs.current[dateField].year.focus();
+                }
+            }, 0);
+        } else if (component === 'year' && value.length === 2) {
+            // Conversion automatique de l'année
+            const yearNum = parseInt(value);
+            const fullYear = yearNum < 50 ? 2000 + yearNum : 1900 + yearNum;
+            
+            setDateComponents(prev => ({
+                ...prev,
+                [dateField]: {
+                    ...prev[dateField],
+                    year: fullYear.toString()
+                }
+            }));
+        }
+        
+        // Mettre à jour le champ principal quand tous les composants sont remplis
+        const updatedComponents = {
+            ...dateComponents[dateField],
+            [component]: component === 'year' && value.length === 2 ? 
+                (parseInt(value) < 50 ? 2000 + parseInt(value) : 1900 + parseInt(value)).toString() : value
+        };
+        
+        if (updatedComponents.day && updatedComponents.month && updatedComponents.year) {
+            const formattedDate = `${updatedComponents.day.padStart(2, '0')}/${updatedComponents.month.padStart(2, '0')}/${updatedComponents.year}`;
+            setMemberFormData(prev => ({
+                ...prev,
+                [dateField]: formattedDate
+            }));
+            
+            // Validation de la date
+            const validation = validateFrenchDate(formattedDate);
+            setDateErrors(prev => ({
+                ...prev,
+                [dateField]: validation.isValid ? '' : validation.error
+            }));
+        }
+    };
+    
+    const handleDateKeyDown = (e, dateField, component) => {
+        // Permettre les touches de navigation
+        if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            return;
+        }
+        
+        // Empêcher les caractères non numériques
+        if (!/\d/.test(e.key)) {
+            e.preventDefault();
         }
     };
 
     const getMemberTypeName = (typeId) => {
         const type = memberTypes.find(t => t.id === typeId);
         return type ? type.nom : 'Non défini';
+    };
+
+    // Fonction pour afficher l'anniversaire au format JJ/MM
+    const getBirthdayDisplay = (dateNaissance) => {
+        if (!dateNaissance) return 'Non renseigné';
+        
+        try {
+            let date;
+            // Si la date est au format jj/mm/aaaa
+            if (dateNaissance.includes('/')) {
+                const [jour, mois] = dateNaissance.split('/');
+                return `${jour.padStart(2, '0')}/${mois.padStart(2, '0')}`;
+            }
+            // Si la date est au format ISO (aaaa-mm-jj)
+            else {
+                date = new Date(dateNaissance);
+                const jour = date.getDate().toString().padStart(2, '0');
+                const mois = (date.getMonth() + 1).toString().padStart(2, '0');
+                return `${jour}/${mois}`;
+            }
+        } catch (error) {
+            return 'Non renseigné';
+        }
     };
 
     const filteredMembers = members.filter(member => {
@@ -648,7 +1014,7 @@ const Admin = () => {
             formData.append('members', JSON.stringify(teamFormData.teamMembers));
             
             if (teamFormData.teamPhoto) {
-                formData.append('teamPhoto', teamFormData.teamPhoto);
+                formData.append('photo', teamFormData.teamPhoto);
             } else if (teamFormData.photo_url) {
                 formData.append('photo_url', teamFormData.photo_url);
             }
@@ -1564,7 +1930,7 @@ const Admin = () => {
                                             {existingEventPhotos.map((photo) => (
                                                 <div key={photo.id} className="relative group">
                                                     <img
-                                                        src={`http://localhost:5556/api/events/photos/${photo.filename}`}
+                                                        src={`http://localhost:8080/api/events/photos/${photo.filename}`}
                                                         alt={photo.filename}
                                                         className="object-cover w-full h-24 rounded-lg border border-gray-200"
                                                     />
@@ -1673,7 +2039,7 @@ const Admin = () => {
 
             {activeModal === 'evenement' && (
                 <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xl font-semibold text-gray-900">Gestion des Événements</h3>
@@ -1776,7 +2142,7 @@ const Admin = () => {
             {/* Modal Gestion des Lotos */}
             {activeModal === 'loto' && (
                 <div className="flex fixed inset-0 z-[50] justify-center items-center p-4 bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xl font-semibold text-gray-900">Gestion des Lotos</h3>
@@ -2578,31 +2944,61 @@ const Admin = () => {
                                             <table className="min-w-full divide-y divide-gray-200">
                                                 <thead className="bg-gray-50">
                                                     <tr>
+                                                        <th className="px-4 py-3 w-16 text-xs font-medium tracking-wider text-center text-gray-500 uppercase">Photo</th>
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Nom</th>
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Prénom</th>
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Email</th>
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Téléphone</th>
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Type</th>
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">N° Licence</th>
-                                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Date d'entrée</th>
+                                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Anniversaire</th>
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
                                                     {filteredMembers.map(member => (
                                                         <tr key={member.id} className="hover:bg-gray-50">
+                                                            <td className="px-4 py-4 text-center whitespace-nowrap">
+                                                <div className="flex justify-center">
+                                                    {member.photo_url ? (
+                                                        <img
+                                                            src={member.photo_url.startsWith('/uploads/') || member.photo_url.startsWith('uploads/') ? 
+                                                                `http://localhost:8080/api/members/photos/${member.photo_url.split('/').pop()}` : 
+                                                                member.photo_url}
+                                                            alt={`Photo de ${member.prenom} ${member.nom}`}
+                                                            className="object-cover w-10 h-10 rounded-full border-2 border-gray-200"
+                                                            onError={(e) => {
+                                                                // En cas d'erreur, remplacer par l'avatar généré
+                                                                const avatar = generateAvatar(member.prenom, member.nom);
+                                                                const avatarDiv = document.createElement('div');
+                                                                avatarDiv.className = 'flex justify-center items-center w-10 h-10 text-sm font-semibold text-white rounded-full border-2 border-gray-200';
+                                                                avatarDiv.style.backgroundColor = avatar.backgroundColor;
+                                                                avatarDiv.textContent = avatar.initials;
+                                                                e.target.parentNode.replaceChild(avatarDiv, e.target);
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <div 
+                                                            className="flex justify-center items-center w-10 h-10 text-sm font-semibold text-white rounded-full border-2 border-gray-200"
+                                                            style={{ backgroundColor: generateAvatar(member.prenom, member.nom).backgroundColor }}
+                                                        >
+                                                            {generateAvatar(member.prenom, member.nom).initials}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
                                                             <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{member.nom}</td>
                                                             <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{member.prenom}</td>
                                                             <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{member.email}</td>
                                                             <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{member.telephone}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <span className="px-2 py-1 bg-[#425e9b] bg-opacity-10 text-[#425e9b] rounded-full text-sm font-medium">
-                                                                    {getMemberTypeName(member.typeMembreId)}
+                                                                    {getMemberTypeName(member.type_membre_id)}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{member.numeroLicence}</td>
+                                                            <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{member.numero_licence || 'Non renseigné'}</td>
                                                             <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
-                                                                {new Date(member.dateEntree).toLocaleDateString('fr-FR')}
+                                                                {getBirthdayDisplay(member.date_naissance)}
                                                             </td>
                                                             <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                                                 <div className="flex space-x-2">
@@ -2803,10 +3199,10 @@ const Admin = () => {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     {team.photo_url ? (
-                                                        <img className="h-10 w-10 rounded-full mr-3" src={team.photo_url} alt={team.name} />
+                                                        <img className="mr-3 w-10 h-10 rounded-full" src={team.photo_url} alt={team.name} />
                                                     ) : (
                                                         <div className="h-10 w-10 rounded-full bg-[#425e9b] flex items-center justify-center mr-3">
-                                                            <Trophy className="h-5 w-5 text-white" />
+                                                            <Trophy className="w-5 h-5 text-white" />
                                                         </div>
                                                     )}
                                                     <span className="text-sm font-medium text-gray-900">{team.name}</span>
@@ -2967,24 +3363,24 @@ const Admin = () => {
                                                     type="file"
                                                     className="hidden"
                                                     accept="image/*"
-                                                    onChange={handleImageChange}
+                                                    onChange={handleMemberImageChange}
                                                 />
                                             </label>
                                         </div>
                                         
-                                        {imagePreview && (
+                                        {memberImagePreview && (
                                             <div className="relative">
                                                 <img
-                                                    src={imagePreview}
+                                                    src={memberImagePreview}
                                                     alt="Prévisualisation"
                                                     className="object-cover w-full h-32 rounded-lg border border-gray-300"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => {
-                                                        setImagePreview(null);
-                                                        setSelectedImageFile(null);
-                                                        setFormData({...formData, image: ''});
+                                                        setMemberImagePreview(null);
+                                                        setSelectedMemberImageFile(null);
+                                                        setMemberFormData({...memberFormData, photo: ''});
                                                     }}
                                                     className="absolute top-2 right-2 p-1 text-white bg-red-500 rounded-full transition-colors hover:bg-red-600"
                                                 >
@@ -3061,7 +3457,7 @@ const Admin = () => {
             {/* Modal Ajouter/Modifier membre */}
             {showMemberModal && (
                 <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-semibold text-gray-900">
@@ -3163,12 +3559,58 @@ const Admin = () => {
                                         <CalendarIcon className="inline mr-1 w-4 h-4" />
                                         Date de naissance
                                     </label>
-                                    <input
-                                        type="date"
-                                        value={memberFormData.dateNaissance}
-                                        onChange={(e) => setMemberFormData({...memberFormData, dateNaissance: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
-                                    />
+                                    <div className="flex items-center space-x-1">
+                                        <input
+                                            ref={(el) => {
+                                                if (!dateRefs.current.dateNaissance) dateRefs.current.dateNaissance = {};
+                                                dateRefs.current.dateNaissance.day = el;
+                                            }}
+                                            type="text"
+                                            placeholder="JJ"
+                                            maxLength="2"
+                                            value={dateComponents?.dateNaissance?.day || ''}
+                                            onChange={(e) => handleDateComponentChange('dateNaissance', 'day', e.target.value)}
+                                            onKeyDown={(e) => handleDateKeyDown(e, 'dateNaissance', 'day')}
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                                dateErrors.dateNaissance ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                        />
+                                        <span className="text-gray-500">/</span>
+                                        <input
+                                            ref={(el) => {
+                                                if (!dateRefs.current.dateNaissance) dateRefs.current.dateNaissance = {};
+                                                dateRefs.current.dateNaissance.month = el;
+                                            }}
+                                            type="text"
+                                            placeholder="MM"
+                                            maxLength="2"
+                                            value={dateComponents?.dateNaissance?.month || ''}
+                                            onChange={(e) => handleDateComponentChange('dateNaissance', 'month', e.target.value)}
+                                            onKeyDown={(e) => handleDateKeyDown(e, 'dateNaissance', 'month')}
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                                dateErrors.dateNaissance ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                        />
+                                        <span className="text-gray-500">/</span>
+                                        <input
+                                            ref={(el) => {
+                                                if (!dateRefs.current.dateNaissance) dateRefs.current.dateNaissance = {};
+                                                dateRefs.current.dateNaissance.year = el;
+                                            }}
+                                            type="text"
+                                            placeholder="AAAA"
+                                            maxLength="4"
+                                            value={dateComponents?.dateNaissance?.year || ''}
+                                            onChange={(e) => handleDateComponentChange('dateNaissance', 'year', e.target.value)}
+                                            onKeyDown={(e) => handleDateKeyDown(e, 'dateNaissance', 'year')}
+                                            className={`w-16 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                                dateErrors.dateNaissance ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                        />
+                                    </div>
+                                    {dateErrors.dateNaissance && (
+                                        <p className="mt-1 text-sm text-red-600">{dateErrors.dateNaissance}</p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -3176,12 +3618,58 @@ const Admin = () => {
                                         <CalendarIcon className="inline mr-1 w-4 h-4" />
                                         Date d'entrée
                                     </label>
-                                    <input
-                                        type="date"
-                                        value={memberFormData.dateEntree}
-                                        onChange={(e) => setMemberFormData({...memberFormData, dateEntree: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
-                                    />
+                                    <div className="flex items-center space-x-1">
+                                        <input
+                                            ref={(el) => {
+                                                if (!dateRefs.current.dateEntree) dateRefs.current.dateEntree = {};
+                                                dateRefs.current.dateEntree.day = el;
+                                            }}
+                                            type="text"
+                                            placeholder="JJ"
+                                            maxLength="2"
+                                            value={dateComponents?.dateEntree?.day || ''}
+                                            onChange={(e) => handleDateComponentChange('dateEntree', 'day', e.target.value)}
+                                            onKeyDown={(e) => handleDateKeyDown(e, 'dateEntree', 'day')}
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                                dateErrors.dateEntree ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                        />
+                                        <span className="text-gray-500">/</span>
+                                        <input
+                                            ref={(el) => {
+                                                if (!dateRefs.current.dateEntree) dateRefs.current.dateEntree = {};
+                                                dateRefs.current.dateEntree.month = el;
+                                            }}
+                                            type="text"
+                                            placeholder="MM"
+                                            maxLength="2"
+                                            value={dateComponents?.dateEntree?.month || ''}
+                                            onChange={(e) => handleDateComponentChange('dateEntree', 'month', e.target.value)}
+                                            onKeyDown={(e) => handleDateKeyDown(e, 'dateEntree', 'month')}
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                                dateErrors.dateEntree ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                        />
+                                        <span className="text-gray-500">/</span>
+                                        <input
+                                            ref={(el) => {
+                                                if (!dateRefs.current.dateEntree) dateRefs.current.dateEntree = {};
+                                                dateRefs.current.dateEntree.year = el;
+                                            }}
+                                            type="text"
+                                            placeholder="AAAA"
+                                            maxLength="4"
+                                            value={dateComponents?.dateEntree?.year || ''}
+                                            onChange={(e) => handleDateComponentChange('dateEntree', 'year', e.target.value)}
+                                            onKeyDown={(e) => handleDateKeyDown(e, 'dateEntree', 'year')}
+                                            className={`w-16 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                                dateErrors.dateEntree ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                        />
+                                    </div>
+                                    {dateErrors.dateEntree && (
+                                        <p className="mt-1 text-sm text-red-600">{dateErrors.dateEntree}</p>
+                                    )}
                                 </div>
 
                                 <div className="md:col-span-2">
@@ -3204,23 +3692,23 @@ const Admin = () => {
                                                     type="file"
                                                     className="hidden"
                                                     accept="image/*"
-                                                    onChange={handleImageChange}
+                                                    onChange={handleMemberImageChange}
                                                 />
                                             </label>
                                         </div>
                                         
-                                        {imagePreview && (
+                                        {memberImagePreview && (
                                             <div className="relative">
                                                 <img
-                                                    src={imagePreview}
+                                                    src={memberImagePreview}
                                                     alt="Prévisualisation"
                                                     className="object-cover w-full h-32 rounded-lg border border-gray-300"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => {
-                                                        setImagePreview(null);
-                                                        setSelectedImageFile(null);
+                                                        setMemberImagePreview(null);
+                                                        setSelectedMemberImageFile(null);
                                                         setMemberFormData({...memberFormData, photo: ''});
                                                     }}
                                                     className="absolute top-2 right-2 p-1 text-white bg-red-500 rounded-full transition-colors hover:bg-red-600"
@@ -3400,16 +3888,16 @@ const Admin = () => {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
                                     />
                                     {(teamFormData.teamPhoto || teamFormData.photo_url) && (
-                                        <div className="mt-2 relative inline-block">
+                                        <div className="inline-block relative mt-2">
                                             <img
                                                 src={teamFormData.teamPhoto ? URL.createObjectURL(teamFormData.teamPhoto) : teamFormData.photo_url}
                                                 alt="Aperçu"
-                                                className="w-32 h-32 object-cover rounded-lg border"
+                                                className="object-cover w-32 h-32 rounded-lg border"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={removeTeamPhoto}
-                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+                                                className="flex absolute -top-2 -right-2 justify-center items-center w-6 h-6 text-white bg-red-500 rounded-full transition-colors hover:bg-red-600"
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>
@@ -3424,13 +3912,13 @@ const Admin = () => {
                                     </label>
                                     
                                     {/* Sélection d'un nouveau membre */}
-                                    <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                                        <h4 className="text-sm font-medium text-gray-700 mb-2">Ajouter un membre</h4>
+                                    <div className="p-4 mb-4 bg-gray-50 rounded-lg">
+                                        <h4 className="mb-2 text-sm font-medium text-gray-700">Ajouter un membre</h4>
                                         
                                         {/* Input avec dropdown */}
                                         <div className="relative member-dropdown-container">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Search className="h-4 w-4 text-gray-400" />
+                                            <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                                                <Search className="w-4 h-4 text-gray-400" />
                                             </div>
                                             <input
                                                 type="text"
@@ -3471,9 +3959,9 @@ const Admin = () => {
                                                 const limitedMembers = filteredMembers.slice(0, 10);
                                                 
                                                 return (
-                                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto animate-fadeIn" style={{boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'}}>
+                                                    <div className="overflow-y-auto absolute right-0 left-0 top-full z-50 mt-2 max-h-64 bg-white rounded-xl border border-gray-200 shadow-xl animate-fadeIn" style={{boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'}}>
                                                         {limitedMembers.length === 0 ? (
-                                                            <div className="px-4 py-4 text-gray-500 text-sm text-center">
+                                                            <div className="px-4 py-4 text-sm text-center text-gray-500">
                                                                 <div className="flex flex-col items-center space-y-2">
                                                                     <Search className="w-5 h-5 text-gray-400" />
                                                                     <span>Aucun membre trouvé</span>
@@ -3501,7 +3989,7 @@ const Admin = () => {
                                                                                         {member.prenom} {member.nom}
                                                                                     </div>
                                                                                     {member.email && (
-                                                                                        <div className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors duration-200">
+                                                                                        <div className="text-xs text-gray-500 transition-colors duration-200 group-hover:text-gray-600">
                                                                                             {member.email}
                                                                                         </div>
                                                                                     )}
@@ -3511,7 +3999,7 @@ const Admin = () => {
                                                                     ))}
                                                                 </div>
                                                                 {filteredMembers.length > 10 && (
-                                                                    <div className="px-4 py-3 text-xs text-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 text-center">
+                                                                    <div className="px-4 py-3 text-xs text-center text-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
                                                                         <span className="inline-flex items-center space-x-1">
                                                                             <span className="w-2 h-2 bg-[#425e9b] rounded-full"></span>
                                                                             <span>{filteredMembers.length} membres trouvés (10 premiers affichés)</span>
@@ -3531,7 +4019,7 @@ const Admin = () => {
                                         <div className="space-y-2">
                                             <h4 className="text-sm font-medium text-gray-700">Membres sélectionnés</h4>
                                             {teamFormData.teamMembers.map((member, index) => (
-                                                <div key={member.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                                                <div key={member.id} className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-200">
                                                     <div className="flex items-center space-x-3">
                                                         <span className="font-medium text-gray-900">
                                                             {member.prenom} {member.nom}
@@ -3550,7 +4038,7 @@ const Admin = () => {
                                                         <button
                                                             type="button"
                                                             onClick={() => removeMemberFromTeam(member.id)}
-                                                            className="text-red-600 hover:text-red-800 transition-colors"
+                                                            className="text-red-600 transition-colors hover:text-red-800"
                                                         >
                                                             <X className="w-4 h-4" />
                                                         </button>

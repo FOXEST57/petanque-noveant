@@ -1,7 +1,33 @@
 import express, { type Request, type Response } from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { initDatabase, getMembers, createMember, updateMember, deleteMember, getMemberTypes, createMemberType, updateMemberType } from '../../src/lib/database.js';
 
 const router = express.Router();
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept only image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  }
+});
+
+// Ensure uploads/members directory exists
+const uploadsDir = path.join(process.cwd(), 'uploads', 'members');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Initialize database connection
 const init = async () => {
@@ -61,8 +87,16 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
+// Helper function to generate unique filename
+const generateUniqueFilename = (originalName: string): string => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 15);
+  const extension = path.extname(originalName);
+  return `${timestamp}_${random}${extension}`;
+};
+
 // PUT /api/members/:id - Update member
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', upload.single('photo'), async (req: Request, res: Response) => {
   try {
     const memberId = parseInt(req.params.id);
     const memberData = req.body;
@@ -72,6 +106,18 @@ router.put('/:id', async (req: Request, res: Response) => {
         success: false,
         error: 'Invalid member ID'
       });
+    }
+
+    // Handle photo upload if present
+    if (req.file) {
+      const filename = generateUniqueFilename(req.file.originalname);
+      const uploadPath = path.join(uploadsDir, filename);
+      
+      // Save file to disk
+      await fs.promises.writeFile(uploadPath, req.file.buffer);
+      
+      // Store relative path in database
+      memberData.photo_url = `uploads/members/${filename}`;
     }
 
     const result = await updateMember(memberId, memberData);
@@ -127,6 +173,24 @@ router.delete('/:id', async (req: Request, res: Response) => {
       success: false,
       error: 'Failed to delete member'
     });
+  }
+});
+
+// GET /api/members/photos/:filename - Serve member photos
+router.get('/photos/:filename', (req: Request, res: Response) => {
+  try {
+    const { filename } = req.params;
+    const filePath = path.join(uploadsDir, filename);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Photo not found' });
+    }
+    
+    res.sendFile(path.resolve(filePath));
+  } catch (error) {
+    console.error('Error serving member photo:', error);
+    res.status(500).json({ error: 'Failed to serve photo' });
   }
 });
 

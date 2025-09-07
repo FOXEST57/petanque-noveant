@@ -1,4 +1,7 @@
 import express, { type Request, type Response } from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { 
   getTeams, 
   getTeamById, 
@@ -12,6 +15,37 @@ import {
 } from '../../src/lib/database.js';
 
 const router = express.Router();
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept only image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  }
+});
+
+// Ensure uploads/teams directory exists
+const uploadsDir = path.join(process.cwd(), 'uploads', 'teams');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Helper function to generate unique filename
+const generateUniqueFilename = (originalName: string): string => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 15);
+  const extension = path.extname(originalName);
+  return `${timestamp}_${random}${extension}`;
+};
 
 // GET /api/teams - Récupérer toutes les équipes
 router.get('/', async (req: Request, res: Response) => {
@@ -57,7 +91,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 // POST /api/teams - Créer une nouvelle équipe
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', upload.single('photo'), async (req: Request, res: Response) => {
   try {
     const teamData = req.body;
     
@@ -67,6 +101,18 @@ router.post('/', async (req: Request, res: Response) => {
         success: false,
         error: 'Le nom de l\'équipe est requis'
       });
+    }
+    
+    // Handle photo upload if present
+    if (req.file) {
+      const filename = generateUniqueFilename(req.file.originalname);
+      const uploadPath = path.join(uploadsDir, filename);
+      
+      // Save file to disk
+      await fs.promises.writeFile(uploadPath, req.file.buffer);
+      
+      // Store relative path in database
+      teamData.photo_url = `uploads/teams/${filename}`;
     }
     
     const result = await createTeam(teamData);
@@ -88,10 +134,47 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/teams/:id - Mettre à jour une équipe
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', upload.single('photo'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const teamData = req.body;
+    
+    // Debug logging
+    console.log('PUT /api/teams/:id - req.body:', req.body);
+    console.log('PUT /api/teams/:id - req.file:', req.file ? 'File present' : 'No file');
+    
+    // Extract and validate team data, filtering out undefined values
+    const { name, category, description, competition } = req.body;
+    const teamData: any = {};
+    
+    if (name !== undefined && name !== null && name !== '') teamData.name = name;
+    if (category !== undefined && category !== null) teamData.category = category || '';
+    if (description !== undefined && description !== null) teamData.description = description || '';
+    if (competition !== undefined && competition !== null) teamData.competition = competition || '';
+    
+    console.log('PUT /api/teams/:id - teamData before photo:', teamData);
+    
+    // Handle photo upload if present
+    if (req.file) {
+      const filename = generateUniqueFilename(req.file.originalname);
+      const uploadPath = path.join(uploadsDir, filename);
+      
+      // Save file to disk
+      await fs.promises.writeFile(uploadPath, req.file.buffer);
+      
+      // Store relative path in database
+      teamData.photo_url = `uploads/teams/${filename}`;
+    }
+    
+    console.log('PUT /api/teams/:id - final teamData:', teamData);
+    console.log('PUT /api/teams/:id - teamData keys:', Object.keys(teamData));
+    
+    // Check if there are any fields to update
+    if (Object.keys(teamData).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Aucun champ valide à mettre à jour'
+      });
+    }
     
     const result = await updateTeam(parseInt(id), teamData);
     
@@ -259,6 +342,24 @@ router.put('/:teamId/members/:memberId', async (req: Request, res: Response) => 
       success: false,
       error: 'Erreur lors de la mise à jour du rôle du membre'
     });
+  }
+});
+
+// GET /api/teams/photos/:filename - Servir les photos d'équipes
+router.get('/photos/:filename', (req: Request, res: Response) => {
+  try {
+    const { filename } = req.params;
+    const filePath = path.join(uploadsDir, filename);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Photo not found' });
+    }
+    
+    res.sendFile(path.resolve(filePath));
+  } catch (error) {
+    console.error('Error serving team photo:', error);
+    res.status(500).json({ error: 'Failed to serve photo' });
   }
 });
 

@@ -111,7 +111,7 @@ export const createMember = async (memberData) => {
   const { nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url } = memberData;
   return await runQuery(
     'INSERT INTO members (nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
-    [nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url]
+    [nom || null, prenom || null, adresse || null, telephone || null, email || null, numero_licence || null, date_entree || null, date_naissance || null, type_membre_id || null, photo_url || null]
   );
 };
 
@@ -119,7 +119,7 @@ export const updateMember = async (id, memberData) => {
   const { nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url } = memberData;
   return await runQuery(
     'UPDATE members SET nom = ?, prenom = ?, adresse = ?, telephone = ?, email = ?, numero_licence = ?, date_entree = ?, date_naissance = ?, type_membre_id = ?, photo_url = ?, updated_at = NOW() WHERE id = ?',
-    [nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url, id]
+    [nom || null, prenom || null, adresse || null, telephone || null, email || null, numero_licence || null, date_entree || null, date_naissance || null, type_membre_id || null, photo_url || null, id]
   );
 };
 
@@ -270,11 +270,40 @@ export const createTeam = async (teamData) => {
 };
 
 export const updateTeam = async (id, teamData) => {
-  const { name, category, description, photo_url, competition } = teamData;
-  return await runQuery(
-    'UPDATE teams SET name = ?, category = ?, description = ?, photo_url = ?, competition = ?, updated_at = NOW() WHERE id = ?',
-    [name, category || '', description || '', photo_url || '', competition || '', id]
-  );
+  // Build dynamic query based on provided fields
+  const fields = [];
+  const values = [];
+  
+  if (teamData.name !== undefined) {
+    fields.push('name = ?');
+    values.push(teamData.name);
+  }
+  if (teamData.category !== undefined) {
+    fields.push('category = ?');
+    values.push(teamData.category || '');
+  }
+  if (teamData.description !== undefined) {
+    fields.push('description = ?');
+    values.push(teamData.description || '');
+  }
+  if (teamData.photo_url !== undefined) {
+    fields.push('photo_url = ?');
+    values.push(teamData.photo_url || '');
+  }
+  if (teamData.competition !== undefined) {
+    fields.push('competition = ?');
+    values.push(teamData.competition || '');
+  }
+  
+  if (fields.length === 0) {
+    throw new Error('No fields to update');
+  }
+  
+  fields.push('updated_at = NOW()');
+  values.push(id);
+  
+  const query = `UPDATE teams SET ${fields.join(', ')} WHERE id = ?`;
+  return await runQuery(query, values);
 };
 
 export const deleteTeam = async (id) => {
