@@ -454,11 +454,11 @@ const Admin = () => {
             name: drink.name,
             price: drink.price.toString(),
             description: drink.description,
-            image: drink.image,
+            image: drink.image_url,
             stock: drink.stock
         });
         setSelectedImageFile(null);
-        setImagePreview(drink.image);
+        setImagePreview(drink.image_url);
         setShowBarModal(true);
     };
 
@@ -489,7 +489,6 @@ const Admin = () => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     setImagePreview(e.target.result);
-                    setFormData({...formData, image: e.target.result});
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -546,25 +545,54 @@ const Admin = () => {
             return;
         }
 
-        const drinkData = {
-            ...formData,
-            price: parseFloat(formData.price),
-            stock: parseInt(formData.stock)
-        };
-
         try {
+            const formDataToSend = new FormData();
+            formDataToSend.append('name', formData.name);
+            formDataToSend.append('price', formData.price);
+            formDataToSend.append('description', formData.description || '');
+            formDataToSend.append('stock', formData.stock || '50');
+            
+            // Ajouter la photo si elle existe
+            if (selectedImageFile) {
+                formDataToSend.append('photo', selectedImageFile);
+            }
+
             if (modalMode === 'add') {
-                await addDrink(drinkData);
+                const response = await fetch('/api/drinks', {
+                    method: 'POST',
+                    body: formDataToSend
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la création de la boisson');
+                }
+                
+                const newDrink = await response.json();
+                addDrink(newDrink);
                 toast.success('Boisson ajoutée avec succès');
             } else {
-                await updateDrink(selectedDrink.id, drinkData);
+                const response = await fetch(`/api/drinks/${selectedDrink.id}`, {
+                    method: 'PUT',
+                    body: formDataToSend
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la modification de la boisson');
+                }
+                
+                const updatedDrink = await response.json();
+                updateDrink(selectedDrink.id, updatedDrink);
                 toast.success('Boisson modifiée avec succès');
             }
 
             setShowBarModal(false);
             setSelectedImageFile(null);
             setImagePreview(null);
+            
+            // Rester dans la section bar après la sauvegarde
+            setActiveModal('bar');
         } catch (error) {
+            console.error('Erreur lors de la sauvegarde de la boisson:', error);
             toast.error('Erreur lors de la sauvegarde de la boisson');
         }
     };
@@ -1347,8 +1375,11 @@ const Admin = () => {
 
     const handleEventPhotosChange = (e) => {
         const files = Array.from(e.target.files);
-        if (files.length > 10) {
-            toast.error('Vous ne pouvez sélectionner que 10 photos maximum');
+        
+        // Vérifier le nombre total de photos (existantes + nouvelles + déjà sélectionnées)
+        const totalPhotos = (existingEventPhotos?.length || 0) + selectedEventPhotos.length + files.length;
+        if (totalPhotos > 10) {
+            toast.error(`Vous ne pouvez avoir que 10 photos maximum au total. Actuellement: ${(existingEventPhotos?.length || 0) + selectedEventPhotos.length} photos.`);
             return;
         }
         
@@ -1368,9 +1399,10 @@ const Admin = () => {
                 toast.error('Seuls les fichiers image de moins de 5MB sont acceptés');
             }
             
-            setSelectedEventPhotos(validFiles);
+            // Ajouter les nouvelles photos aux existantes au lieu de les remplacer
+            setSelectedEventPhotos(prev => [...prev, ...validFiles]);
             
-            // Créer les prévisualisations
+            // Créer les prévisualisations pour les nouvelles photos
             const previews = [];
             validFiles.forEach(file => {
                 const reader = new FileReader();
@@ -1387,6 +1419,9 @@ const Admin = () => {
                 reader.readAsDataURL(file);
             });
         }
+        
+        // Réinitialiser l'input pour permettre de nouveaux ajouts
+        e.target.value = '';
     };
 
     const removeEventPhoto = (index) => {
@@ -3375,24 +3410,24 @@ const Admin = () => {
                                                     type="file"
                                                     className="hidden"
                                                     accept="image/*"
-                                                    onChange={handleMemberImageChange}
+                                                    onChange={handleImageChange}
                                                 />
                                             </label>
                                         </div>
                                         
-                                        {memberImagePreview && (
+                                        {imagePreview && (
                                             <div className="relative">
                                                 <img
-                                                    src={memberImagePreview}
+                                                    src={imagePreview}
                                                     alt="Prévisualisation"
                                                     className="object-cover w-full h-32 rounded-lg border border-gray-300"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => {
-                                                        setMemberImagePreview(null);
-                                                        setSelectedMemberImageFile(null);
-                                                        setMemberFormData({...memberFormData, photo: ''});
+                                                        setImagePreview(null);
+                                                        setSelectedImageFile(null);
+                                                        setFormData({...formData, image: ''});
                                                     }}
                                                     className="absolute top-2 right-2 p-1 text-white bg-red-500 rounded-full transition-colors hover:bg-red-600"
                                                 >

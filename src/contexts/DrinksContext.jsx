@@ -23,9 +23,8 @@ export const DrinksProvider = ({ children }) => {
         setDrinks(drinksData);
       } catch (error) {
         console.error('Erreur lors du chargement des boissons:', error);
-        // En cas d'erreur, utiliser les données par défaut
-        const { drinks: fallbackDrinks } = await import('../data/drinks');
-        setDrinks(fallbackDrinks.map(drink => ({ ...drink, stock: 50 })));
+        // En cas d'erreur, laisser la liste vide
+        setDrinks([]);
       } finally {
         setLoading(false);
       }
