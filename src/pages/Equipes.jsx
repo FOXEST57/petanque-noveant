@@ -69,7 +69,7 @@ const Equipes = () => {
                   <div className="h-48 bg-gray-200 flex items-center justify-center">
                     {team.photo_url ? (
                       <img 
-                        src={`http://localhost:8080/${team.photo_url}`} 
+                        src={`${import.meta.env.VITE_API_URL}/${team.photo_url}`} 
                         alt={`Photo de l'équipe ${team.name}`}
                         className="w-full h-full object-cover"
                         onError={(e) => {

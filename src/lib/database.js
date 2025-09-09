@@ -220,20 +220,40 @@ export const createDrink = async (drinkData) => {
 };
 
 export const updateDrink = async (id, drinkData) => {
-  const { name, price, description, image_url, stock } = drinkData;
-  // Convertir les valeurs undefined en null pour éviter l'erreur MySQL
-  const params = [
-    name ?? null,
-    price ?? null,
-    description ?? null,
-    image_url ?? null,
-    stock ?? null,
-    id
-  ];
-  return await runQuery(
-    'UPDATE drinks SET name = ?, price = ?, description = ?, image_url = ?, stock = ?, updated_at = NOW() WHERE id = ?',
-    params
-  );
+  // Build dynamic query based on provided fields
+  const fields = [];
+  const values = [];
+  
+  if (drinkData.name !== undefined) {
+    fields.push('name = ?');
+    values.push(drinkData.name);
+  }
+  if (drinkData.price !== undefined) {
+    fields.push('price = ?');
+    values.push(drinkData.price);
+  }
+  if (drinkData.description !== undefined) {
+    fields.push('description = ?');
+    values.push(drinkData.description || '');
+  }
+  if (drinkData.image_url !== undefined) {
+    fields.push('image_url = ?');
+    values.push(drinkData.image_url || '');
+  }
+  if (drinkData.stock !== undefined) {
+    fields.push('stock = ?');
+    values.push(drinkData.stock);
+  }
+  
+  if (fields.length === 0) {
+    throw new Error('No fields to update');
+  }
+  
+  fields.push('updated_at = NOW()');
+  values.push(id);
+  
+  const query = `UPDATE drinks SET ${fields.join(', ')} WHERE id = ?`;
+  return await runQuery(query, values);
 };
 
 export const deleteDrink = async (id) => {
@@ -365,6 +385,71 @@ export const getTeamWithMembers = async (teamId) => {
     team.members = await getTeamMembers(teamId);
   }
   return team;
+};
+
+// === FONCTIONS CRUD POUR LES IMAGES DU CARROUSEL ===
+export const getCarouselImages = async () => {
+  return await getAllQuery('SELECT * FROM carousel_images WHERE is_active = TRUE ORDER BY display_order ASC, created_at DESC');
+};
+
+export const getAllCarouselImages = async () => {
+  return await getAllQuery('SELECT * FROM carousel_images ORDER BY display_order ASC, created_at DESC');
+};
+
+export const getCarouselImageById = async (id) => {
+  return await getQuery('SELECT * FROM carousel_images WHERE id = ?', [id]);
+};
+
+export const addCarouselImage = async (imageData) => {
+  const { title, image_url, display_order, is_active } = imageData;
+  return await runQuery(
+    'INSERT INTO carousel_images (title, image_url, display_order, is_active, updated_at) VALUES (?, ?, ?, ?, NOW())',
+    [title || '', image_url, display_order || 0, is_active !== undefined ? is_active : true]
+  );
+};
+
+export const updateCarouselImage = async (id, imageData) => {
+  // Build dynamic query based on provided fields
+  const fields = [];
+  const values = [];
+  
+  if (imageData.title !== undefined) {
+    fields.push('title = ?');
+    values.push(imageData.title || '');
+  }
+  if (imageData.image_url !== undefined) {
+    fields.push('image_url = ?');
+    values.push(imageData.image_url);
+  }
+  if (imageData.display_order !== undefined) {
+    fields.push('display_order = ?');
+    values.push(imageData.display_order);
+  }
+  if (imageData.is_active !== undefined) {
+    fields.push('is_active = ?');
+    values.push(imageData.is_active);
+  }
+  
+  if (fields.length === 0) {
+    throw new Error('No fields to update');
+  }
+  
+  fields.push('updated_at = NOW()');
+  values.push(id);
+  
+  const query = `UPDATE carousel_images SET ${fields.join(', ')} WHERE id = ?`;
+  return await runQuery(query, values);
+};
+
+export const deleteCarouselImage = async (id) => {
+  return await runQuery('DELETE FROM carousel_images WHERE id = ?', [id]);
+};
+
+export const updateCarouselImageOrder = async (imageId, newOrder) => {
+  return await runQuery(
+    'UPDATE carousel_images SET display_order = ?, updated_at = NOW() WHERE id = ?',
+    [newOrder, imageId]
+  );
 };
 
 // Initialiser la base de données au démarrage

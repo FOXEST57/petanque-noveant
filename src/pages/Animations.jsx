@@ -16,7 +16,7 @@ const Animations = () => {
 
   const fetchEventPhotos = async (eventId) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/events/${eventId}/photos`)
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${eventId}/photos`)
       if (response.ok) {
         const photos = await response.json()
         return photos
@@ -107,11 +107,11 @@ const Animations = () => {
             <div key={photo.id} className="relative group">
               <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img
-                  src={`http://localhost:8080/api/events/photos/${photo.filename}`}
+                  src={`${import.meta.env.VITE_API_URL}/api/events/photos/${photo.filename}`}
                   alt={`${eventTitle} - Photo ${index + 1}`}
                   className="w-full h-full object-cover cursor-pointer transition-transform group-hover:scale-105"
                   onClick={() => setSelectedPhoto({
-                    src: `http://localhost:8080/api/events/photos/${photo.filename}`,
+                    src: `${import.meta.env.VITE_API_URL}/api/events/photos/${photo.filename}`,
                     alt: `${eventTitle} - Photo ${index + 1}`,
                     title: eventTitle
                   })}

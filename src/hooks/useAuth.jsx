@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
 
 const AuthContext = createContext({});
 
@@ -14,179 +13,93 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
+    // TODO: Remplacer par votre système d'authentification local
+    // Pour l'instant, on simule un utilisateur connecté
     useEffect(() => {
-        // Get initial session
-        const getInitialSession = async () => {
-            const {
-                data: { session },
-            } = await supabase.auth.getSession();
-            if (session?.user) {
-                setUser(session.user);
-                await fetchUserProfile(session.user.id);
-            } else {
-                setUser(null);
-                setUserProfile(null);
-            }
-            setLoading(false);
+        // Simulation d'un utilisateur pour les tests
+        const mockUser = {
+            id: 'mock-user-id',
+            email: 'admin@petanque-noveant.fr'
         };
-
-        getInitialSession();
-
-        // Listen for auth changes
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (session?.user) {
-                setUser(session.user);
-                await fetchUserProfile(session.user.id);
-            } else {
-                setUser(null);
-                setUserProfile(null);
-            }
-            setLoading(false);
-        });
-
-        return () => subscription?.unsubscribe();
+        
+        const mockProfile = {
+            first_name: 'Admin',
+            last_name: 'Pétanque',
+            phone: '0123456789',
+            role: 'admin'
+        };
+        
+        setUser(mockUser);
+        setUserProfile(mockProfile);
+        setLoading(false);
     }, []);
 
     const fetchUserProfile = async (userId) => {
-        try {
-            const { data, error } = await supabase
-                .from("users")
-                .select("*")
-                .eq("id", userId)
-                .single();
-
-            if (error && error.code !== "PGRST116") {
-                console.error("Error fetching user profile:", error);
-                return;
-            }
-
-            setUserProfile(data);
-        } catch (error) {
-            console.error("Error fetching user profile:", error);
-        }
+        // TODO: Implémenter la récupération du profil utilisateur depuis votre API locale
+        console.log('fetchUserProfile appelé pour:', userId);
+        return null;
     };
 
-    const signUp = async (email, password, userData = {}) => {
-        try {
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: userData,
-                },
-            });
-
-            if (error) throw error;
-
-            // Create user profile in users table
-            if (data.user) {
-                const { error: profileError } = await supabase
-                    .from("users")
-                    .insert({
-                        id: data.user.id,
-                        email: data.user.email,
-                        first_name: userData.first_name || "",
-                        last_name: userData.last_name || "",
-                        phone: userData.phone || "",
-                        role: "membre",
-                    });
-
-                if (profileError) {
-                    console.error("Error creating user profile:", profileError);
-                }
-            }
-
-            return { data, error: null };
-        } catch (error) {
-            return { data: null, error };
-        }
+    const signUp = async (email, password, userData) => {
+        // TODO: Implémenter l'inscription avec votre API locale
+        console.log('signUp appelé:', { email, userData });
+        throw new Error('Inscription non implémentée - remplacer par votre API locale');
     };
 
     const signIn = async (email, password) => {
-        try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-
-            if (error) throw error;
-            return { data, error: null };
-        } catch (error) {
-            return { data: null, error };
-        }
+        // TODO: Implémenter la connexion avec votre API locale
+        console.log('signIn appelé:', { email });
+        throw new Error('Connexion non implémentée - remplacer par votre API locale');
     };
 
     const signOut = async () => {
-        try {
-            const { error } = await supabase.auth.signOut();
-            if (error) throw error;
-            return { error: null };
-        } catch (error) {
-            return { error };
-        }
+        // TODO: Implémenter la déconnexion avec votre API locale
+        setUser(null);
+        setUserProfile(null);
+        console.log('Utilisateur déconnecté');
+    };
+
+    const getCurrentUser = () => {
+        return user;
+    };
+
+    const onAuthStateChange = (callback) => {
+        // TODO: Implémenter l'écoute des changements d'état d'authentification
+        console.log('onAuthStateChange appelé');
+        return { unsubscribe: () => {} };
     };
 
     const resetPassword = async (email) => {
-        try {
-            const { data, error } = await supabase.auth.resetPasswordForEmail(
-                email
-            );
-            if (error) throw error;
-            return { data, error: null };
-        } catch (error) {
-            return { data: null, error };
-        }
+        // TODO: Implémenter la réinitialisation de mot de passe avec votre API locale
+        console.log('resetPassword appelé pour:', email);
+        throw new Error('Réinitialisation de mot de passe non implémentée');
     };
 
     const updateProfile = async (updates) => {
-        try {
-            // Update auth user metadata
-            const { data: authData, error: authError } =
-                await supabase.auth.updateUser({
-                    data: updates,
-                });
-
-            if (authError) throw authError;
-
-            // Update user profile in users table
-            if (user?.id) {
-                const { data: profileData, error: profileError } =
-                    await supabase
-                        .from("users")
-                        .update(updates)
-                        .eq("id", user.id)
-                        .select()
-                        .single();
-
-                if (profileError) throw profileError;
-
-                setUserProfile(profileData);
-            }
-
-            return { data: authData, error: null };
-        } catch (error) {
-            return { data: null, error };
+        // TODO: Implémenter la mise à jour du profil avec votre API locale
+        console.log('updateProfile appelé:', updates);
+        // Simulation de mise à jour locale
+        if (user) {
+            const updatedUser = {
+                ...user,
+                user_metadata: {
+                    ...user.user_metadata,
+                    ...updates
+                }
+            };
+            setUser(updatedUser);
+            setUserProfile(updatedUser.user_metadata);
         }
     };
 
-    const getUserRole = () => {
-        return userProfile?.role || "visiteur";
-    };
-
     const isAdmin = () => {
-        return getUserRole() === "admin";
-    };
-
-    const isResponsable = () => {
-        return getUserRole() === "responsable" || isAdmin();
+        return userProfile?.role === 'admin';
     };
 
     const isMembre = () => {
-        return ["membre", "responsable", "admin"].includes(getUserRole());
+        return userProfile?.role === 'admin' || userProfile?.role === 'responsable' || userProfile?.role === 'membre';
     };
 
     const value = {
@@ -196,16 +109,18 @@ export const AuthProvider = ({ children }) => {
         signUp,
         signIn,
         signOut,
+        getCurrentUser,
+        onAuthStateChange,
         resetPassword,
         updateProfile,
-        getUserRole,
-        isAdmin,
-        isResponsable,
-        isMembre,
         fetchUserProfile,
+        isAdmin,
+        isMembre
     };
 
     return (
-        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+        <AuthContext.Provider value={value}>
+            {children}
+        </AuthContext.Provider>
     );
 };
