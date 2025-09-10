@@ -2803,12 +2803,12 @@ const Admin = () => {
                                         </p>
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div className="space-y-6">
                                         <div className="p-6 bg-white rounded-lg border border-gray-200">
                                             <h4 className="mb-4 text-lg font-semibold text-gray-900">
                                                 Contenu Principal
                                             </h4>
-                                            <div className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="block mb-2 text-sm font-medium text-gray-700">
                                                         Titre Principal
@@ -2835,10 +2835,10 @@ const Admin = () => {
                                                 </div>
                                                 <div>
                                                     <label className="block mb-2 text-sm font-medium text-gray-700">
-                                                        Description
+                                                        Sous-titre
                                                     </label>
-                                                    <textarea
-                                                        rows={4}
+                                                    <input
+                                                        type="text"
                                                         placeholder="Description de votre club de pétanque..."
                                                         value={
                                                             homeContent.description ||
@@ -2906,7 +2906,7 @@ const Admin = () => {
                                                             }
                                                             )
                                                         </h4>
-                                                        <div className="space-y-3">
+                                                        <div className="flex flex-wrap gap-3">
                                                             {existingCarouselImages.map(
                                                                 (
                                                                     image,
@@ -2917,7 +2917,7 @@ const Admin = () => {
                                                                             image.id ||
                                                                             index
                                                                         }`}
-                                                                        className="flex gap-3 items-center p-3 bg-gray-50 rounded-lg border border-gray-200"
+                                                                        className="flex flex-col gap-2 items-center p-3 bg-gray-50 rounded-lg border border-gray-200 min-w-[120px]"
                                                                     >
                                                                         {/* Position */}
                                                                         <div className="flex flex-col items-center">
@@ -2995,7 +2995,7 @@ const Admin = () => {
                                                                         </div>
 
                                                                         {/* Bouton supprimer */}
-                                                                        <div className="ml-auto">
+                                                                        <div>
                                                                             <button
                                                                                 onClick={() =>
                                                                                     removeCarouselImage(
@@ -3028,7 +3028,7 @@ const Admin = () => {
                                                             }
                                                             )
                                                         </h4>
-                                                        <div className="space-y-3">
+                                                        <div className="flex flex-wrap gap-3">
                                                             {carouselPreviews.map(
                                                                 (
                                                                     preview,
@@ -3036,7 +3036,7 @@ const Admin = () => {
                                                                 ) => (
                                                                     <div
                                                                         key={`new-${index}`}
-                                                                        className="flex gap-3 items-center p-3 bg-green-50 rounded-lg border border-gray-200"
+                                                                        className="flex flex-col gap-2 items-center p-3 bg-green-50 rounded-lg border border-gray-200 min-w-[120px]"
                                                                     >
                                                                         {/* Position */}
                                                                         <div className="flex flex-col items-center">
@@ -3118,7 +3118,7 @@ const Admin = () => {
                                                                         </div>
 
                                                                         {/* Bouton supprimer */}
-                                                                        <div className="ml-auto">
+                                                                        <div>
                                                                             <button
                                                                                 onClick={() =>
                                                                                     removeCarouselImage(
