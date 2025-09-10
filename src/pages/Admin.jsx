@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Users, Calendar, Trophy, BarChart3, Wine, Plus, Minus, Edit, Trash2, Search, Filter, X, Save, UserPlus, Phone, Mail, MapPin, Calendar as CalendarIcon, CreditCard, Shield, Gift, Euro, Camera } from "lucide-react";
+import { Users, Calendar, Trophy, BarChart3, Wine, Plus, Minus, Edit, Trash2, Search, Filter, X, Save, UserPlus, Phone, Mail, MapPin, Calendar as CalendarIcon, CreditCard, Shield, Gift, Euro, Camera, Home } from "lucide-react";
 import { useDrinks } from "../contexts/DrinksContext";
 import { toast } from "sonner";
 import { eventsAPI, statsAPI, teamsAPI } from "../lib/api";
@@ -546,18 +546,18 @@ const Admin = () => {
         }
 
         try {
-            const formDataToSend = new FormData();
-            formDataToSend.append('name', formData.name);
-            formDataToSend.append('price', formData.price);
-            formDataToSend.append('description', formData.description || '');
-            formDataToSend.append('stock', formData.stock || '50');
-            
-            // Ajouter la photo si elle existe
-            if (selectedImageFile) {
-                formDataToSend.append('photo', selectedImageFile);
-            }
-
             if (modalMode === 'add') {
+                const formDataToSend = new FormData();
+                formDataToSend.append('name', formData.name);
+                formDataToSend.append('price', formData.price);
+                formDataToSend.append('description', formData.description || '');
+                formDataToSend.append('stock', formData.stock || '50');
+                
+                // Ajouter la photo si elle existe
+                if (selectedImageFile) {
+                    formDataToSend.append('photo', selectedImageFile);
+                }
+
                 const response = await fetch('/api/drinks', {
                     method: 'POST',
                     body: formDataToSend
@@ -571,17 +571,53 @@ const Admin = () => {
                 addDrink(newDrink);
                 toast.success('Boisson ajoutée avec succès');
             } else {
-                const response = await fetch(`/api/drinks/${selectedDrink.id}`, {
-                    method: 'PUT',
-                    body: formDataToSend
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Erreur lors de la modification de la boisson');
+                // Mode édition : différencier selon la présence d'un fichier
+                if (selectedImageFile) {
+                    // S'il y a une nouvelle photo, utiliser la route upload
+                    const formDataToSend = new FormData();
+                    formDataToSend.append('name', formData.name);
+                    formDataToSend.append('price', formData.price);
+                    formDataToSend.append('description', formData.description || '');
+                    formDataToSend.append('stock', formData.stock || '50');
+                    formDataToSend.append('photo', selectedImageFile);
+
+                    const response = await fetch(`/api/drinks/${selectedDrink.id}/upload`, {
+                        method: 'PUT',
+                        body: formDataToSend
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la modification de la boisson');
+                    }
+                } else {
+                    // Pas de nouvelle photo, utiliser JSON
+                    const jsonData = {
+                        name: formData.name,
+                        price: parseFloat(formData.price),
+                        description: formData.description || '',
+                        stock: parseInt(formData.stock) || 50
+                    };
+
+                    const response = await fetch(`/api/drinks/${selectedDrink.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(jsonData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la modification de la boisson');
+                    }
                 }
                 
-                const updatedDrink = await response.json();
-                updateDrink(selectedDrink.id, updatedDrink);
+                // Utiliser le contexte pour mettre à jour
+                await updateDrink(selectedDrink.id, {
+                    name: formData.name,
+                    price: parseFloat(formData.price),
+                    description: formData.description || '',
+                    stock: parseInt(formData.stock) || 50
+                });
                 toast.success('Boisson modifiée avec succès');
             }
 
@@ -1616,6 +1652,14 @@ const Admin = () => {
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <ManagementCard
+                        title="Page d'Accueil"
+                        icon={Home}
+                        count={1}
+                        description="Gestion du contenu de la page d'accueil"
+                        modalKey="pageAccueil"
+                    />
+
+                    <ManagementCard
                         title="Bar"
                         icon={Wine}
                         count={stats.drinks}
@@ -1697,6 +1741,7 @@ const Admin = () => {
                         {/* Header de la modale */}
                         <div className="flex justify-between items-center p-6 border-b border-gray-200">
                             <h2 className="text-2xl font-bold text-gray-900">
+                                {activeModal === 'pageAccueil' && 'Gestion de la Page d\'Accueil'}
                                 {activeModal === 'bar' && 'Gestion du Bar'}
                                 {activeModal === 'membre' && 'Gestion des Membres'}
                                 {activeModal === 'typeMembre' && 'Gestion des Types de Membre'}
@@ -1717,6 +1762,97 @@ const Admin = () => {
 
                         {/* Contenu de la modale */}
                         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                            {activeModal === 'pageAccueil' && (
+                                <div className="space-y-6">
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                        <div className="flex items-center space-x-2 mb-2">
+                                            <Home className="w-5 h-5 text-blue-600" />
+                                            <h3 className="text-lg font-semibold text-blue-900">Configuration de la Page d'Accueil</h3>
+                                        </div>
+                                        <p className="text-blue-700 text-sm">
+                                            Gérez le contenu principal de votre page d'accueil : titre, description, images du carrousel et sections d'information.
+                                        </p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                        <div className="bg-white border border-gray-200 rounded-lg p-6">
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Contenu Principal</h4>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Titre Principal</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Bienvenue au Club de Pétanque"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                                    <textarea
+                                                        rows={4}
+                                                        placeholder="Description de votre club de pétanque..."
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white border border-gray-200 rounded-lg p-6">
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Carrousel d'Images</h4>
+                                            <div className="space-y-4">
+                                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                                    <Camera className="mx-auto w-12 h-12 text-gray-400 mb-2" />
+                                                    <p className="text-sm text-gray-600 mb-2">Glissez vos images ici ou cliquez pour sélectionner</p>
+                                                    <button className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors text-sm">
+                                                        Choisir des images
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-gray-500">Formats acceptés : JPG, PNG, WebP. Taille max : 5MB par image.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white border border-gray-200 rounded-lg p-6">
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">Sections d'Information</h4>
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                            <div className="border border-gray-200 rounded-lg p-4">
+                                                <h5 className="font-medium text-gray-900 mb-2">Horaires d'Ouverture</h5>
+                                                <textarea
+                                                    rows={3}
+                                                    placeholder="Lundi - Vendredi: 14h - 18h\nSamedi - Dimanche: 9h - 19h"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                />
+                                            </div>
+                                            <div className="border border-gray-200 rounded-lg p-4">
+                                                <h5 className="font-medium text-gray-900 mb-2">Contact</h5>
+                                                <textarea
+                                                    rows={3}
+                                                    placeholder="Téléphone: 01 23 45 67 89\nEmail: contact@petanque.fr\nAdresse: 123 Rue de la Pétanque"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                />
+                                            </div>
+                                            <div className="border border-gray-200 rounded-lg p-4">
+                                                <h5 className="font-medium text-gray-900 mb-2">Informations Pratiques</h5>
+                                                <textarea
+                                                    rows={3}
+                                                    placeholder="Parking gratuit\nAccès handicapés\nBar sur place"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end space-x-4">
+                                        <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                                            Annuler
+                                        </button>
+                                        <button className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors">
+                                            Sauvegarder
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
                             {activeModal === 'bar' && (
                                 <div className="space-y-6">
                                     {/* Barre de recherche et filtres */}

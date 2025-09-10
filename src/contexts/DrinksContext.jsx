@@ -47,9 +47,16 @@ export const DrinksProvider = ({ children }) => {
 
   const updateDrink = async (drinkId, drinkData) => {
     try {
+      console.log('=== DEBUG CONTEXT UPDATE DRINK ===');
+      console.log('DrinkId:', drinkId);
+      console.log('DrinkData:', drinkData);
+      
       await drinksAPI.update(drinkId, drinkData);
+      
+      console.log('API update successful, reloading drinks...');
       // Recharger les données depuis la base
       const updatedDrinks = await drinksAPI.getAll();
+      console.log('Updated drinks loaded:', updatedDrinks.length, 'items');
       setDrinks(updatedDrinks);
     } catch (error) {
       console.error('Erreur lors de la mise à jour de la boisson:', error);

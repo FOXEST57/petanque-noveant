@@ -88,11 +88,18 @@ router.post('/', upload.single('photo'), async (req: Request, res: Response) => 
   }
 });
 
-// PUT /api/drinks/:id - Mettre à jour une boisson
-router.put('/:id', upload.single('photo'), async (req: Request, res: Response) => {
+// PUT /api/drinks/:id - Mettre à jour une boisson (données JSON seulement)
+router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, price, description, stock } = req.body;
+    
+    // Logs de débogage
+    console.log('=== DEBUG UPDATE DRINK (JSON) ===');
+    console.log('ID:', id);
+    console.log('Request body:', req.body);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('Stock value:', stock, 'Type:', typeof stock);
     
     // Nettoyer les données pour éviter les valeurs undefined
     const cleanData: any = {};
@@ -127,6 +134,63 @@ router.put('/:id', upload.single('photo'), async (req: Request, res: Response) =
   } catch (error) {
     console.error('Erreur lors de la mise à jour de la boisson:', error);
     res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// PUT /api/drinks/:id/upload - Mettre à jour une boisson avec fichier
+router.put('/:id/upload', upload.single('photo'), async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, price, description, stock } = req.body;
+    
+    // Logs de débogage
+    console.log('=== DEBUG UPDATE DRINK (WITH FILE) ===');
+    console.log('ID:', id);
+    console.log('Request body:', req.body);
+    console.log('File:', req.file);
+    
+    // Nettoyer les données pour éviter les valeurs undefined
+    const cleanData: any = {};
+    
+    if (name !== undefined && name !== null && name !== '') cleanData.name = name;
+    if (price !== undefined && price !== null) cleanData.price = price;
+    if (description !== undefined && description !== null) cleanData.description = description;
+    if (stock !== undefined && stock !== null) cleanData.stock = stock;
+    
+    // Gérer l'upload de fichier si présent
+    if (req.file) {
+      const fileName = `drink_${Date.now()}_${req.file.originalname}`;
+      const filePath = path.join(__dirname, '../../public/uploads', fileName);
+      
+      // Créer le dossier s'il n'existe pas
+      const uploadDir = path.dirname(filePath);
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      // Sauvegarder le fichier
+      fs.writeFileSync(filePath, req.file.buffer);
+      cleanData.photo = `/uploads/${fileName}`;
+    }
+    
+    // Vérifier qu'il y a au moins un champ à mettre à jour
+    if (Object.keys(cleanData).length === 0) {
+      return res.status(400).json({ error: 'Aucun champ valide fourni pour la mise à jour' });
+    }
+    
+    console.log('Clean data to update:', cleanData);
+    
+    // Mettre à jour la boisson
+    const result = await updateDrink(parseInt(id), cleanData);
+    
+    if (!result) {
+      return res.status(404).json({ error: 'Boisson non trouvée' });
+    }
+    
+    res.json({ message: 'Boisson mise à jour avec succès', drink: result });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de la boisson avec fichier:', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour de la boisson' });
   }
 });
 

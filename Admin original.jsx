@@ -374,7 +374,7 @@ const Admin = () => {
                 eventsData.map(async (event) => {
                     try {
                         // Récupérer les photos de l'événement
-                        const response = await fetch(`http://localhost:8080/api/events/${event.id}/photos`);
+                        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${event.id}/photos`);
                         const photos = response.ok ? await response.json() : [];
                         
                         return {
@@ -660,7 +660,7 @@ const Admin = () => {
         // Prévisualisation simple de la photo (chemin de fichier uniquement)
         if (member.photo_url && (member.photo_url.startsWith('/uploads/') || member.photo_url.startsWith('uploads/'))) {
             // Construire l'URL complète pour servir la photo depuis le backend
-            setMemberImagePreview(`http://localhost:8080/api/members/photos/${member.photo_url.split('/').pop()}`);
+            setMemberImagePreview(`${import.meta.env.VITE_API_URL}/api/members/photos/${member.photo_url.split('/').pop()}`);
         } else {
             setMemberImagePreview(null);
         }
@@ -1977,7 +1977,7 @@ const Admin = () => {
                                             {existingEventPhotos.map((photo) => (
                                                 <div key={photo.id} className="relative group">
                                                     <img
-                                                        src={`http://localhost:8080/api/events/photos/${photo.filename}`}
+                                                        src={`${import.meta.env.VITE_API_URL}/api/events/photos/${photo.filename}`}
                                                         alt={photo.filename}
                                                         className="object-cover w-full h-24 rounded-lg border border-gray-200"
                                                     />
@@ -3010,7 +3010,7 @@ const Admin = () => {
                                                     {member.photo_url ? (
                                                         <img
                                                             src={member.photo_url.startsWith('/uploads/') || member.photo_url.startsWith('uploads/') ? 
-                                                                `http://localhost:8080/api/members/photos/${member.photo_url.split('/').pop()}` : 
+                                                                `${import.meta.env.VITE_API_URL}/api/members/photos/${member.photo_url.split('/').pop()}` : 
                                                                 member.photo_url}
                                                             alt={`Photo de ${member.prenom} ${member.nom}`}
                                                             className="object-cover w-10 h-10 rounded-full border-2 border-gray-200"

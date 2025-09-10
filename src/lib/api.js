@@ -113,11 +113,31 @@ export const drinksAPI = {
     return response.data;
   },
   update: async (id, drinkData) => {
-    const response = await apiCall(`/drinks/${id}`, {
+    console.log('=== DEBUG API UPDATE ===');
+    console.log('URL:', `${API_BASE_URL}/drinks/${id}`);
+    console.log('Data to send:', drinkData);
+    console.log('JSON stringified:', JSON.stringify(drinkData));
+    
+    const response = await fetch(`${API_BASE_URL}/drinks/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(drinkData)
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(drinkData),
     });
-    return response.data;
+    
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Response error:', errorText);
+      throw new Error('Erreur lors de la mise à jour de la boisson');
+    }
+    
+    const result = await response.json();
+    console.log('Response result:', result);
+    return result;
   },
   delete: async (id) => {
     const response = await apiCall(`/drinks/${id}`, {

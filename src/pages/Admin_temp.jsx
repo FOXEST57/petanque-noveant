@@ -546,18 +546,19 @@ const Admin = () => {
         }
 
         try {
-            const formDataToSend = new FormData();
-            formDataToSend.append('name', formData.name);
-            formDataToSend.append('price', formData.price);
-            formDataToSend.append('description', formData.description || '');
-            formDataToSend.append('stock', formData.stock || '50');
-            
-            // Ajouter la photo si elle existe
-            if (selectedImageFile) {
-                formDataToSend.append('photo', selectedImageFile);
-            }
-
             if (modalMode === 'add') {
+                // Pour l'ajout, utiliser FormData (peut inclure une photo)
+                const formDataToSend = new FormData();
+                formDataToSend.append('name', formData.name);
+                formDataToSend.append('price', formData.price);
+                formDataToSend.append('description', formData.description || '');
+                formDataToSend.append('stock', formData.stock || '50');
+                
+                // Ajouter la photo si elle existe
+                if (selectedImageFile) {
+                    formDataToSend.append('photo', selectedImageFile);
+                }
+
                 const response = await fetch('/api/drinks', {
                     method: 'POST',
                     body: formDataToSend
@@ -571,17 +572,53 @@ const Admin = () => {
                 addDrink(newDrink);
                 toast.success('Boisson ajoutée avec succès');
             } else {
-                const response = await fetch(`/api/drinks/${selectedDrink.id}`, {
-                    method: 'PUT',
-                    body: formDataToSend
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Erreur lors de la modification de la boisson');
+                // Pour la modification, vérifier s'il y a une nouvelle photo
+                if (selectedImageFile) {
+                    // S'il y a une nouvelle photo, utiliser la route upload
+                    const formDataToSend = new FormData();
+                    formDataToSend.append('name', formData.name);
+                    formDataToSend.append('price', formData.price);
+                    formDataToSend.append('description', formData.description || '');
+                    formDataToSend.append('stock', formData.stock || '50');
+                    formDataToSend.append('photo', selectedImageFile);
+
+                    const response = await fetch(`/api/drinks/${selectedDrink.id}/upload`, {
+                        method: 'PUT',
+                        body: formDataToSend
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la modification de la boisson');
+                    }
+                } else {
+                    // S'il n'y a pas de nouvelle photo, utiliser JSON
+                    const jsonData = {
+                        name: formData.name,
+                        price: parseFloat(formData.price),
+                        description: formData.description || '',
+                        stock: parseInt(formData.stock) || 50
+                    };
+
+                    const response = await fetch(`/api/drinks/${selectedDrink.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(jsonData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la modification de la boisson');
+                    }
                 }
                 
-                const updatedDrink = await response.json();
-                updateDrink(selectedDrink.id, updatedDrink);
+                // Utiliser le contexte pour mettre à jour
+                await updateDrink(selectedDrink.id, {
+                    name: formData.name,
+                    price: parseFloat(formData.price),
+                    description: formData.description || '',
+                    stock: parseInt(formData.stock) || 50
+                });
                 toast.success('Boisson modifiée avec succès');
             }
 
@@ -1546,14 +1583,25 @@ const Admin = () => {
     }, [isDropdownOpen]);
 
     const handleAdjustStock = async (drinkId, change) => {
+        console.log('=== DEBUG HANDLE ADJUST STOCK ===');
+        console.log('DrinkId:', drinkId, 'Change:', change);
+        
         const drink = drinks.find(d => d.id === drinkId);
+        console.log('Found drink:', drink);
+        
         if (drink) {
             const newStock = Math.max(0, drink.stock + change);
+            console.log('Old stock:', drink.stock, 'New stock:', newStock);
+            
             try {
                 await updateDrink(drinkId, { ...drink, stock: newStock });
+                toast.success('Stock mis à jour avec succès');
             } catch (error) {
+                console.error('Error in handleAdjustStock:', error);
                 toast.error('Erreur lors de la mise à jour du stock');
             }
+        } else {
+            console.error('Drink not found with ID:', drinkId);
         }
     };
 
