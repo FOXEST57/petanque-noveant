@@ -104,12 +104,16 @@ router.post('/', upload.single('image'), async (req: Request, res: Response) => 
     await fs.promises.writeFile(uploadPath, req.file.buffer);
     
     // Prepare data for database
-    const imageData = {
+    const imageData: any = {
       title: title || '',
       image_url: `uploads/carousel/${filename}`,
-      display_order: display_order ? parseInt(display_order) : 0,
       is_active: is_active !== undefined ? is_active === 'true' : true
     };
+    
+    // Only set display_order if explicitly provided
+    if (display_order !== undefined && display_order !== null && display_order !== '') {
+      imageData.display_order = parseInt(display_order);
+    }
 
     const result = await addCarouselImage(imageData);
     res.status(201).json({ success: true, data: result });

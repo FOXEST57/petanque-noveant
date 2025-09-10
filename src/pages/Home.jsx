@@ -1,8 +1,42 @@
 import { Link } from 'react-router-dom'
 import { Calendar, Users, Trophy, MapPin, Clock } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import Carousel from '../components/Carousel'
 
 const Home = () => {
+  const [homeContent, setHomeContent] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchHomeContent = async () => {
+      try {
+        const response = await fetch('/api/home-content')
+        const result = await response.json()
+        if (result.success) {
+          console.log('Home content loaded:', result.data)
+          setHomeContent(result.data)
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement du contenu:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchHomeContent()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#425e9b] mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section with Carousel */}
@@ -13,10 +47,10 @@ const Home = () => {
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="text-center text-white px-4">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Bienvenue au Club de Pétanque
+              {homeContent?.title || 'Bienvenue au Club de Pétanque'}
             </h1>
             <p className="text-xl md:text-2xl mb-8">
-              Noveant-sur-Moselle
+              {homeContent?.description || 'Noveant-sur-Moselle'}
             </p>
             <div className="space-x-4">
               <Link
@@ -57,7 +91,7 @@ const Home = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2">Horaires d'ouverture</h3>
               <p className="text-gray-600">
-                Ouvert tous les jours
+                {homeContent?.openingHours || 'Ouvert tous les jours'}
               </p>
             </div>
             

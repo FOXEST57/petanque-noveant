@@ -14,6 +14,7 @@ import contactRoutes from './routes/contact.js';
 import teamsRoutes from './routes/teams.js';
 import drinksRoutes from './routes/drinks.js';
 import carouselRoutes from './routes/carousel.js';
+import homeContentRoutes from './routes/home-content.js';
 
 // for esm mode
 const __filename = fileURLToPath(import.meta.url);
@@ -42,6 +43,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/drinks', drinksRoutes);
 app.use('/api/carousel', carouselRoutes);
+app.use('/api/home-content', homeContentRoutes);
 
 /**
  * health

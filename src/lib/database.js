@@ -19,6 +19,55 @@ const dbConfig = {
 // Pool de connexions
 let pool = null;
 
+// Fonction pour créer les tables si elles n'existent pas
+const createTablesIfNotExists = async () => {
+  try {
+    // Créer la table home_content
+    await runQuery(`
+      CREATE TABLE IF NOT EXISTS home_content (
+        id INT PRIMARY KEY DEFAULT 1,
+        title VARCHAR(255) NOT NULL DEFAULT 'Bienvenue au Club de Pétanque de Noveant',
+        description TEXT,
+        schedules TEXT,
+        contact TEXT,
+        practical_info TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Créer la table home_carousel_images
+    await runQuery(`
+      CREATE TABLE IF NOT EXISTS home_carousel_images (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        home_content_id INT DEFAULT 1,
+        image_url VARCHAR(500) NOT NULL,
+        display_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (home_content_id) REFERENCES home_content(id) ON DELETE CASCADE
+      )
+    `);
+    
+    // Insérer le contenu par défaut si la table est vide
+    const existingContent = await getQuery('SELECT id FROM home_content WHERE id = 1');
+    if (!existingContent) {
+      await runQuery(`
+        INSERT INTO home_content (id, title, description, schedules, contact, practical_info)
+        VALUES (1, 'Bienvenue au Club de Pétanque de Noveant', 
+                'Découvrez notre club convivial et nos activités.',
+                'Ouvert tous les jours de 14h à 18h',
+                'Téléphone: 03 87 XX XX XX\nEmail: contact@petanque-noveant.fr',
+                'Parking gratuit disponible\nAccès handicapés')
+      `);
+    }
+    
+    console.log('Tables home_content et home_carousel_images créées/vérifiées avec succès.');
+  } catch (error) {
+    console.error('Erreur lors de la création des tables:', error);
+    // Ne pas faire échouer l'initialisation si les tables existent déjà
+  }
+};
+
 // Initialisation de la base de données
 export const initDatabase = async () => {
   try {
@@ -28,6 +77,9 @@ export const initDatabase = async () => {
     const connection = await pool.getConnection();
     console.log('Connexion à la base de données MySQL établie.');
     connection.release();
+    
+    // Créer les tables si nécessaire
+    await createTablesIfNotExists();
     
     return pool;
   } catch (error) {
@@ -402,9 +454,17 @@ export const getCarouselImageById = async (id) => {
 
 export const addCarouselImage = async (imageData) => {
   const { title, image_url, display_order, is_active } = imageData;
+  
+  // Si display_order n'est pas fourni, calculer la prochaine position disponible
+  let finalDisplayOrder = display_order;
+  if (finalDisplayOrder === undefined || finalDisplayOrder === null) {
+    const maxOrderResult = await getQuery('SELECT MAX(display_order) as max_order FROM carousel_images');
+    finalDisplayOrder = (maxOrderResult?.max_order || 0) + 1;
+  }
+  
   return await runQuery(
     'INSERT INTO carousel_images (title, image_url, display_order, is_active, updated_at) VALUES (?, ?, ?, ?, NOW())',
-    [title || '', image_url, display_order || 0, is_active !== undefined ? is_active : true]
+    [title || '', image_url, finalDisplayOrder, is_active !== undefined ? is_active : true]
   );
 };
 
@@ -448,6 +508,125 @@ export const deleteCarouselImage = async (id) => {
 export const updateCarouselImageOrder = async (imageId, newOrder) => {
   return await runQuery(
     'UPDATE carousel_images SET display_order = ?, updated_at = NOW() WHERE id = ?',
+    [newOrder, imageId]
+  );
+};
+
+// === FONCTIONS CRUD POUR LE CONTENU DE LA PAGE D'ACCUEIL ===
+export const getHomeContent = async () => {
+  const content = await getQuery('SELECT * FROM home_content WHERE id = 1');
+  if (!content) {
+    // Retourner un contenu par défaut si aucun n'existe
+    return {
+      id: 1,
+      title: 'Bienvenue au Club de Pétanque de Noveant',
+      description: 'Découvrez notre club convivial et nos activités.',
+      schedules: 'Ouvert tous les jours de 14h à 18h',
+      contact: 'Téléphone: 03 87 XX XX XX\nEmail: contact@petanque-noveant.fr',
+      practical_info: 'Parking gratuit disponible\nAccès handicapés',
+      carousel_images: []
+    };
+  }
+  
+  // Récupérer les images du carrousel associées
+  const carouselImages = await getAllQuery(
+    'SELECT * FROM home_carousel_images WHERE home_content_id = ? ORDER BY display_order ASC',
+    [content.id]
+  );
+  
+  return {
+    ...content,
+    carousel_images: carouselImages
+  };
+};
+
+export const updateHomeContent = async (contentData) => {
+  // Vérifier si un enregistrement existe
+  const existing = await getQuery('SELECT * FROM home_content WHERE id = 1');
+  
+  if (existing) {
+    // Construire la requête de mise à jour dynamiquement
+    const fields = [];
+    const values = [];
+    
+    if (contentData.title !== undefined) {
+      fields.push('title = ?');
+      values.push(contentData.title === '' ? null : contentData.title);
+    }
+    if (contentData.description !== undefined) {
+      fields.push('description = ?');
+      values.push(contentData.description === '' ? null : contentData.description);
+    }
+    if (contentData.schedules !== undefined) {
+      fields.push('schedules = ?');
+      values.push(contentData.schedules === '' ? null : contentData.schedules);
+    }
+    if (contentData.contact !== undefined) {
+      fields.push('contact = ?');
+      values.push(contentData.contact === '' ? null : contentData.contact);
+    }
+    if (contentData.practical_info !== undefined) {
+      fields.push('practical_info = ?');
+      values.push(contentData.practical_info === '' ? null : contentData.practical_info);
+    }
+    
+    if (fields.length === 0) {
+      console.log('Aucun champ à mettre à jour');
+      return existing;
+    }
+    
+    fields.push('updated_at = NOW()');
+    const query = `UPDATE home_content SET ${fields.join(', ')} WHERE id = 1`;
+    
+    await runQuery(query, values);
+    return await getQuery('SELECT * FROM home_content WHERE id = 1');
+  } else {
+    // Créer un nouvel enregistrement avec des valeurs par défaut
+    const title = contentData.title || 'Bienvenue au Club de Pétanque de Noveant';
+    const description = contentData.description || 'Découvrez notre club convivial et nos activités.';
+    const schedules = contentData.schedules || 'Ouvert tous les jours de 14h à 18h';
+    const contact = contentData.contact || 'Téléphone: 03 87 XX XX XX\nEmail: contact@petanque-noveant.fr';
+    const practical_info = contentData.practical_info || 'Parking gratuit disponible\nAccès handicapés';
+    
+    await runQuery(
+      'INSERT INTO home_content (id, title, description, schedules, contact, practical_info, updated_at) VALUES (1, ?, ?, ?, ?, ?, NOW())',
+      [title || null, description || null, schedules || null, contact || null, practical_info || null]
+    );
+    return await getQuery('SELECT * FROM home_content WHERE id = 1');
+  }
+};
+
+// === FONCTIONS CRUD POUR LES IMAGES DU CARROUSEL DE LA PAGE D'ACCUEIL ===
+export const getHomeCarouselImages = async () => {
+  return await getAllQuery(
+    'SELECT * FROM home_carousel_images WHERE home_content_id = 1 ORDER BY display_order ASC',
+    []
+  );
+};
+
+export const addHomeCarouselImage = async (imageData) => {
+  const { image_url, display_order } = imageData;
+  
+  // Si display_order n'est pas fourni, calculer la prochaine position disponible
+  let finalDisplayOrder = display_order;
+  if (finalDisplayOrder === undefined || finalDisplayOrder === null) {
+    const maxOrderResult = await getQuery('SELECT MAX(display_order) as max_order FROM home_carousel_images WHERE home_content_id = 1');
+    finalDisplayOrder = (maxOrderResult?.max_order || 0) + 1;
+  }
+  
+  return await runQuery(
+    'INSERT INTO home_carousel_images (home_content_id, image_url, display_order, created_at) VALUES (1, ?, ?, NOW())',
+    [image_url, finalDisplayOrder]
+  );
+};
+
+export const deleteHomeCarouselImage = async (id) => {
+  return await runQuery('DELETE FROM home_carousel_images WHERE id = ?', [id]);
+};
+
+export const updateHomeCarouselImageOrder = async (imageId, newOrder) => {
+  return await runQuery(
+    'UPDATE home_carousel_images SET display_order = ? WHERE id = ?',
     [newOrder, imageId]
   );
 };
