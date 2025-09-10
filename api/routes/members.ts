@@ -2,7 +2,7 @@ import express, { type Request, type Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { initDatabase, getMembers, createMember, updateMember, deleteMember, getMemberTypes, createMemberType, updateMemberType } from '../../src/lib/database.js';
+import { initDatabase, getMembers, createMember, updateMember, deleteMember, getMemberTypes, createMemberType, updateMemberType, deleteMemberType } from '../../src/lib/database.js';
 
 const router = express.Router();
 
@@ -262,6 +262,40 @@ router.put('/types/:id', async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       error: 'Internal server error'
+    });
+  }
+});
+
+// DELETE /api/members/types/:id - Delete member type
+router.delete('/types/:id', async (req: Request, res: Response) => {
+  try {
+    const typeId = parseInt(req.params.id);
+    
+    if (isNaN(typeId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid member type ID'
+      });
+    }
+    
+    const result = await deleteMemberType(typeId);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Member type not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Member type deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting member type:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete member type'
     });
   }
 });

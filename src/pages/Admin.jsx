@@ -1136,11 +1136,17 @@ const Admin = () => {
         setShowTypeMemberDeleteConfirm(true);
     };
 
-    const confirmDeleteTypeMember = () => {
-        setMemberTypes(memberTypes.filter(t => t.id !== typeMemberToDelete.id));
-        setShowTypeMemberDeleteConfirm(false);
-        setTypeMemberToDelete(null);
-        toast.success('Type de membre supprimé avec succès');
+    const confirmDeleteTypeMember = async () => {
+        try {
+            await membersAPI.deleteType(typeMemberToDelete.id);
+            await loadMemberTypes();
+            setShowTypeMemberDeleteConfirm(false);
+            setTypeMemberToDelete(null);
+            toast.success('Type de membre supprimé avec succès');
+        } catch (error) {
+            console.error('Erreur lors de la suppression du type de membre:', error);
+            toast.error('Erreur lors de la suppression: ' + error.message);
+        }
     };
 
     const handleSaveTypeMember = async () => {
@@ -1684,6 +1690,14 @@ const Admin = () => {
                     />
 
                     <ManagementCard
+                        title="Gestion des droits"
+                        icon={Shield}
+                        count={availableRights.length}
+                        description="Gérer les permissions et accès des utilisateurs"
+                        modalKey="droits"
+                    />
+
+                    <ManagementCard
                         title="Événement"
                         icon={Calendar}
                         count={stats.events}
@@ -1745,6 +1759,7 @@ const Admin = () => {
                                 {activeModal === 'bar' && 'Gestion du Bar'}
                                 {activeModal === 'membre' && 'Gestion des Membres'}
                                 {activeModal === 'typeMembre' && 'Gestion des Types de Membre'}
+                                {activeModal === 'droits' && 'Gestion des Droits'}
                                 {activeModal === 'evenement' && 'Gestion des Événements'}
                                 {activeModal === 'equipe' && 'Gestion des Équipes'}
                                 {activeModal === 'resultat' && 'Gestion des Résultats'}
@@ -3134,7 +3149,7 @@ const Admin = () => {
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Téléphone</th>
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Type</th>
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">N° Licence</th>
-                                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Anniversaire</th>
+                                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">ANNIV</th>
                                                         <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Actions</th>
                                                     </tr>
                                                 </thead>
@@ -3434,8 +3449,55 @@ const Admin = () => {
                 </div>
             )}
 
+            {activeModal === 'droits' && (
+                <div className="space-y-6">
+                    {/* Liste des droits disponibles */}
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <Shield className="w-5 h-5 text-[#425e9b]" />
+                            Droits disponibles
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {availableRights.map(right => (
+                                <div key={right.id} className="border border-gray-200 rounded-lg p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h4 className="font-medium text-gray-900">{right.label}</h4>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                            right.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                        }`}>
+                                            {right.active ? 'Actif' : 'Inactif'}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-gray-600">{right.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Attribution des droits */}
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <Users className="w-5 h-5 text-[#425e9b]" />
+                            Attribution des droits
+                        </h3>
+                        <div className="space-y-4">
+                            <button
+                                onClick={() => setActiveModal('typeMembre')}
+                                className="w-full bg-[#425e9b] text-white px-4 py-3 rounded-lg hover:bg-[#364a82] transition-colors flex items-center justify-center gap-2"
+                            >
+                                <Shield className="w-4 h-4" />
+                                Gérer les types de membre
+                            </button>
+                            <p className="text-sm text-gray-600 text-center">
+                                Les droits sont attribués via les types de membre. Cliquez sur le bouton ci-dessus pour gérer les types de membre et leurs droits associés.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Modales vides pour les autres sections */}
-            {activeModal !== 'bar' && activeModal !== 'membre' && activeModal !== 'typeMembre' && activeModal !== 'equipe' && (
+            {activeModal !== 'bar' && activeModal !== 'membre' && activeModal !== 'typeMembre' && activeModal !== 'equipe' && activeModal !== 'droits' && (
                 <div className="py-12 text-center">
                     <div className="mx-auto mb-4 w-12 h-12 text-gray-400">
                         {activeModal === 'evenement' && <Calendar className="w-12 h-12" />}
@@ -4294,6 +4356,7 @@ const Admin = () => {
                     </div>
                 </div>
             )}
+
         </div>
     );
 };

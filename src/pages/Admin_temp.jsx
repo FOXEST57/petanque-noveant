@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Users, Calendar, Trophy, BarChart3, Wine, Plus, Minus, Edit, Trash2, Search, Filter, X, Save, UserPlus, Phone, Mail, MapPin, Calendar as CalendarIcon, CreditCard, Shield, Gift, Euro, Camera } from "lucide-react";
+import { Users, Calendar, Trophy, BarChart3, Wine, Plus, Minus, Edit, Trash2, Search, Filter, X, Save, UserPlus, Phone, Mail, MapPin, Calendar as CalendarIcon, CreditCard, Shield, Gift, Euro, Camera, AlertTriangle } from "lucide-react";
 import { useDrinks } from "../contexts/DrinksContext";
 import { toast } from "sonner";
 import { eventsAPI, statsAPI, teamsAPI } from "../lib/api";
@@ -1137,11 +1137,17 @@ const Admin = () => {
         setShowTypeMemberDeleteConfirm(true);
     };
 
-    const confirmDeleteTypeMember = () => {
-        setMemberTypes(memberTypes.filter(t => t.id !== typeMemberToDelete.id));
-        setShowTypeMemberDeleteConfirm(false);
-        setTypeMemberToDelete(null);
-        toast.success('Type de membre supprimé avec succès');
+    const confirmDeleteTypeMember = async () => {
+        try {
+            await membersAPI.deleteType(typeMemberToDelete.id);
+            await loadMemberTypes();
+            setShowTypeMemberDeleteConfirm(false);
+            setTypeMemberToDelete(null);
+            toast.success('Type de membre supprimé avec succès');
+        } catch (error) {
+            console.error('Erreur lors de la suppression du type de membre:', error);
+            toast.error('Erreur lors de la suppression: ' + error.message);
+        }
     };
 
     const handleSaveTypeMember = async () => {
@@ -1688,6 +1694,14 @@ const Admin = () => {
                     />
 
                     <ManagementCard
+                        title="Gestion des droits"
+                        icon={Shield}
+                        count={availableRights.length}
+                        description="Gérer les permissions et accès des utilisateurs"
+                        modalKey="droits"
+                    />
+
+                    <ManagementCard
                         title="Événement"
                         icon={Calendar}
                         count={stats.events}
@@ -1748,6 +1762,7 @@ const Admin = () => {
                                 {activeModal === 'bar' && 'Gestion du Bar'}
                                 {activeModal === 'membre' && 'Gestion des Membres'}
                                 {activeModal === 'typeMembre' && 'Gestion des Types de Membre'}
+                                {activeModal === 'droits' && 'Gestion des Droits'}
                                 {activeModal === 'evenement' && 'Gestion des Événements'}
                                 {activeModal === 'equipe' && 'Gestion des Équipes'}
                                 {activeModal === 'resultat' && 'Gestion des Résultats'}
@@ -3346,8 +3361,52 @@ const Admin = () => {
                 </div>
             )}
 
+            {/* Modale Gestion des droits */}
+            {activeModal === 'droits' && (
+                <div className="space-y-6">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center space-x-2">
+                            <Shield className="w-5 h-5 text-blue-600" />
+                            <h3 className="text-lg font-semibold text-blue-900">Système de droits disponibles</h3>
+                        </div>
+                        <p className="mt-2 text-sm text-blue-700">
+                            Gérez les permissions et accès des utilisateurs en assignant des droits spécifiques.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        {availableRights.map((right) => (
+                            <div key={right.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <h4 className="text-sm font-semibold text-gray-900">{right.label}</h4>
+                                        <p className="mt-1 text-xs text-gray-600">{right.description}</p>
+                                        <div className="mt-2">
+                                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                                                ID: {right.id}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <Shield className="w-5 h-5 text-gray-400" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div className="flex items-center space-x-2">
+                            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                            <h3 className="text-sm font-semibold text-yellow-900">Information</h3>
+                        </div>
+                        <p className="mt-2 text-sm text-yellow-700">
+                            Les droits sont assignés via les "Types de Membre". Utilisez la section "Types de Membre" pour créer des rôles et leur assigner des droits spécifiques.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Modales vides pour les autres sections */}
-            {activeModal !== 'bar' && activeModal !== 'membre' && activeModal !== 'typeMembre' && activeModal !== 'equipe' && (
+            {activeModal !== 'bar' && activeModal !== 'membre' && activeModal !== 'typeMembre' && activeModal !== 'equipe' && activeModal !== 'droits' && (
                 <div className="py-12 text-center">
                     <div className="mx-auto mb-4 w-12 h-12 text-gray-400">
                         {activeModal === 'evenement' && <Calendar className="w-12 h-12" />}
