@@ -1,80 +1,69 @@
-const sqlite3 = require('sqlite3').verbose();
+const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
-// Chemin vers la base de données
-const dbPath = path.join(__dirname, '..', 'database', 'petanque.db');
+// Configuration de la base de données MariaDB/MySQL
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'petanque_noveant'
+};
+
 const uploadsPath = path.join(__dirname, '..', 'uploads', 'events');
 
 // Fonction pour supprimer tous les événements
-function deleteAllEvents() {
-    return new Promise((resolve, reject) => {
-        const db = new sqlite3.Database(dbPath);
+async function deleteAllEvents() {
+    let connection;
+    
+    try {
+        connection = await mysql.createConnection(dbConfig);
         
-        db.serialize(() => {
-            // Compter les événements avant suppression
-            db.get("SELECT COUNT(*) as count FROM events", (err, row) => {
-                if (err) {
-                    console.error('Erreur lors du comptage des événements:', err);
-                    db.close();
-                    return reject(err);
-                }
-                const eventsCount = row.count;
-                console.log(`Nombre d'événements à supprimer: ${eventsCount}`);
-                
-                // Compter les photos avant suppression
-                db.get("SELECT COUNT(*) as count FROM event_photos", (err, row) => {
-                    if (err) {
-                        console.error('Erreur lors du comptage des photos:', err);
-                        db.close();
-                        return reject(err);
-                    }
-                    const photosCount = row.count;
-                    console.log(`Nombre de photos à supprimer: ${photosCount}`);
-                    
-                    // Supprimer toutes les photos de la table
-                    db.run("DELETE FROM event_photos", (err) => {
-                        if (err) {
-                            console.error('Erreur lors de la suppression des photos:', err);
-                            db.close();
-                            return reject(err);
-                        }
-                        console.log('✅ Toutes les photos supprimées de la table event_photos');
-                        
-                        // Supprimer tous les événements
-                        db.run("DELETE FROM events", (err) => {
-                            if (err) {
-                                console.error('Erreur lors de la suppression des événements:', err);
-                                db.close();
-                                return reject(err);
-                            }
-                            console.log('✅ Tous les événements supprimés de la table events');
-                            
-                            // Réinitialiser les compteurs auto-increment
-                            db.run("DELETE FROM sqlite_sequence WHERE name='events'", (err) => {
-                                if (err) {
-                                    console.log('⚠️  Pas de compteur auto-increment à réinitialiser pour events');
-                                } else {
-                                    console.log('✅ Compteur auto-increment réinitialisé pour events');
-                                }
-                                
-                                db.run("DELETE FROM sqlite_sequence WHERE name='event_photos'", (err) => {
-                                    if (err) {
-                                        console.log('⚠️  Pas de compteur auto-increment à réinitialiser pour event_photos');
-                                    } else {
-                                        console.log('✅ Compteur auto-increment réinitialisé pour event_photos');
-                                    }
-                                    
-                                    db.close();
-                                    resolve({ eventsCount, photosCount });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
+        // Compter les événements avant suppression
+        const [eventsResult] = await connection.execute("SELECT COUNT(*) as count FROM events");
+        const eventsCount = eventsResult[0].count;
+        console.log(`Nombre d'événements à supprimer: ${eventsCount}`);
+        
+        // Compter les photos avant suppression
+        const [photosResult] = await connection.execute("SELECT COUNT(*) as count FROM event_photos");
+        const photosCount = photosResult[0].count;
+        console.log(`Nombre de photos à supprimer: ${photosCount}`);
+        
+        // Supprimer toutes les photos de la table
+        await connection.execute("DELETE FROM event_photos");
+        console.log('✅ Toutes les photos supprimées de la table event_photos');
+        
+        // Supprimer tous les événements
+        await connection.execute("DELETE FROM events");
+        console.log('✅ Tous les événements supprimés de la table events');
+        
+        // Réinitialiser les compteurs auto-increment pour MySQL
+        try {
+            await connection.execute("ALTER TABLE events AUTO_INCREMENT = 1");
+            console.log('✅ Compteur auto-increment réinitialisé pour events');
+        } catch (err) {
+            console.log('⚠️  Pas de compteur auto-increment à réinitialiser pour events');
+        }
+        
+        try {
+            await connection.execute("ALTER TABLE event_photos AUTO_INCREMENT = 1");
+            console.log('✅ Compteur auto-increment réinitialisé pour event_photos');
+        } catch (err) {
+            console.log('⚠️  Pas de compteur auto-increment à réinitialiser pour event_photos');
+        }
+        
+        return { eventsCount, photosCount };
+        
+    } catch (error) {
+        console.error('Erreur lors de la suppression des événements:', error);
+        throw error;
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
+    }
 }
 
 // Fonction pour supprimer tous les fichiers photos
@@ -130,23 +119,20 @@ function deleteAllPhotoFiles() {
     });
 }
 
-// Exécution principale
+// Fonction principale
 async function main() {
+    console.log('🗑️  Début de la suppression de tous les événements...');
+    
     try {
-        console.log('🗑️  Début de la suppression de tous les événements...');
-        
-        // Supprimer les enregistrements de la base de données
         const { eventsCount, photosCount } = await deleteAllEvents();
+        console.log('\n📊 Résumé:');
+        console.log(`- ${eventsCount} événements supprimés`);
+        console.log(`- ${photosCount} photos supprimées de la base de données`);
         
-        // Supprimer les fichiers photos
-        const deletedFilesCount = await deleteAllPhotoFiles();
-        
-        console.log('\n📊 Résumé de la suppression:');
-        console.log(`- Événements supprimés: ${eventsCount}`);
-        console.log(`- Photos supprimées de la base: ${photosCount}`);
-        console.log(`- Fichiers photos supprimés: ${deletedFilesCount}`);
+        // Supprimer les fichiers photos physiques
+        const deletedFiles = await deletePhotoFiles();
+        console.log(`- ${deletedFiles} fichiers photos supprimés du disque`);
         console.log('\n✅ Suppression terminée avec succès!');
-        
     } catch (error) {
         console.error('❌ Erreur lors de la suppression:', error);
         process.exit(1);

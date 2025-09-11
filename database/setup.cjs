@@ -1,75 +1,73 @@
-const sqlite3 = require('sqlite3').verbose();
+const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
-const DB_PATH = path.join(__dirname, 'petanque.db');
-const INIT_SQL_PATH = path.join(__dirname, 'init.sql');
-
-// Fonction pour initialiser la base de données
-const setupDatabase = () => {
-  return new Promise((resolve, reject) => {
-    try {
-      console.log('🚀 Initialisation de la base de données SQLite...');
-      
-      // Supprimer l'ancienne base de données si elle existe
-      if (fs.existsSync(DB_PATH)) {
-        fs.unlinkSync(DB_PATH);
-        console.log('✅ Ancienne base de données supprimée');
-      }
-      
-      // Créer une nouvelle base de données
-      const db = new sqlite3.Database(DB_PATH, (err) => {
-        if (err) {
-          console.error('❌ Erreur lors de la création de la base de données:', err);
-          reject(err);
-          return;
-        }
-        console.log('✅ Base de données créée avec succès');
-        
-        // Lire et exécuter le script SQL d'initialisation
-        const initSQL = fs.readFileSync(INIT_SQL_PATH, 'utf8');
-        
-        db.exec(initSQL, (err) => {
-          if (err) {
-            console.error('❌ Erreur lors de l\'exécution du script SQL:', err);
-            reject(err);
-            return;
-          }
-          
-          console.log('✅ Tables créées et données d\'exemple insérées');
-          
-          // Fermer la connexion
-          db.close((err) => {
-            if (err) {
-              console.error('❌ Erreur lors de la fermeture:', err);
-              reject(err);
-              return;
-            }
-            console.log('✅ Base de données initialisée avec succès!');
-            console.log(`📍 Fichier de base de données: ${DB_PATH}`);
-            resolve();
-          });
-        });
-      });
-      
-    } catch (error) {
-      console.error('❌ Erreur générale:', error);
-      reject(error);
-    }
-  });
+// Configuration de la base de données MariaDB/MySQL
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'petanque_noveant'
 };
 
-// Exécuter le script si appelé directement
-if (require.main === module) {
-  setupDatabase()
-    .then(() => {
-      console.log('🎉 Configuration terminée!');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('💥 Échec de la configuration:', error);
-      process.exit(1);
+const sqlPath = path.join(__dirname, 'create_database.sql');
+
+console.log('🚀 Initialisation de la base de données MariaDB/MySQL...');
+
+async function initializeDatabase() {
+  let connection;
+  
+  try {
+    // Créer la connexion MySQL
+    connection = await mysql.createConnection({
+      host: dbConfig.host,
+      port: dbConfig.port,
+      user: dbConfig.user,
+      password: dbConfig.password
     });
+    
+    console.log('✅ Connexion à MySQL établie');
+    
+    // Créer la base de données si elle n'existe pas
+    await connection.execute(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
+    console.log(`✅ Base de données '${dbConfig.database}' créée ou vérifiée`);
+    
+    // Se connecter à la base de données spécifique
+    await connection.changeUser({ database: dbConfig.database });
+    console.log(`✅ Connexion à la base de données '${dbConfig.database}' établie`);
+        
+    // Lire le fichier SQL
+    const sqlContent = fs.readFileSync(sqlPath, 'utf8');
+    console.log('📄 Fichier SQL lu avec succès');
+    
+    // Diviser le contenu SQL en requêtes individuelles
+    const queries = sqlContent
+      .split(';')
+      .map(query => query.trim())
+      .filter(query => query.length > 0);
+    
+    // Exécuter chaque requête
+    for (const query of queries) {
+      if (query.trim()) {
+        await connection.execute(query);
+      }
+    }
+    
+    console.log('✅ Script SQL exécuté avec succès');
+    console.log('🎉 Base de données initialisée!');
+    
+  } catch (error) {
+    console.error('❌ Erreur lors de l\'initialisation de la base de données:', error.message);
+    process.exit(1);
+  } finally {
+    if (connection) {
+      await connection.end();
+      console.log('🔒 Connexion fermée');
+    }
+  }
 }
 
-module.exports = setupDatabase;
+// Lancer l'initialisation
+initializeDatabase();

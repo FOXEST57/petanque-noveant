@@ -1,7 +1,7 @@
 import { initDatabase, closeDatabase, getMembers, createMember, getMemberTypes, getEvents, getConcours, getLotos, getDrinks, getTeams } from '../src/lib/database.js';
 
 async function testCRUD() {
-    console.log('🧪 Test des fonctionnalités CRUD SQLite...');
+    console.log('🧪 Test des fonctionnalités CRUD MariaDB...');
     
     try {
         // Initialiser la base de données

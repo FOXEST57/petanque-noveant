@@ -1,37 +1,43 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const mysql = require('mysql2/promise');
+require('dotenv').config();
 
-const DB_PATH = path.join(__dirname, 'database/petanque.db');
+// Configuration de la base de données MariaDB/MySQL
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'petanque_noveant'
+};
 
-console.log('🔍 Vérification de la base de données...');
+console.log('🔍 Vérification de la base de données MariaDB/MySQL...');
 
-const db = new sqlite3.Database(DB_PATH, sqlite3.OPEN_READONLY, (err) => {
-  if (err) {
-    console.error('❌ Erreur lors de l\'ouverture:', err);
-    return;
-  }
+async function checkDatabase() {
+  let connection;
   
-  console.log('✅ Base de données ouverte en lecture seule');
-  
-  // Vérifier les événements
-  db.all('SELECT id, title FROM events', (err, events) => {
-    if (err) {
-      console.error('❌ Erreur events:', err);
-      return;
-    }
+  try {
+    connection = await mysql.createConnection(dbConfig);
+    console.log('✅ Base de données connectée');
+    
+    // Vérifier les événements
+    const [events] = await connection.execute('SELECT id, title FROM events');
     console.log('📅 Événements:', events.length);
     events.forEach(e => console.log(`  - ID: ${e.id}, Titre: ${e.title}`));
     
     // Vérifier les photos d'événements
-    db.all('SELECT * FROM event_photos', (err, photos) => {
-      if (err) {
-        console.error('❌ Erreur event_photos:', err);
-        return;
-      }
-      console.log('📸 Photos d\'événements:', photos.length);
-      photos.forEach(p => console.log(`  - ID: ${p.id}, Event: ${p.event_id}, Fichier: ${p.filename}`));
-      
-      db.close();
-    });
-  });
-});
+    const [photos] = await connection.execute('SELECT * FROM event_photos');
+    console.log('📸 Photos d\'événements:', photos.length);
+    photos.forEach(p => console.log(`  - ID: ${p.id}, Event: ${p.event_id}, Fichier: ${p.filename}`));
+    
+  } catch (error) {
+    console.error('❌ Erreur lors de la vérification:', error);
+  } finally {
+    if (connection) {
+      await connection.end();
+      console.log('🔒 Connexion fermée');
+    }
+  }
+}
+
+// Exécuter la vérification
+checkDatabase();

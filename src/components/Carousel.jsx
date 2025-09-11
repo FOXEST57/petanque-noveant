@@ -54,7 +54,7 @@ const Carousel = () => {
           const apiImages = data.data.carouselImages.map((imgObj, index) => ({
             src: imgObj.image_url.startsWith('uploads/') ? `/${imgObj.image_url}` : imgObj.image_url,
             alt: `Image du carrousel ${index + 1}`,
-            caption: `Image ${index + 1}`
+            caption: imgObj.title || `Image ${index + 1}`
           }))
           console.log('Setting API images:', apiImages)
           setImages(apiImages)

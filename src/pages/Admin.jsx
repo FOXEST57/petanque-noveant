@@ -1204,6 +1204,18 @@ const Admin = () => {
         }
     };
 
+    // Fonction pour gérer les changements de titre des images existantes
+    const handleExistingImageTitleChange = (index, newTitle) => {
+        const updatedImages = existingCarouselImages.map((image, i) => 
+            i === index ? { ...image, title: newTitle } : image
+        );
+        setExistingCarouselImages(updatedImages);
+        setHomeContent(prev => ({
+            ...prev,
+            carouselImages: updatedImages
+        }));
+    };
+
     const removeCarouselImage = (index, isExisting = false) => {
         if (isExisting) {
             const updatedExisting = existingCarouselImages.filter(
@@ -1393,6 +1405,18 @@ const Admin = () => {
             // Gérer les images du carrousel
             let hasImageChanges = false;
 
+            // Vérifier si les titres des images existantes ont été modifiés
+            const titlesChanged = existingCarouselImages.some((img, index) => {
+                const originalImg = originalHomeContent.carouselImages[index];
+                return originalImg && img.title !== originalImg.title;
+            });
+
+            if (titlesChanged) {
+                hasImageChanges = true;
+                changedFields.push("titres des images du carrousel");
+                console.log("✏️ Titres des images modifiés");
+            }
+
             // Si des images existantes ont été supprimées
             if (
                 existingCarouselImages.length <
@@ -1447,17 +1471,18 @@ const Admin = () => {
                 return;
             }
 
-            // N'envoyer existingImages que si des images ont été supprimées
+            // Envoyer existingImages si des images ont été supprimées ou si les titres ont été modifiés
             if (
                 existingCarouselImages.length !==
-                originalHomeContent.carouselImages.length
+                originalHomeContent.carouselImages.length ||
+                titlesChanged
             ) {
                 formData.append(
                     "existingImages",
                     JSON.stringify(existingCarouselImages)
                 );
                 console.log(
-                    "🔄 Ajout des images existantes car des images ont été supprimées"
+                    "🔄 Ajout des images existantes car des images ont été supprimées ou des titres modifiés"
                 );
             }
 
@@ -3008,6 +3033,24 @@ const Admin = () => {
                                                                             >
                                                                                 <X className="w-4 h-4" />
                                                                             </button>
+                                                                        </div>
+
+                                                                        {/* Input titre */}
+                                                                        <div className="mt-2 w-full">
+                                                                            <input
+                                                                                type="text"
+                                                                                value={image.title || `Image ${index + 1}`}
+                                                                                onChange={(e) => {
+                                                                                    const updatedImages = [...existingCarouselImages];
+                                                                                    updatedImages[index] = {
+                                                                                        ...updatedImages[index],
+                                                                                        title: e.target.value
+                                                                                    };
+                                                                                    setExistingCarouselImages(updatedImages);
+                                                                                }}
+                                                                                className="px-2 py-1 w-full text-xs rounded border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                                                placeholder="Titre de l'image"
+                                                                            />
                                                                         </div>
                                                                     </div>
                                                                 )

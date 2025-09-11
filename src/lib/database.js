@@ -631,5 +631,12 @@ export const updateHomeCarouselImageOrder = async (imageId, newOrder) => {
   );
 };
 
+export const updateHomeCarouselImageTitle = async (imageId, title) => {
+  return await runQuery(
+    'UPDATE home_carousel_images SET title = ? WHERE id = ?',
+    [title, imageId]
+  );
+};
+
 // Initialiser la base de données au démarrage
 initDatabase().catch(console.error);

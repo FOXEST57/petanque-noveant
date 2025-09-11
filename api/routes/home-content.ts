@@ -8,7 +8,8 @@ import {
   getHomeCarouselImages,
   addHomeCarouselImage, 
   deleteHomeCarouselImage,
-  updateHomeCarouselImageOrder 
+  updateHomeCarouselImageOrder,
+  updateHomeCarouselImageTitle 
 } from '../../src/lib/database.js';
 
 const router = express.Router();
@@ -112,10 +113,18 @@ router.put('/', upload.array('carouselImages', 10), async (req: Request, res: Re
           }
         }
         
-        // Mettre à jour l'ordre des images existantes si nécessaire
+        // Mettre à jour l'ordre et les titres des images existantes si nécessaire
         for (const existingImg of existingImagesArray) {
+          const currentImg = currentImages.find(img => img.id === existingImg.id);
+          
           if (existingImg.display_order !== undefined) {
             await updateHomeCarouselImageOrder(existingImg.id, existingImg.display_order);
+          }
+          
+          // Vérifier si le titre a changé
+          if (existingImg.title !== undefined && currentImg && existingImg.title !== currentImg.title) {
+            await updateHomeCarouselImageTitle(existingImg.id, existingImg.title);
+            console.log(`Titre mis à jour pour l'image ${existingImg.id}: ${existingImg.title}`);
           }
         }
       } catch (error) {
