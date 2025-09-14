@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const EventCarousel = ({ images, eventTitle }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const intervalRef = useRef(null);
+  const pauseTimeoutRef = useRef(null);
 
   if (!images || images.length === 0) {
     // Fallback image if no images available
@@ -17,19 +20,59 @@ const EventCarousel = ({ images, eventTitle }) => {
     );
   }
 
+  // Auto-play functionality
+  useEffect(() => {
+    if (!images || images.length <= 1) return;
+
+    const startAutoPlay = () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      
+      intervalRef.current = setInterval(() => {
+        if (isAutoPlaying) {
+          setCurrentIndex((prevIndex) => 
+            prevIndex === images.length - 1 ? 0 : prevIndex + 1
+          );
+        }
+      }, 3500); // 3.5 seconds
+    };
+
+    if (isAutoPlaying) {
+      startAutoPlay();
+    }
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+    };
+  }, [isAutoPlaying, images]);
+
+  const pauseAutoPlay = () => {
+    setIsAutoPlaying(false);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+    
+    // Resume auto-play after 5 seconds of inactivity
+    pauseTimeoutRef.current = setTimeout(() => {
+      setIsAutoPlaying(true);
+    }, 5000);
+  };
+
   const nextSlide = () => {
+    pauseAutoPlay();
     setCurrentIndex((prevIndex) => 
       prevIndex === images.length - 1 ? 0 : prevIndex + 1
     );
   };
 
   const prevSlide = () => {
+    pauseAutoPlay();
     setCurrentIndex((prevIndex) => 
       prevIndex === 0 ? images.length - 1 : prevIndex - 1
     );
   };
 
   const goToSlide = (index) => {
+    pauseAutoPlay();
     setCurrentIndex(index);
   };
 
