@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Calendar, MapPin, Users, Clock, AlertCircle, Image, X } from 'lucide-react'
-import { eventsAPI } from '../lib/api'
+import React, { useState, useEffect } from 'react';
+import { Calendar, Clock, MapPin, Users, Camera, X, Image } from 'lucide-react';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import { eventsAPI } from '../lib/api';
 
 const Animations = () => {
   const [events, setEvents] = useState([])
@@ -9,10 +10,27 @@ const Animations = () => {
   const [filter, setFilter] = useState('all') // 'all', 'upcoming', 'past'
   const [eventPhotos, setEventPhotos] = useState({}) // Store photos for each event
   const [selectedPhoto, setSelectedPhoto] = useState(null) // For modal display
+  const [searchParams] = useSearchParams();
+  const [highlightedEventId, setHighlightedEventId] = useState(null);
 
   useEffect(() => {
     fetchEvents()
   }, [])
+
+  // Gérer l'ID de l'événement depuis l'URL
+  useEffect(() => {
+    const eventId = searchParams.get('id');
+    if (eventId) {
+      setHighlightedEventId(eventId);
+      // Scroll vers l'événement après un court délai pour s'assurer que le DOM est rendu
+      setTimeout(() => {
+        const eventElement = document.getElementById(`event-${eventId}`);
+        if (eventElement) {
+          eventElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500);
+    }
+  }, [searchParams]);
 
   const fetchEventPhotos = async (eventId) => {
     try {
@@ -242,9 +260,16 @@ const Animations = () => {
                 const isUpcoming = eventDate >= today
                 
                 return (
-                  <div key={event.id} className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 ${
-                    isUpcoming ? 'border-l-4 border-[#425e9b]' : 'border-l-4 border-gray-300'
-                  }`}>
+                  <div 
+                    key={event.id} 
+                    id={`event-${event.id}`}
+                    className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 ${
+                      isUpcoming ? 'border-l-4 border-[#425e9b]' : 'border-l-4 border-gray-300'
+                    } ${
+                      highlightedEventId === event.id.toString() 
+                        ? 'ring-4 ring-blue-500 shadow-xl transform scale-105' 
+                        : ''
+                    }`}>
                     <div className="p-6">
                       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                         <div className="flex-1">

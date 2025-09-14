@@ -58,6 +58,13 @@ router.get('/', async (req: Request, res: Response) => {
       openingHours: content.schedules,
       contact: content.contact,
       practicalInfo: content.practical_info,
+      location: content.location,
+      members: content.members,
+      clubTitle: content.club_title,
+      clubDescription: content.club_description,
+      teamsContent: content.teams_content,
+      animationsContent: content.animations_content,
+      tournamentsContent: content.tournaments_content,
       carouselImages: carouselImages
     };
     
@@ -71,7 +78,7 @@ router.get('/', async (req: Request, res: Response) => {
 // PUT /api/home-content - Mettre à jour le contenu de la page d'accueil
 router.put('/', upload.array('carouselImages', 10), async (req: Request, res: Response) => {
   try {
-    const { title, description, openingHours, contact, practicalInfo, existingImages } = req.body;
+    const { title, description, openingHours, contact, practicalInfo, location, members, clubTitle, clubDescription, teamsContent, animationsContent, tournamentsContent, existingImages } = req.body;
     
     // Construire l'objet de données pour la mise à jour
     const contentData: any = {};
@@ -82,6 +89,13 @@ router.put('/', upload.array('carouselImages', 10), async (req: Request, res: Re
     if (openingHours !== undefined) contentData.schedules = openingHours;
     if (contact !== undefined) contentData.contact = contact;
     if (practicalInfo !== undefined) contentData.practical_info = practicalInfo;
+    if (location !== undefined) contentData.location = location;
+    if (members !== undefined) contentData.members = members;
+    if (clubTitle !== undefined) contentData.club_title = clubTitle;
+    if (clubDescription !== undefined) contentData.club_description = clubDescription;
+    if (teamsContent !== undefined) contentData.teams_content = teamsContent;
+    if (animationsContent !== undefined) contentData.animations_content = animationsContent;
+    if (tournamentsContent !== undefined) contentData.tournaments_content = tournamentsContent;
 
     // Mettre à jour le contenu principal s'il y a des champs à modifier
     let updatedContent = null;
@@ -161,6 +175,13 @@ router.put('/', upload.array('carouselImages', 10), async (req: Request, res: Re
       openingHours: finalContent.schedules,
       contact: finalContent.contact,
       practicalInfo: finalContent.practical_info,
+      location: finalContent.location,
+      members: finalContent.members,
+      clubTitle: finalContent.club_title,
+      clubDescription: finalContent.club_description,
+      teamsContent: finalContent.teams_content,
+      animationsContent: finalContent.animations_content,
+      tournamentsContent: finalContent.tournaments_content,
       carouselImages: carouselImages
     };
 

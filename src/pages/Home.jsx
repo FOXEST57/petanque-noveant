@@ -2,28 +2,109 @@ import { Link } from 'react-router-dom'
 import { Calendar, Users, Trophy, MapPin, Clock } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import Carousel from '../components/Carousel'
+import EventCarousel from '../components/EventCarousel'
 
 const Home = () => {
   const [homeContent, setHomeContent] = useState(null)
+  const [events, setEvents] = useState([])
+  const [eventPhotos, setEventPhotos] = useState({})
   const [loading, setLoading] = useState(true)
 
+  // Function to get the 3 most relevant events
+  const getRelevantEvents = (events) => {
+    if (!events || !Array.isArray(events) || events.length === 0) return []
+    
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    // Separate future and past events
+    const futureEvents = events.filter(event => new Date(event.date) >= today)
+    const pastEvents = events.filter(event => new Date(event.date) < today)
+    
+    // Sort future events by date (ascending - closest first)
+    futureEvents.sort((a, b) => new Date(a.date) - new Date(b.date))
+    
+    // Sort past events by date (descending - most recent first)
+    pastEvents.sort((a, b) => new Date(b.date) - new Date(a.date))
+    
+    // Select events according to the logic
+    const selectedEvents = []
+    
+    // First, add future events (max 3)
+    const futureToAdd = Math.min(3, futureEvents.length)
+    selectedEvents.push(...futureEvents.slice(0, futureToAdd))
+    
+    // If we need more events, add past events
+    const remainingSlots = 3 - selectedEvents.length
+    if (remainingSlots > 0 && pastEvents.length > 0) {
+      selectedEvents.push(...pastEvents.slice(0, remainingSlots))
+    }
+    
+    return selectedEvents
+  }
+
+  // Function to fetch photos for an event
+  const fetchEventPhotos = async (eventId) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${eventId}/photos`)
+      if (response.ok) {
+        const photos = await response.json()
+        return photos || []
+      }
+    } catch (error) {
+      console.error(`Error fetching photos for event ${eventId}:`, error)
+    }
+    return []
+  }
+
   useEffect(() => {
-    const fetchHomeContent = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/home-content')
-        const result = await response.json()
-        if (result.success) {
-          console.log('Home content loaded:', result.data)
-          setHomeContent(result.data)
+        // Fetch home content
+        const homeResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/content/home`)
+        if (homeResponse.ok) {
+          const homeData = await homeResponse.json()
+          setHomeContent(homeData)
+        }
+
+        // Fetch events
+        const eventsResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/events`)
+        if (eventsResponse.ok) {
+          const eventsData = await eventsResponse.json()
+          
+          // Handle the API response structure
+          let validEvents = []
+          if (eventsData && eventsData.success && Array.isArray(eventsData.data)) {
+            validEvents = eventsData.data
+          } else if (Array.isArray(eventsData)) {
+            validEvents = eventsData
+          }
+          
+          setEvents(validEvents)
+          
+          // Fetch photos for relevant events
+          const relevantEvents = getRelevantEvents(validEvents)
+          
+          const photosPromises = relevantEvents.map(async (event) => {
+            const photos = await fetchEventPhotos(event.id)
+            return { eventId: event.id, photos }
+          })
+          
+          const photosResults = await Promise.all(photosPromises)
+          const photosMap = {}
+          photosResults.forEach(({ eventId, photos }) => {
+            photosMap[eventId] = photos
+          })
+          setEventPhotos(photosMap)
         }
       } catch (error) {
-        console.error('Erreur lors du chargement du contenu:', error)
+        console.error('Error fetching data:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchHomeContent()
+    fetchData()
   }, [])
 
   if (loading) {
@@ -80,8 +161,7 @@ const Home = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2">Notre Localisation</h3>
               <p className="text-gray-600">
-                Veloroute Charles le téméraire<br />
-                57680 Novéant-sur-Moselle, France
+                {homeContent?.location || 'Veloroute Charles le téméraire\n57680 Novéant-sur-Moselle, France'}
               </p>
             </div>
             
@@ -101,9 +181,7 @@ const Home = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2">Nos Membres</h3>
               <p className="text-gray-600">
-                Plus de 80 licenciés<br />
-                Toutes catégories d'âge<br />
-                Ambiance conviviale
+                {homeContent?.members || 'Plus de 80 licenciés\nToutes catégories d\'âge\nAmbiance conviviale'}
               </p>
             </div>
           </div>
@@ -115,157 +193,133 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Découvrez notre club
+              {homeContent?.clubTitle || 'Découvrez notre club'}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Un club dynamique qui propose de nombreuses activités tout au long de l'année
+              {homeContent?.clubDescription || 'Un club dynamique qui propose de nombreuses activités tout au long de l\'année'}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="flex flex-wrap justify-center gap-8 md:justify-around">
             {/* Équipes */}
-            <Link to="/equipes" className="group">
+            <Link to="/equipes" className="group w-full sm:w-80 md:w-72 lg:w-80">
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                <div className="p-6">
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:from-blue-100 group-hover:to-blue-200 transition-colors duration-200">
+                <div className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:from-blue-100 group-hover:to-blue-200 transition-colors duration-200 mx-auto">
                   <Users className="w-6 h-6 text-[#425e9b]" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
                     Nos Équipes
                   </h3>
                   <p className="text-gray-600">
-                    Découvrez nos équipes et leurs performances dans les différents championnats.
+                    {homeContent?.teamsContent || 'Découvrez nos équipes et leurs performances dans les différents championnats.'}
                   </p>
                 </div>
               </div>
             </Link>
 
             {/* Animations */}
-            <Link to="/animations" className="group">
+            <Link to="/animations" className="group w-full sm:w-80 md:w-72 lg:w-80">
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                <div className="p-6">
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:from-blue-100 group-hover:to-blue-200 transition-colors duration-200">
+                <div className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:from-blue-100 group-hover:to-blue-200 transition-colors duration-200 mx-auto">
                   <Calendar className="w-6 h-6 text-[#425e9b]" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
                      Nos Animations
                   </h3>
                   <p className="text-gray-600">
-                    Tournois, événements spéciaux et animations pour tous les âges.
+                    {homeContent?.animationsContent || 'Tournois, événements spéciaux et animations pour tous les âges.'}
                   </p>
                 </div>
               </div>
             </Link>
 
             {/* Compétitions */}
-            <Link to="/competitions" className="group">
+            <Link to="/competitions" className="group w-full sm:w-80 md:w-72 lg:w-80">
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                <div className="p-6">
-                  <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200">
+                <div className="p-6 text-center">
+                  <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200 mx-auto">
                   <Trophy className="w-6 h-6 text-[#425e9b]" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
                      Nos Tournois
                   </h3>
                   <p className="text-gray-600">
-                    Suivez nos résultats et classements dans les championnats régionaux.
+                    {homeContent?.tournamentsContent || 'Suivez nos résultats et classements dans les championnats régionaux.'}
                   </p>
                 </div>
               </div>
             </Link>
-
-
           </div>
         </div>
       </section>
 
-      {/* News Section */}
-      <section className="py-16 bg-white">
+      {/* Activités du club Section */}
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Actualités du club
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Activités du club</h2>
+            <p className="text-lg text-gray-600">Découvrez nos événements les plus récents et à venir</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* News Item 1 */}
-            <article className="bg-gray-50 rounded-lg overflow-hidden">
-              <img 
-                src="/image/AdobeStock_133397076.jpeg" 
-                alt="Tournoi d'été" 
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-6">
-                <div className="text-sm text-[#425e9b] font-semibold mb-2">
-                  15 Juin 2024
-                </div>
-                <h3 className="text-xl font-semibold mb-3">
-                  Grand Tournoi d'Été
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Inscriptions ouvertes pour notre traditionnel tournoi d'été qui aura lieu le 20 juillet.
-                </p>
-                <Link 
-                  to="/animations" 
-                  className="text-[#425e9b] hover:text-[#3a5287] font-semibold"
-                >
-                  En savoir plus →
-                </Link>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {getRelevantEvents(events).length > 0 ? (
+              getRelevantEvents(events).map((event, index) => {
+                const eventDate = new Date(event.date)
+                const isUpcoming = eventDate >= new Date()
+                const eventImages = eventPhotos[event.id] || []
+                
+                return (
+                  <article key={event.id || index} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <EventCarousel 
+                      images={eventImages}
+                      eventTitle={event.title}
+                    />
+                    <div className="p-6">
+                      <div className="flex items-center text-sm mb-2">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        <span className={isUpcoming ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                          {eventDate.toLocaleDateString('fr-FR', { 
+                            day: 'numeric', 
+                            month: 'long', 
+                            year: 'numeric' 
+                          })}
+                        </span>
+                        {isUpcoming && (
+                          <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                            À venir
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{event.title}</h3>
+                      <p className="text-gray-600 mb-4 line-clamp-3">
+                        {event.description || 'Découvrez les détails de cet événement du club.'}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <Link 
+                          to={`/animations?id=${event.id}`} 
+                          className="text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+                        >
+                          Lire la suite →
+                        </Link>
+                        {eventImages.length > 0 && (
+                          <span className="text-xs text-gray-500">
+                            {eventImages.length} photo{eventImages.length > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                )
+              })
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun événement disponible</h3>
+                <p className="text-gray-600">Les prochains événements seront bientôt annoncés.</p>
               </div>
-            </article>
-
-            {/* News Item 2 */}
-            <article className="bg-gray-50 rounded-lg overflow-hidden">
-              <img 
-                src="/image/AdobeStock_114710176.jpeg" 
-                alt="Nouveaux équipements" 
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-6">
-                <div className="text-sm text-[#425e9b] font-semibold mb-2">
-                   20 Mai 2024
-                 </div>
-                <h3 className="text-xl font-semibold mb-3">
-                  Nouveaux Équipements
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Le club s'équipe de nouvelles boules de compétition pour améliorer les conditions de jeu.
-                </p>
-                <Link 
-                  to="/contact" 
-                  className="text-[#425e9b] hover:text-[#3a5287] font-semibold"
-                >
-                  En savoir plus →
-                </Link>
-              </div>
-            </article>
-
-            {/* News Item 3 */}
-            <article className="bg-gray-50 rounded-lg overflow-hidden">
-              <img 
-                src="/image/AdobeStock_645053.jpeg" 
-                alt="Assemblée générale" 
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-6">
-                <div className="text-sm text-[#425e9b] font-semibold mb-2">
-                   10 Mai 2024
-                 </div>
-                <h3 className="text-xl font-semibold mb-3">
-                  Assemblée Générale
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Retour sur l'assemblée générale du club et présentation des projets pour la saison.
-                </p>
-                <Link 
-                  to="/contact" 
-                  className="text-[#425e9b] hover:text-[#3a5287] font-semibold"
-                 >
-                   En savoir plus →
-                 </Link>
-              </div>
-            </article>
+            )}
           </div>
         </div>
       </section>

@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth.jsx";
-// import { supabase } from '../lib/supabase' // Supprimé - plus utilisé
 
 const Dashboard = () => {
     const { user, signOut, updateProfile } = useAuth();

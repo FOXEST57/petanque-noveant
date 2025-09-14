@@ -1,0 +1,1 @@
+ALTER TABLE home_carousel_images ADD COLUMN title VARCHAR(255) DEFAULT NULL AFTER image_url;

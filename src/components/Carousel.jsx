@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const Carousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -186,26 +185,7 @@ const Carousel = () => {
         ))}
       </div>
 
-      {/* Navigation arrows - only show if more than one image */}
-      {images.length > 1 && (
-        <>
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 transition-all duration-200 shadow-lg"
-            aria-label="Image précédente"
-          >
-            <ChevronLeft className="w-6 h-6 text-gray-800" />
-          </button>
-          
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 transition-all duration-200 shadow-lg"
-            aria-label="Image suivante"
-          >
-            <ChevronRight className="w-6 h-6 text-gray-800" />
-          </button>
-        </>
-      )}
+
 
       {/* Dots indicator - only show if more than one image */}
       {images.length > 1 && (

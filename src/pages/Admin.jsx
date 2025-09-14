@@ -922,6 +922,13 @@ const Admin = () => {
                     openingHours: data.openingHours || "", // Corriger le mapping
                     contact: data.contact || "",
                     practicalInfo: data.practicalInfo || "", // Mapper practicalInfo
+                    location: data.location || "", // Ajouter le champ location
+                    members: data.members || "", // Ajouter le champ members
+                    clubTitle: data.clubTitle || "Découvrez notre club", // Ajouter le champ clubTitle
+                    clubDescription: data.clubDescription || "", // Ajouter le champ clubDescription
+                    teamsContent: data.teamsContent || "", // Ajouter le champ teamsContent
+                    animationsContent: data.animationsContent || "", // Ajouter le champ animationsContent
+                    tournamentsContent: data.tournamentsContent || "", // Ajouter le champ tournamentsContent
                 };
 
                 console.log("🔍 Mapping des champs:");
@@ -949,6 +956,18 @@ const Admin = () => {
                     data.practicalInfo,
                     "->",
                     contentData.practicalInfo
+                );
+                console.log(
+                    "  location:",
+                    data.location,
+                    "->",
+                    contentData.location
+                );
+                console.log(
+                    "  members:",
+                    data.members,
+                    "->",
+                    contentData.members
                 );
                 console.log(
                     "  carouselImages count:",
@@ -1206,13 +1225,13 @@ const Admin = () => {
 
     // Fonction pour gérer les changements de titre des images existantes
     const handleExistingImageTitleChange = (index, newTitle) => {
-        const updatedImages = existingCarouselImages.map((image, i) => 
+        const updatedImages = existingCarouselImages.map((image, i) =>
             i === index ? { ...image, title: newTitle } : image
         );
         setExistingCarouselImages(updatedImages);
-        setHomeContent(prev => ({
+        setHomeContent((prev) => ({
             ...prev,
-            carouselImages: updatedImages
+            carouselImages: updatedImages,
         }));
     };
 
@@ -1402,6 +1421,154 @@ const Admin = () => {
                 );
             }
 
+            console.log("Localisation actuelle:", homeContent.location);
+            console.log(
+                "Localisation originale:",
+                originalHomeContent.location
+            );
+            console.log(
+                "Localisation différente?",
+                homeContent.location !== originalHomeContent.location
+            );
+
+            if (homeContent.location !== originalHomeContent.location) {
+                formData.append("location", homeContent.location);
+                changedFields.push("localisation");
+                console.log("✏️ Localisation modifiée:", homeContent.location);
+            }
+
+            console.log("Membres actuels:", homeContent.members);
+            console.log("Membres originaux:", originalHomeContent.members);
+            console.log(
+                "Membres différents?",
+                homeContent.members !== originalHomeContent.members
+            );
+
+            if (homeContent.members !== originalHomeContent.members) {
+                formData.append("members", homeContent.members);
+                changedFields.push("membres");
+                console.log("✏️ Membres modifiés:", homeContent.members);
+            }
+
+            console.log("Titre du club actuel:", homeContent.clubTitle);
+            console.log(
+                "Titre du club original:",
+                originalHomeContent.clubTitle
+            );
+            console.log(
+                "Titre du club différent?",
+                homeContent.clubTitle !== originalHomeContent.clubTitle
+            );
+
+            if (homeContent.clubTitle !== originalHomeContent.clubTitle) {
+                formData.append("clubTitle", homeContent.clubTitle);
+                changedFields.push("titre du club");
+                console.log("✏️ Titre du club modifié:", homeContent.clubTitle);
+            }
+
+            console.log(
+                "Description du club actuelle:",
+                homeContent.clubDescription
+            );
+            console.log(
+                "Description du club originale:",
+                originalHomeContent.clubDescription
+            );
+            console.log(
+                "Description du club différente?",
+                homeContent.clubDescription !==
+                    originalHomeContent.clubDescription
+            );
+
+            if (
+                homeContent.clubDescription !==
+                originalHomeContent.clubDescription
+            ) {
+                formData.append("clubDescription", homeContent.clubDescription);
+                changedFields.push("description du club");
+                console.log(
+                    "✏️ Description du club modifiée:",
+                    homeContent.clubDescription
+                );
+            }
+
+            console.log("Contenu équipes actuel:", homeContent.teamsContent);
+            console.log(
+                "Contenu équipes original:",
+                originalHomeContent.teamsContent
+            );
+            console.log(
+                "Contenu équipes différent?",
+                homeContent.teamsContent !== originalHomeContent.teamsContent
+            );
+
+            if (homeContent.teamsContent !== originalHomeContent.teamsContent) {
+                formData.append("teamsContent", homeContent.teamsContent);
+                changedFields.push("contenu équipes");
+                console.log(
+                    "✏️ Contenu équipes modifié:",
+                    homeContent.teamsContent
+                );
+            }
+
+            console.log(
+                "Contenu animations actuel:",
+                homeContent.animationsContent
+            );
+            console.log(
+                "Contenu animations original:",
+                originalHomeContent.animationsContent
+            );
+            console.log(
+                "Contenu animations différent?",
+                homeContent.animationsContent !==
+                    originalHomeContent.animationsContent
+            );
+
+            if (
+                homeContent.animationsContent !==
+                originalHomeContent.animationsContent
+            ) {
+                formData.append(
+                    "animationsContent",
+                    homeContent.animationsContent
+                );
+                changedFields.push("contenu animations");
+                console.log(
+                    "✏️ Contenu animations modifié:",
+                    homeContent.animationsContent
+                );
+            }
+
+            console.log(
+                "Contenu tournois actuel:",
+                homeContent.tournamentsContent
+            );
+            console.log(
+                "Contenu tournois original:",
+                originalHomeContent.tournamentsContent
+            );
+            console.log(
+                "Contenu tournois différent?",
+                homeContent.tournamentsContent !==
+                    originalHomeContent.tournamentsContent
+            );
+
+            if (
+                homeContent.tournamentsContent !==
+                originalHomeContent.tournamentsContent
+            ) {
+                formData.append(
+                    "tournamentsContent",
+                    homeContent.tournamentsContent
+                );
+                changedFields.push("contenu tournois");
+                console.log(
+                    "✏️ Contenu tournois modifié:",
+                    homeContent.tournamentsContent
+                );
+            }
+
             // Gérer les images du carrousel
             let hasImageChanges = false;
 
@@ -1474,7 +1641,7 @@ const Admin = () => {
             // Envoyer existingImages si des images ont été supprimées ou si les titres ont été modifiés
             if (
                 existingCarouselImages.length !==
-                originalHomeContent.carouselImages.length ||
+                    originalHomeContent.carouselImages.length ||
                 titlesChanged
             ) {
                 formData.append(
@@ -1599,6 +1766,13 @@ const Admin = () => {
             openingHours: originalHomeContent.openingHours,
             contact: originalHomeContent.contact,
             practicalInfo: originalHomeContent.practicalInfo,
+            location: originalHomeContent.location,
+            members: originalHomeContent.members,
+            clubTitle: originalHomeContent.clubTitle,
+            clubDescription: originalHomeContent.clubDescription,
+            teamsContent: originalHomeContent.teamsContent,
+            animationsContent: originalHomeContent.animationsContent,
+            tournamentsContent: originalHomeContent.tournamentsContent,
         });
         setSelectedCarouselFiles([]);
         setCarouselPreviews([]);
@@ -3039,14 +3213,34 @@ const Admin = () => {
                                                                         <div className="mt-2 w-full">
                                                                             <input
                                                                                 type="text"
-                                                                                value={image.title || `Image ${index + 1}`}
-                                                                                onChange={(e) => {
-                                                                                    const updatedImages = [...existingCarouselImages];
-                                                                                    updatedImages[index] = {
-                                                                                        ...updatedImages[index],
-                                                                                        title: e.target.value
-                                                                                    };
-                                                                                    setExistingCarouselImages(updatedImages);
+                                                                                value={
+                                                                                    image.title ||
+                                                                                    `Image ${
+                                                                                        index +
+                                                                                        1
+                                                                                    }`
+                                                                                }
+                                                                                onChange={(
+                                                                                    e
+                                                                                ) => {
+                                                                                    const updatedImages =
+                                                                                        [
+                                                                                            ...existingCarouselImages,
+                                                                                        ];
+                                                                                    updatedImages[
+                                                                                        index
+                                                                                    ] =
+                                                                                        {
+                                                                                            ...updatedImages[
+                                                                                                index
+                                                                                            ],
+                                                                                            title: e
+                                                                                                .target
+                                                                                                .value,
+                                                                                        };
+                                                                                    setExistingCarouselImages(
+                                                                                        updatedImages
+                                                                                    );
                                                                                 }}
                                                                                 className="px-2 py-1 w-full text-xs rounded border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                                                                 placeholder="Titre de l'image"
@@ -3195,7 +3389,31 @@ const Admin = () => {
                                         <h4 className="mb-4 text-lg font-semibold text-gray-900">
                                             Sections d'Information
                                         </h4>
-                                        <div className="grid grid-cols-1 gap-4">
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                            <div className="p-4 rounded-lg border border-gray-200">
+                                                <h5 className="mb-2 font-medium text-gray-900">
+                                                    Notre Localisation
+                                                </h5>
+                                                <textarea
+                                                    rows={3}
+                                                    placeholder="Adresse du club\nVille, Code postal\nInformations d'accès"
+                                                    value={
+                                                        homeContent.location ||
+                                                        ""
+                                                    }
+                                                    onChange={(e) =>
+                                                        setHomeContent(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                location:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        )
+                                                    }
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                />
+                                            </div>
                                             <div className="p-4 rounded-lg border border-gray-200">
                                                 <h5 className="mb-2 font-medium text-gray-900">
                                                     Horaires d'Ouverture
@@ -3219,6 +3437,175 @@ const Admin = () => {
                                                     }
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
                                                 />
+                                            </div>
+                                            <div className="p-4 rounded-lg border border-gray-200">
+                                                <h5 className="mb-2 font-medium text-gray-900">
+                                                    Nos Membres
+                                                </h5>
+                                                <textarea
+                                                    rows={3}
+                                                    placeholder="Informations sur les membres\nNombre de licenciés\nActivités des membres"
+                                                    value={
+                                                        homeContent.members ||
+                                                        ""
+                                                    }
+                                                    onChange={(e) =>
+                                                        setHomeContent(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                members:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        )
+                                                    }
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Section séparée pour la description du club */}
+                                        <div className="mt-6">
+                                            <div className="p-4 rounded-lg border border-gray-200">
+                                                <h5 className="mb-4 font-medium text-gray-900">
+                                                    Découvrez notre club
+                                                </h5>
+
+                                                {/* Champ pour le titre du club */}
+                                                <div className="mb-4">
+                                                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                                                        Titre du Club
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Découvrez notre club"
+                                                        value={
+                                                            homeContent.clubTitle ||
+                                                            ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            setHomeContent(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    clubTitle:
+                                                                        e.target
+                                                                            .value,
+                                                                })
+                                                            )
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                    />
+                                                </div>
+
+                                                {/* Champ pour la description du club */}
+                                                <div>
+                                                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                                                        Description du Club
+                                                    </label>
+                                                    <textarea
+                                                        rows={4}
+                                                        placeholder="Description du club\nActivités proposées\nAmbiance et valeurs"
+                                                        value={
+                                                            homeContent.clubDescription ||
+                                                            ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            setHomeContent(
+                                                                (prev) => ({
+                                                                    ...prev,
+                                                                    clubDescription:
+                                                                        e.target
+                                                                            .value,
+                                                                })
+                                                            )
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                    />
+                                                </div>
+
+                                                {/* Champs pour les trois sections sur la même ligne */}
+                                                <div className="grid grid-cols-1 gap-4 mt-6 md:grid-cols-3">
+                                                    {/* Champ Nos Équipes */}
+                                                    <div>
+                                                        <label className="block mb-2 text-sm font-medium text-gray-700">
+                                                            Nos Équipes
+                                                        </label>
+                                                        <textarea
+                                                            rows={4}
+                                                            placeholder="Contenu de la section Nos Équipes..."
+                                                            value={
+                                                                homeContent.teamsContent ||
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                setHomeContent(
+                                                                    (prev) => ({
+                                                                        ...prev,
+                                                                        teamsContent:
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                    })
+                                                                )
+                                                            }
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                        />
+                                                    </div>
+
+                                                    {/* Champ Nos Animations */}
+                                                    <div>
+                                                        <label className="block mb-2 text-sm font-medium text-gray-700">
+                                                            Nos Animations
+                                                        </label>
+                                                        <textarea
+                                                            rows={4}
+                                                            placeholder="Contenu de la section Nos Animations..."
+                                                            value={
+                                                                homeContent.animationsContent ||
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                setHomeContent(
+                                                                    (prev) => ({
+                                                                        ...prev,
+                                                                        animationsContent:
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                    })
+                                                                )
+                                                            }
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                        />
+                                                    </div>
+
+                                                    {/* Champ Nos Tournois */}
+                                                    <div>
+                                                        <label className="block mb-2 text-sm font-medium text-gray-700">
+                                                            Nos Tournois
+                                                        </label>
+                                                        <textarea
+                                                            rows={4}
+                                                            placeholder="Contenu de la section Nos Tournois..."
+                                                            value={
+                                                                homeContent.tournamentsContent ||
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                setHomeContent(
+                                                                    (prev) => ({
+                                                                        ...prev,
+                                                                        tournamentsContent:
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                    })
+                                                                )
+                                                            }
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

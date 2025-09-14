@@ -31,6 +31,10 @@ const createTablesIfNotExists = async () => {
         schedules TEXT,
         contact TEXT,
         practical_info TEXT,
+        location TEXT,
+        members TEXT,
+        club_title VARCHAR(255) DEFAULT 'Découvrez notre club',
+        club_description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
@@ -52,12 +56,16 @@ const createTablesIfNotExists = async () => {
     const existingContent = await getQuery('SELECT id FROM home_content WHERE id = 1');
     if (!existingContent) {
       await runQuery(`
-        INSERT INTO home_content (id, title, description, schedules, contact, practical_info)
+        INSERT INTO home_content (id, title, description, schedules, contact, practical_info, location, members, club_title, club_description)
         VALUES (1, 'Bienvenue au Club de Pétanque de Noveant', 
                 'Découvrez notre club convivial et nos activités.',
                 'Ouvert tous les jours de 14h à 18h',
                 'Téléphone: 03 87 XX XX XX\nEmail: contact@petanque-noveant.fr',
-                'Parking gratuit disponible\nAccès handicapés')
+                'Parking gratuit disponible\nAccès handicapés',
+                'Notre club est situé au cœur de Noveant-sur-Moselle, dans un cadre verdoyant et convivial.',
+                'Notre club compte une cinquantaine de membres passionnés de pétanque, de tous âges et de tous niveaux.',
+                'Découvrez notre club',
+                'Un club dynamique qui propose de nombreuses activités tout au long de l\'année')
       `);
     }
     
@@ -524,6 +532,13 @@ export const getHomeContent = async () => {
       schedules: 'Ouvert tous les jours de 14h à 18h',
       contact: 'Téléphone: 03 87 XX XX XX\nEmail: contact@petanque-noveant.fr',
       practical_info: 'Parking gratuit disponible\nAccès handicapés',
+      location: 'Notre club est situé au cœur de Noveant-sur-Moselle, dans un cadre verdoyant et convivial.',
+      members: 'Notre club compte une cinquantaine de membres passionnés de pétanque, de tous âges et de tous niveaux.',
+      club_title: 'Découvrez notre club',
+      club_description: 'Un club dynamique qui propose de nombreuses activités tout au long de l\'année',
+      teams_content: 'Nos équipes évoluent dans différents championnats départementaux et régionaux. Que vous soyez débutant ou confirmé, vous trouverez votre place dans nos équipes compétitives.',
+      animations_content: 'Tout au long de l\'année, nous organisons des animations conviviales : concours amicaux, soirées à thème, barbecues et événements festifs pour rassembler tous les membres.',
+      tournaments_content: 'Participez à nos tournois réguliers ! Nous organisons des compétitions internes mensuelles et participons aux grands tournois de la région pour tous les niveaux.',
       carousel_images: []
     };
   }
@@ -569,6 +584,34 @@ export const updateHomeContent = async (contentData) => {
       fields.push('practical_info = ?');
       values.push(contentData.practical_info === '' ? null : contentData.practical_info);
     }
+    if (contentData.location !== undefined) {
+      fields.push('location = ?');
+      values.push(contentData.location === '' ? null : contentData.location);
+    }
+    if (contentData.members !== undefined) {
+      fields.push('members = ?');
+      values.push(contentData.members === '' ? null : contentData.members);
+    }
+    if (contentData.club_title !== undefined) {
+      fields.push('club_title = ?');
+      values.push(contentData.club_title === '' ? null : contentData.club_title);
+    }
+    if (contentData.club_description !== undefined) {
+      fields.push('club_description = ?');
+      values.push(contentData.club_description === '' ? null : contentData.club_description);
+    }
+    if (contentData.teams_content !== undefined) {
+      fields.push('teams_content = ?');
+      values.push(contentData.teams_content === '' ? null : contentData.teams_content);
+    }
+    if (contentData.animations_content !== undefined) {
+      fields.push('animations_content = ?');
+      values.push(contentData.animations_content === '' ? null : contentData.animations_content);
+    }
+    if (contentData.tournaments_content !== undefined) {
+      fields.push('tournaments_content = ?');
+      values.push(contentData.tournaments_content === '' ? null : contentData.tournaments_content);
+    }
     
     if (fields.length === 0) {
       console.log('Aucun champ à mettre à jour');
@@ -587,10 +630,17 @@ export const updateHomeContent = async (contentData) => {
     const schedules = contentData.schedules || 'Ouvert tous les jours de 14h à 18h';
     const contact = contentData.contact || 'Téléphone: 03 87 XX XX XX\nEmail: contact@petanque-noveant.fr';
     const practical_info = contentData.practical_info || 'Parking gratuit disponible\nAccès handicapés';
+    const location = contentData.location || 'Notre club est situé au cœur de Noveant-sur-Moselle, dans un cadre verdoyant et convivial.';
+    const members = contentData.members || 'Notre club compte une cinquantaine de membres passionnés de pétanque, de tous âges et de tous niveaux.';
+    const club_title = contentData.club_title || 'Découvrez notre club';
+    const club_description = contentData.club_description || 'Un club dynamique qui propose de nombreuses activités tout au long de l\'année';
+    const teams_content = contentData.teams_content || 'Nos équipes évoluent dans différents championnats départementaux et régionaux. Que vous soyez débutant ou confirmé, vous trouverez votre place dans nos équipes compétitives.';
+    const animations_content = contentData.animations_content || 'Tout au long de l\'année, nous organisons des animations conviviales : concours amicaux, soirées à thème, barbecues et événements festifs pour rassembler tous les membres.';
+    const tournaments_content = contentData.tournaments_content || 'Participez à nos tournois réguliers ! Nous organisons des compétitions internes mensuelles et participons aux grands tournois de la région pour tous les niveaux.';
     
     await runQuery(
-      'INSERT INTO home_content (id, title, description, schedules, contact, practical_info, updated_at) VALUES (1, ?, ?, ?, ?, ?, NOW())',
-      [title || null, description || null, schedules || null, contact || null, practical_info || null]
+      'INSERT INTO home_content (id, title, description, schedules, contact, practical_info, location, members, club_title, club_description, teams_content, animations_content, tournaments_content, updated_at) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+      [title || null, description || null, schedules || null, contact || null, practical_info || null, location || null, members || null, club_title || null, club_description || null, teams_content || null, animations_content || null, tournaments_content || null]
     );
     return await getQuery('SELECT * FROM home_content WHERE id = 1');
   }
