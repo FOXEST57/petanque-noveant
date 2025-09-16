@@ -60,7 +60,7 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // POST /api/members - Create new member
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', upload.single('photo'), async (req: Request, res: Response) => {
   try {
     const memberData = req.body;
     
@@ -70,6 +70,17 @@ router.post('/', async (req: Request, res: Response) => {
         success: false,
         error: 'Nom and prenom are required'
       });
+    }
+
+    // Handle photo upload if present
+    let photoPath = null;
+    if (req.file) {
+      const filename = generateUniqueFilename(req.file.originalname);
+      photoPath = path.join(uploadsDir, filename);
+      
+      // Save the file
+      fs.writeFileSync(photoPath, req.file.buffer);
+      memberData.photo_url = filename; // Utiliser photo_url au lieu de photo
     }
 
     const result = await createMember(memberData);

@@ -12,6 +12,7 @@ import {
     Home,
     Mail,
     MapPin,
+    Minus,
     Phone,
     Plus,
     Save,
@@ -26,18 +27,21 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import BarManagement from "../components/BarManagement";
-import LotoManagement from "../components/LotoManagement";
 import { useDrinks } from "../contexts/DrinksContext";
 import { eventsAPI, teamsAPI } from "../lib/api";
 import { membersAPI } from "../lib/membersAPI";
-import "../styles/animations.css";
+import LotoManagement from "../components/LotoManagement";
+import { formatDateToFrench, formatDateToISO, validateFrenchDate } from "../utils/dateUtils";
 import { generateAvatar } from "../utils/avatarUtils";
-import {
-    formatDateToFrench,
-    formatDateToISO,
-    validateFrenchDate,
-} from "../utils/dateUtils";
+import "../styles/animations.css";
+
+
+
+
+
+
+
+
 
 const Admin = () => {
     const { drinks, addDrink, updateDrink, deleteDrink } = useDrinks();
@@ -55,18 +59,10 @@ const Admin = () => {
     const [showBarModal, setShowBarModal] = useState(false);
     const [modalMode, setModalMode] = useState("add"); // 'add' ou 'edit'
     const [selectedDrink, setSelectedDrink] = useState(null);
-    const [formData, setFormData] = useState({
-        name: "",
-        price: "",
-        description: "",
-        image: "",
-        stock: 50,
-    });
-    const [selectedImageFile, setSelectedImageFile] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [drinkToDelete, setDrinkToDelete] = useState(null);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [drinkToDelete, setDrinkToDelete] = useState(null);
 
     // États pour la gestion des membres
     const [members, setMembers] = useState([]);
@@ -122,6 +118,15 @@ const Admin = () => {
         dateEntree: { day: "", month: "", year: "" },
     });
     const dateRefs = useRef({});
+    const [formData, setFormData] = useState({
+        name: "",
+        price: "",
+        description: "",
+        image: "",
+        stock: 50,
+    });
+    const [selectedImageFile, setSelectedImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
 
     // États pour la gestion des photos de membres
     const [selectedMemberImageFile, setSelectedMemberImageFile] =
@@ -155,31 +160,7 @@ const Admin = () => {
                 .includes(concoursSearchTerm.toLowerCase())
     );
 
-    // États pour la gestion des lotos
-    const [showLotoModal, setShowLotoModal] = useState(false);
-    const [lotoModalMode, setLotoModalMode] = useState("add");
-    const [selectedLoto, setSelectedLoto] = useState(null);
-    const [lotos, setLotos] = useState([]);
-    const [lotoToDelete, setLotoToDelete] = useState(null);
-    const [showLotoDeleteConfirm, setShowLotoDeleteConfirm] = useState(false);
-    const [lotoSearchTerm, setLotoSearchTerm] = useState("");
-    const [lotoFormData, setLotoFormData] = useState({
-        nom: "",
-        date: "",
-        description: "",
-        prixCarton: "",
-        lotsAGagner: "",
-        statut: "planifie",
-    });
 
-    // Variables calculées pour le filtrage des lotos
-    const filteredLotos = lotos.filter(
-        (loto) =>
-            loto.nom.toLowerCase().includes(lotoSearchTerm.toLowerCase()) ||
-            loto.description
-                .toLowerCase()
-                .includes(lotoSearchTerm.toLowerCase())
-    );
 
     // États pour la gestion des événements
     const [showEventModal, setShowEventModal] = useState(false);
@@ -299,20 +280,8 @@ const Admin = () => {
         loadMemberTypes();
         loadEvents();
         loadTeams();
-        loadLotos(); // Charger les lotos
         loadHomeContent(); // Charger le contenu de la page d'accueil
     }, []);
-
-    // Mettre à jour les stats quand les boissons changent
-    useEffect(() => {
-        if (drinks.length >= 0) {
-            // Vérifier que les boissons sont chargées (même si vide)
-            setStats((prevStats) => ({
-                ...prevStats,
-                drinks: drinks.length,
-            }));
-        }
-    }, [drinks]);
 
     // Fonction pour charger les membres depuis la base de données
     const loadMembers = async () => {
@@ -340,7 +309,7 @@ const Admin = () => {
                 teams: teamsCount,
                 events: eventsCount,
                 albums: 0, // TODO: Implémenter l'API des albums
-                // drinks: drinks.length, // Ne pas écraser le compteur de boissons ici
+                drinks: drinks.length,
                 results: 0, // TODO: Implémenter l'API des résultats
             }));
         } catch (error) {
@@ -365,38 +334,6 @@ const Admin = () => {
                 error
             );
             toast.error("Erreur lors du chargement des types de membres");
-        }
-    };
-
-    // Fonction pour charger les lotos (données de test pour l'instant)
-    const loadLotos = async () => {
-        try {
-            // Pour l'instant, utiliser des données de test
-            const lotosData = [
-                {
-                    id: 1,
-                    nom: "Loto de Printemps",
-                    date: "2024-04-15",
-                    description:
-                        "Grand loto de printemps avec de nombreux lots à gagner",
-                    prixCarton: 5,
-                    lotsAGagner: "Électroménager, bons d'achat, paniers garnis",
-                    statut: "planifie",
-                },
-                {
-                    id: 2,
-                    nom: "Loto d'Été",
-                    date: "2024-07-20",
-                    description: "Loto estival en plein air",
-                    prixCarton: 3,
-                    lotsAGagner: "Matériel de plage, barbecue, parasol",
-                    statut: "actif",
-                },
-            ];
-            setLotos(lotosData);
-        } catch (error) {
-            console.error("Erreur lors du chargement des lotos:", error);
-            toast.error("Erreur lors du chargement des lotos");
         }
     };
 
@@ -475,6 +412,71 @@ const Admin = () => {
         }
     };
 
+    // Fonctions de gestion du bar
+    const handleAddDrink = () => {
+        setModalMode("add");
+        setFormData({
+            name: "",
+            price: "",
+            description: "",
+            image: "",
+            stock: 50,
+        });
+        setSelectedImageFile(null);
+        setImagePreview(null);
+        setShowBarModal(true);
+    };
+
+    const handleEditDrink = (drink) => {
+        setModalMode("edit");
+        setSelectedDrink(drink);
+        setFormData({
+            name: drink.name,
+            price: drink.price.toString(),
+            description: drink.description,
+            image: drink.image_url,
+            stock: drink.stock,
+        });
+        setSelectedImageFile(null);
+        setImagePreview(drink.image_url);
+        setShowBarModal(true);
+    };
+
+    const handleDeleteDrink = (drink) => {
+        setDrinkToDelete(drink);
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await deleteDrink(drinkToDelete.id);
+            setShowDeleteConfirm(false);
+            setDrinkToDelete(null);
+            toast.success("Boisson supprimée avec succès");
+        } catch (error) {
+            toast.error("Erreur lors de la suppression de la boisson");
+        }
+    };
+
+    // Fonction pour gérer la sélection d'image
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.type.startsWith("image/")) {
+                setSelectedImageFile(file);
+
+                // Créer une prévisualisation
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    setImagePreview(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                toast.error("Veuillez sélectionner un fichier image valide");
+            }
+        }
+    };
+
     // Fonction pour gérer la sélection d'image de membre
     const handleMemberImageChange = (e) => {
         const file = e.target.files[0];
@@ -523,6 +525,116 @@ const Admin = () => {
         setSelectedMemberImageFile(null);
         setMemberImagePreview(null);
         setMemberFormData({ ...memberFormData, photo: "" });
+    };
+
+    const handleSaveDrink = async () => {
+        if (!formData.name || !formData.price) {
+            toast.error("Veuillez remplir tous les champs obligatoires");
+            return;
+        }
+
+        try {
+            if (modalMode === "add") {
+                const formDataToSend = new FormData();
+                formDataToSend.append("name", formData.name);
+                formDataToSend.append("price", formData.price);
+                formDataToSend.append(
+                    "description",
+                    formData.description || ""
+                );
+                formDataToSend.append("stock", formData.stock || "50");
+
+                // Ajouter la photo si elle existe
+                if (selectedImageFile) {
+                    formDataToSend.append("photo", selectedImageFile);
+                }
+
+                const response = await fetch("/api/drinks", {
+                    method: "POST",
+                    body: formDataToSend,
+                });
+
+                if (!response.ok) {
+                    throw new Error("Erreur lors de la création de la boisson");
+                }
+
+                const newDrink = await response.json();
+                addDrink(newDrink);
+                toast.success("Boisson ajoutée avec succès");
+            } else {
+                // Mode édition : différencier selon la présence d'un fichier
+                if (selectedImageFile) {
+                    // S'il y a une nouvelle photo, utiliser la route upload
+                    const formDataToSend = new FormData();
+                    formDataToSend.append("name", formData.name);
+                    formDataToSend.append("price", formData.price);
+                    formDataToSend.append(
+                        "description",
+                        formData.description || ""
+                    );
+                    formDataToSend.append("stock", formData.stock || "50");
+                    formDataToSend.append("photo", selectedImageFile);
+
+                    const response = await fetch(
+                        `/api/drinks/${selectedDrink.id}/upload`,
+                        {
+                            method: "PUT",
+                            body: formDataToSend,
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "Erreur lors de la modification de la boisson"
+                        );
+                    }
+                } else {
+                    // Pas de nouvelle photo, utiliser JSON
+                    const jsonData = {
+                        name: formData.name,
+                        price: parseFloat(formData.price),
+                        description: formData.description || "",
+                        stock: parseInt(formData.stock) || 50,
+                    };
+
+                    const response = await fetch(
+                        `/api/drinks/${selectedDrink.id}`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(jsonData),
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "Erreur lors de la modification de la boisson"
+                        );
+                    }
+                }
+
+                // Utiliser le contexte pour mettre à jour
+                await updateDrink(selectedDrink.id, {
+                    name: formData.name,
+                    price: parseFloat(formData.price),
+                    description: formData.description || "",
+                    stock: parseInt(formData.stock) || 50,
+                });
+                toast.success("Boisson modifiée avec succès");
+            }
+
+            setShowBarModal(false);
+            setSelectedImageFile(null);
+            setImagePreview(null);
+
+            // Rester dans la section bar après la sauvegarde
+            setActiveModal("bar");
+        } catch (error) {
+            console.error("Erreur lors de la sauvegarde de la boisson:", error);
+            toast.error("Erreur lors de la sauvegarde de la boisson");
+        }
     };
 
     // Fonctions de gestion des membres
@@ -2169,6 +2281,8 @@ const Admin = () => {
         setShowConcoursModal(false);
     };
 
+
+
     // Fonctions de gestion des événements
     const handleAddEvent = () => {
         // Ouvrir directement le modal principal des événements ET le modal d'ajout
@@ -2448,6 +2562,25 @@ const Admin = () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isDropdownOpen]);
+
+    const handleAdjustStock = async (drinkId, change) => {
+        const drink = drinks.find((d) => d.id === drinkId);
+        if (drink) {
+            const newStock = Math.max(0, drink.stock + change);
+            try {
+                await updateDrink(drinkId, { ...drink, stock: newStock });
+            } catch (error) {
+                toast.error("Erreur lors de la mise à jour du stock");
+            }
+        }
+    };
+
+    const filteredDrinks = drinks.filter((drink) => {
+        const matchesSearch = drink.name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase());
+        return matchesSearch;
+    });
 
     const ManagementCard = ({
         title,
@@ -3297,9 +3430,190 @@ const Admin = () => {
                             )}
 
                             {activeModal === "bar" && (
-                                <BarManagement
-                                    onClose={() => setActiveModal(null)}
-                                />
+                                <div className="space-y-6">
+                                    {/* Barre de recherche et filtres */}
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col gap-4 sm:flex-row">
+                                            <div className="flex-1">
+                                                <div className="relative">
+                                                    <Search className="absolute left-3 top-1/2 w-4 h-4 text-gray-400 transform -translate-y-1/2" />
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Rechercher une boisson..."
+                                                        value={searchTerm}
+                                                        onChange={(e) =>
+                                                            setSearchTerm(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                onClick={handleAddDrink}
+                                                className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center space-x-2"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                <span>Ajouter</span>
+                                            </button>
+                                        </div>
+                                        <div className="text-sm text-gray-600">
+                                            {filteredDrinks.length} boisson
+                                            {filteredDrinks.length > 1
+                                                ? "s"
+                                                : ""}{" "}
+                                            trouvée
+                                            {filteredDrinks.length > 1
+                                                ? "s"
+                                                : ""}
+                                        </div>
+                                    </div>
+
+                                    {/* Tableau des boissons */}
+                                    <div className="overflow-hidden bg-white rounded-lg shadow">
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                                            Boisson
+                                                        </th>
+                                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                                            Prix
+                                                        </th>
+                                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                                            Stock
+                                                        </th>
+                                                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                                            Actions
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {filteredDrinks.map(
+                                                        (drink) => (
+                                                            <tr
+                                                                key={drink.id}
+                                                                className="hover:bg-gray-50"
+                                                            >
+                                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                                    <div className="flex items-center">
+                                                                        <div className="flex-shrink-0 w-10 h-10">
+                                                                            <img
+                                                                                className="object-cover w-10 h-10 rounded-full"
+                                                                                src={
+                                                                                    drink.image_url
+                                                                                }
+                                                                                alt={
+                                                                                    drink.name
+                                                                                }
+                                                                                onError={(
+                                                                                    e
+                                                                                ) => {
+                                                                                    e.target.src =
+                                                                                        "https://via.placeholder.com/40x40?text=?";
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="ml-4">
+                                                                            <div className="text-sm font-medium text-gray-900">
+                                                                                {
+                                                                                    drink.name
+                                                                                }
+                                                                            </div>
+                                                                            <div className="text-sm text-gray-500">
+                                                                                {
+                                                                                    drink.description
+                                                                                }
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
+                                                                    {
+                                                                        drink.price
+                                                                    }
+                                                                    €
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                                    <div className="flex items-center space-x-2">
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleAdjustStock(
+                                                                                    drink.id,
+                                                                                    -1
+                                                                                )
+                                                                            }
+                                                                            className="p-1 text-gray-400 transition-colors hover:text-red-600"
+                                                                            disabled={
+                                                                                drink.stock <=
+                                                                                0
+                                                                            }
+                                                                        >
+                                                                            <Minus className="w-4 h-4" />
+                                                                        </button>
+                                                                        <span
+                                                                            className={`text-sm font-medium px-2 py-1 rounded ${
+                                                                                drink.stock <=
+                                                                                5
+                                                                                    ? "bg-red-100 text-red-800"
+                                                                                    : drink.stock <=
+                                                                                      10
+                                                                                    ? "bg-yellow-100 text-yellow-800"
+                                                                                    : "bg-green-100 text-green-800"
+                                                                            }`}
+                                                                        >
+                                                                            {
+                                                                                drink.stock
+                                                                            }
+                                                                        </span>
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleAdjustStock(
+                                                                                    drink.id,
+                                                                                    1
+                                                                                )
+                                                                            }
+                                                                            className="p-1 text-gray-400 transition-colors hover:text-green-600"
+                                                                        >
+                                                                            <Plus className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                                                    <div className="flex space-x-2">
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleEditDrink(
+                                                                                    drink
+                                                                                )
+                                                                            }
+                                                                            className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                        >
+                                                                            <Edit className="w-4 h-4" />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                handleDeleteDrink(
+                                                                                    drink
+                                                                                )
+                                                                            }
+                                                                            className="text-red-600 transition-colors hover:text-red-800"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
 
                             {/* Modal Ajouter/Modifier événement */}
@@ -3863,9 +4177,272 @@ const Admin = () => {
 
                             {/* Modal Gestion des Lotos */}
                             {activeModal === "loto" && (
-                                <LotoManagement
-                                    onClose={() => setActiveModal(null)}
-                                />
+                                <LotoManagement onClose={() => setActiveModal(null)} />
+                            )}
+                                                                                    className="p-2 text-red-600 rounded-lg transition-colors hover:bg-red-50"
+                                                                                    title="Supprimer"
+                                                                                >
+                                                                                    <Trash2 className="w-4 h-4" />
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                )
+                                                            )
+                                                        ) : (
+                                                            <tr>
+                                                                <td
+                                                                    colSpan="6"
+                                                                    className="px-4 py-8 text-center text-gray-500 border border-gray-200"
+                                                                >
+                                                                    Aucun loto
+                                                                    trouvé
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Modal Ajouter/Modifier Loto */}
+                            {showLotoModal && (
+                                <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
+                                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                        <div className="p-6">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h3 className="text-lg font-semibold text-gray-900">
+                                                    {lotoModalMode === "add"
+                                                        ? "Ajouter un loto"
+                                                        : "Modifier le loto"}
+                                                </h3>
+                                                <button
+                                                    onClick={() =>
+                                                        setShowLotoModal(false)
+                                                    }
+                                                    className="p-2 rounded-lg transition-colors hover:bg-gray-100"
+                                                >
+                                                    <X className="w-5 h-5 text-gray-500" />
+                                                </button>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                                <div className="md:col-span-2">
+                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                        Nom du loto *
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={lotoFormData.nom}
+                                                        onChange={(e) =>
+                                                            setLotoFormData({
+                                                                ...lotoFormData,
+                                                                nom: e.target
+                                                                    .value,
+                                                            })
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        placeholder="Nom du loto"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                        Date *
+                                                    </label>
+                                                    <input
+                                                        type="date"
+                                                        value={
+                                                            lotoFormData.date
+                                                        }
+                                                        onChange={(e) =>
+                                                            setLotoFormData({
+                                                                ...lotoFormData,
+                                                                date: e.target
+                                                                    .value,
+                                                            })
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                        Statut
+                                                    </label>
+                                                    <select
+                                                        value={
+                                                            lotoFormData.statut
+                                                        }
+                                                        onChange={(e) =>
+                                                            setLotoFormData({
+                                                                ...lotoFormData,
+                                                                statut: e.target
+                                                                    .value,
+                                                            })
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                    >
+                                                        <option value="en_attente">
+                                                            En attente
+                                                        </option>
+                                                        <option value="actif">
+                                                            Actif
+                                                        </option>
+                                                        <option value="termine">
+                                                            Terminé
+                                                        </option>
+                                                    </select>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                        Prix du carton (€) *
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={
+                                                            lotoFormData.prixCarton
+                                                        }
+                                                        onChange={(e) =>
+                                                            setLotoFormData({
+                                                                ...lotoFormData,
+                                                                prixCarton:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                        Lots à gagner *
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={
+                                                            lotoFormData.lotsAGagner
+                                                        }
+                                                        onChange={(e) =>
+                                                            setLotoFormData({
+                                                                ...lotoFormData,
+                                                                lotsAGagner:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        placeholder="Ex: Jambon, Bouteilles de vin..."
+                                                    />
+                                                </div>
+
+                                                <div className="md:col-span-2">
+                                                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                                                        Description
+                                                    </label>
+                                                    <textarea
+                                                        value={
+                                                            lotoFormData.description
+                                                        }
+                                                        onChange={(e) =>
+                                                            setLotoFormData({
+                                                                ...lotoFormData,
+                                                                description:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        }
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        rows="3"
+                                                        placeholder="Description du loto..."
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-end mt-6 space-x-3">
+                                                <button
+                                                    onClick={() =>
+                                                        setShowLotoModal(false)
+                                                    }
+                                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg transition-colors hover:bg-gray-200"
+                                                >
+                                                    Annuler
+                                                </button>
+                                                <button
+                                                    onClick={handleSaveLoto}
+                                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                                >
+                                                    <Save className="w-4 h-4" />
+                                                    <span>
+                                                        {lotoModalMode === "add"
+                                                            ? "Ajouter"
+                                                            : "Modifier"}
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Modal de confirmation de suppression loto */}
+                            {showLotoDeleteConfirm && (
+                                <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
+                                    <div className="w-full max-w-md bg-white rounded-lg">
+                                        <div className="p-6">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h3 className="text-lg font-semibold text-gray-900">
+                                                    Confirmer la suppression
+                                                </h3>
+                                                <button
+                                                    onClick={() =>
+                                                        setShowLotoDeleteConfirm(
+                                                            false
+                                                        )
+                                                    }
+                                                    className="p-2 rounded-lg transition-colors hover:bg-gray-100"
+                                                >
+                                                    <X className="w-5 h-5 text-gray-500" />
+                                                </button>
+                                            </div>
+
+                                            <p className="mb-6 text-gray-600">
+                                                Êtes-vous sûr de vouloir
+                                                supprimer le loto "
+                                                {lotoToDelete?.nom}" ? Cette
+                                                action est irréversible.
+                                            </p>
+
+                                            <div className="flex justify-end space-x-3">
+                                                <button
+                                                    onClick={() =>
+                                                        setShowLotoDeleteConfirm(
+                                                            false
+                                                        )
+                                                    }
+                                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg transition-colors hover:bg-gray-200"
+                                                >
+                                                    Annuler
+                                                </button>
+                                                <button
+                                                    onClick={confirmDeleteLoto}
+                                                    className="flex items-center px-4 py-2 space-x-2 text-white bg-red-600 rounded-lg transition-colors hover:bg-red-700"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    <span>Supprimer</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
 
                             {activeModal === "concours" && (

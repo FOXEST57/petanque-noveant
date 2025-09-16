@@ -61,10 +61,15 @@ const Home = () => {
     const fetchData = async () => {
       try {
         // Fetch home content
-        const homeResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/content/home`)
+        const homeResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/home-content`)
         if (homeResponse.ok) {
           const homeData = await homeResponse.json()
-          setHomeContent(homeData)
+          // Extract data from API response structure
+          if (homeData.success && homeData.data) {
+            setHomeContent(homeData.data)
+          } else {
+            setHomeContent(homeData)
+          }
         }
 
         // Fetch events
