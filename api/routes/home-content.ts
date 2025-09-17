@@ -78,7 +78,23 @@ router.get('/', async (req: Request, res: Response) => {
 // PUT /api/home-content - Mettre à jour le contenu de la page d'accueil
 router.put('/', upload.array('carouselImages', 10), async (req: Request, res: Response) => {
   try {
-    const { title, description, openingHours, contact, practicalInfo, location, members, clubTitle, clubDescription, teamsContent, animationsContent, tournamentsContent, existingImages } = req.body;
+    console.log('PUT /api/home-content - req.body:', req.body);
+    console.log('PUT /api/home-content - req.files:', req.files);
+    
+    // Parser les données JSON du FormData
+    let homeContentData = {};
+    if (req.body.homeContent) {
+      try {
+        homeContentData = JSON.parse(req.body.homeContent);
+        console.log('PUT /api/home-content - homeContentData parsed:', homeContentData);
+      } catch (error) {
+        console.error('Erreur lors du parsing des données homeContent:', error);
+        return res.status(400).json({ success: false, error: 'Données invalides' });
+      }
+    }
+    
+    const { title, description, openingHours, contact, practicalInfo, location, members, clubTitle, clubDescription, teamsContent, animationsContent, tournamentsContent } = homeContentData as any;
+    const { existingImages } = req.body;
     
     // Construire l'objet de données pour la mise à jour
     const contentData: any = {};

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Users, Camera, X, Image } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, X, Image } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { eventsAPI } from '../lib/api';
 

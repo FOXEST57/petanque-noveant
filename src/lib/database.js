@@ -239,7 +239,13 @@ export const deleteEvent = async (id) => {
 
 // === FONCTIONS CRUD POUR LES PHOTOS D'ÉVÉNEMENTS ===
 export const getEventPhotos = async (eventId) => {
-  return await getAllQuery('SELECT * FROM event_photos WHERE event_id = ? ORDER BY upload_date DESC', [eventId]);
+  const photos = await getAllQuery('SELECT * FROM event_photos WHERE event_id = ? ORDER BY upload_date DESC', [eventId]);
+  
+  // Construire les URLs complètes pour chaque photo avec le serveur backend
+  return photos.map(photo => ({
+    ...photo,
+    url: `http://localhost:3002/api/events/photos/${photo.filename}`
+  }));
 };
 
 export const getEventPhotoById = async (id) => {
