@@ -12,6 +12,7 @@ import {
     Home,
     Mail,
     MapPin,
+    Minus,
     Phone,
     Plus,
     Save,
@@ -24,20 +25,17 @@ import {
     Wine,
     X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import BarManagement from "../components/BarManagement";
-import LotoManagement from "../components/LotoManagement";
+import React, { useState, useEffect, useRef } from "react";
+import { toast } from "react-hot-toast";
 import { useDrinks } from "../contexts/DrinksContext";
 import { eventsAPI, teamsAPI } from "../lib/api";
 import { membersAPI } from "../lib/membersAPI";
-import "../styles/animations.css";
+import LotoManagement from "../components/LotoManagement";
+import BarManagement from "../components/BarManagement";
+import { formatDateToFrench, formatDateToISO, validateFrenchDate } from "../utils/dateUtils";
 import { generateAvatar } from "../utils/avatarUtils";
-import {
-    formatDateToFrench,
-    formatDateToISO,
-    validateFrenchDate,
-} from "../utils/dateUtils";
+import "../styles/animations.css";
+import "../styles/AdminCards.css";
 
 const Admin = () => {
     const { drinks, addDrink, updateDrink, deleteDrink } = useDrinks();
@@ -52,20 +50,6 @@ const Admin = () => {
 
     // État pour la gestion des modales
     const [activeModal, setActiveModal] = useState(null); // 'bar', 'membre', 'evenement', 'equipe', 'resultat'
-    const [showBarModal, setShowBarModal] = useState(false);
-    const [modalMode, setModalMode] = useState("add"); // 'add' ou 'edit'
-    const [selectedDrink, setSelectedDrink] = useState(null);
-    const [formData, setFormData] = useState({
-        name: "",
-        price: "",
-        description: "",
-        image: "",
-        stock: 50,
-    });
-    const [selectedImageFile, setSelectedImageFile] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [drinkToDelete, setDrinkToDelete] = useState(null);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
     // États pour la gestion des membres
@@ -91,6 +75,7 @@ const Admin = () => {
     const [showTypeMemberDeleteConfirm, setShowTypeMemberDeleteConfirm] =
         useState(false);
     const [typeMemberToDelete, setTypeMemberToDelete] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [typeMemberFormData, setTypeMemberFormData] = useState({
         nom: "",
         description: "",
@@ -169,17 +154,17 @@ const Admin = () => {
         description: "",
         prixCarton: "",
         lotsAGagner: "",
-        statut: "planifie",
+        statut: "planifie"
     });
 
     // Variables calculées pour le filtrage des lotos
     const filteredLotos = lotos.filter(
         (loto) =>
             loto.nom.toLowerCase().includes(lotoSearchTerm.toLowerCase()) ||
-            loto.description
-                .toLowerCase()
-                .includes(lotoSearchTerm.toLowerCase())
+            loto.description.toLowerCase().includes(lotoSearchTerm.toLowerCase())
     );
+
+
 
     // États pour la gestion des événements
     const [showEventModal, setShowEventModal] = useState(false);
@@ -305,11 +290,10 @@ const Admin = () => {
 
     // Mettre à jour les stats quand les boissons changent
     useEffect(() => {
-        if (drinks.length >= 0) {
-            // Vérifier que les boissons sont chargées (même si vide)
-            setStats((prevStats) => ({
+        if (drinks.length >= 0) { // Vérifier que les boissons sont chargées (même si vide)
+            setStats(prevStats => ({
                 ...prevStats,
-                drinks: drinks.length,
+                drinks: drinks.length
             }));
         }
     }, [drinks]);
@@ -377,11 +361,10 @@ const Admin = () => {
                     id: 1,
                     nom: "Loto de Printemps",
                     date: "2024-04-15",
-                    description:
-                        "Grand loto de printemps avec de nombreux lots à gagner",
+                    description: "Grand loto de printemps avec de nombreux lots à gagner",
                     prixCarton: 5,
                     lotsAGagner: "Électroménager, bons d'achat, paniers garnis",
-                    statut: "planifie",
+                    statut: "planifie"
                 },
                 {
                     id: 2,
@@ -390,8 +373,8 @@ const Admin = () => {
                     description: "Loto estival en plein air",
                     prixCarton: 3,
                     lotsAGagner: "Matériel de plage, barbecue, parasol",
-                    statut: "actif",
-                },
+                    statut: "actif"
+                }
             ];
             setLotos(lotosData);
         } catch (error) {
@@ -475,6 +458,8 @@ const Admin = () => {
         }
     };
 
+
+
     // Fonction pour gérer la sélection d'image de membre
     const handleMemberImageChange = (e) => {
         const file = e.target.files[0];
@@ -524,6 +509,8 @@ const Admin = () => {
         setMemberImagePreview(null);
         setMemberFormData({ ...memberFormData, photo: "" });
     };
+
+
 
     // Fonctions de gestion des membres
     const handleAddMember = () => {
@@ -2169,6 +2156,8 @@ const Admin = () => {
         setShowConcoursModal(false);
     };
 
+
+
     // Fonctions de gestion des événements
     const handleAddEvent = () => {
         // Ouvrir directement le modal principal des événements ET le modal d'ajout
@@ -2449,6 +2438,8 @@ const Admin = () => {
         };
     }, [isDropdownOpen]);
 
+
+
     const ManagementCard = ({
         title,
         icon: Icon,
@@ -2462,14 +2453,13 @@ const Admin = () => {
 
         return (
             <div
-                className="p-6 bg-white rounded-lg shadow-md transition-all duration-200 transform cursor-pointer hover:shadow-lg hover:scale-105"
+                className="admin-stats-card"
                 onClick={handleCardClick}
-                style={{ pointerEvents: "auto" }}
             >
-                <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-[#425e9b] bg-opacity-10 rounded-lg">
-                            <Icon className="w-6 h-6 text-[#425e9b]" />
+                <div className="admin-stats-card-header">
+                    <div className="admin-stats-card-info">
+                        <div className="admin-card-icon">
+                            <Icon />
                         </div>
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900">
@@ -2480,14 +2470,14 @@ const Admin = () => {
                             </p>
                         </div>
                     </div>
-                    <div className="text-right">
-                        <div className="text-2xl font-bold text-[#425e9b]">
+                    <div className="admin-stats-card-count">
+                        <div className="admin-stats-card-number">
                             {count}
                         </div>
                     </div>
                 </div>
-                <div className="flex justify-center items-center py-2">
-                    <span className="text-sm text-[#425e9b] font-medium">
+                <div className="admin-stats-card-footer">
+                    <span className="admin-stats-card-action">
                         Cliquer pour gérer →
                     </span>
                 </div>
@@ -2497,15 +2487,15 @@ const Admin = () => {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#425e9b]"></div>
+            <div className="admin-loading-container">
+                <div className="admin-loading-spinner"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="admin-main-container">
+            <div className="admin-content-wrapper">
                 <div className="mb-8">
                     <h1 className="mb-2 text-4xl font-bold text-gray-900">
                         Administration
@@ -2516,7 +2506,7 @@ const Admin = () => {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="admin-cards-grid">
                     <ManagementCard
                         title="Page d'Accueil"
                         icon={Home}
@@ -2609,13 +2599,13 @@ const Admin = () => {
                         }
                     }}
                 >
-                    <div className="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-hidden animate-slideIn">
+                    <div className="admin-modal-card">
                         {/* Header de la modale */}
-                        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                            <h2 className="text-2xl font-bold text-gray-900">
-                                {activeModal === "pageAccueil" &&
-                                    "Gestion de la Page d'Accueil"}
-                                {activeModal === "bar" && "Gestion du Bar"}
+                        {activeModal !== "bar" && (
+                            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                                <h2 className="text-2xl font-bold text-gray-900">
+                                    {activeModal === "pageAccueil" &&
+                                        "Gestion de la Page d'Accueil"}
                                 {activeModal === "membre" &&
                                     "Gestion des Membres"}
                                 {activeModal === "typeMembre" &&
@@ -2632,17 +2622,20 @@ const Admin = () => {
                                 {activeModal === "concours" &&
                                     "Gestion des Concours"}
                                 {activeModal === "loto" && "Gestion des Lotos"}
-                            </h2>
-                            <button
-                                onClick={() => setActiveModal(null)}
-                                className="p-2 rounded-lg transition-colors hover:bg-gray-100"
-                            >
-                                <X className="w-6 h-6 text-gray-500" />
-                            </button>
-                        </div>
+                                </h2>
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="p-2 rounded-lg transition-colors hover:bg-gray-100"
+                                >
+                                    <X className="w-6 h-6 text-gray-500" />
+                                </button>
+                            </div>
+                        )}
 
                         {/* Contenu de la modale */}
-                        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                        <div className={`overflow-y-auto max-h-[calc(90vh-120px)] ${
+                            activeModal === "bar" ? "" : "p-6"
+                        }`}>
                             {activeModal === "pageAccueil" && (
                                 <div className="space-y-6">
                                     {console.log(
@@ -2864,7 +2857,7 @@ const Admin = () => {
                                                                                 onClick={() =>
                                                                                     removeCarouselImage(
                                                                                         index,
-                                                                                        true
+                                                                                        false
                                                                                     )
                                                                                 }
                                                                                 className="flex justify-center items-center w-8 h-8 text-white bg-red-500 rounded-full transition-colors hover:bg-red-600"
@@ -3297,15 +3290,13 @@ const Admin = () => {
                             )}
 
                             {activeModal === "bar" && (
-                                <BarManagement
-                                    onClose={() => setActiveModal(null)}
-                                />
+                                <BarManagement onClose={() => setActiveModal(null)} />
                             )}
 
                             {/* Modal Ajouter/Modifier événement */}
                             {activeModal === "evenement" && showEventModal && (
                                 <div className="flex fixed inset-0 z-[70] justify-center items-center p-4 bg-black bg-opacity-50">
-                                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                    <div className="bg-white rounded-lg max-w-6xl w-full overflow-y-auto" style={{maxHeight: 'calc(100vh - 2rem)'}}>
                                         <div className="p-6">
                                             <div className="flex justify-between items-center mb-4">
                                                 <h3 className="text-lg font-semibold text-gray-900">
@@ -3683,7 +3674,7 @@ const Admin = () => {
 
                             {activeModal === "evenement" && (
                                 <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
-                                    <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+                                    <div className="bg-white rounded-lg max-w-7xl w-full overflow-y-auto" style={{maxHeight: 'calc(100vh - 2rem)'}}>
                                         <div className="p-6">
                                             <div className="flex justify-between items-center mb-6">
                                                 <h3 className="text-xl font-semibold text-gray-900">
@@ -3731,7 +3722,7 @@ const Admin = () => {
                                                 </div>
 
                                                 {/* Tableau des événements */}
-                                                <div className="overflow-hidden bg-white rounded-lg shadow">
+                                                <div className="admin-content-card">
                                                     <div className="overflow-x-auto">
                                                         <table className="min-w-full divide-y divide-gray-200">
                                                             <thead className="bg-gray-50">
@@ -3863,9 +3854,7 @@ const Admin = () => {
 
                             {/* Modal Gestion des Lotos */}
                             {activeModal === "loto" && (
-                                <LotoManagement
-                                    onClose={() => setActiveModal(null)}
-                                />
+                                <LotoManagement onClose={() => setActiveModal(null)} />
                             )}
 
                             {activeModal === "concours" && (
@@ -3896,7 +3885,7 @@ const Admin = () => {
                                     </div>
 
                                     {/* Tableau des concours */}
-                                    <div className="overflow-hidden bg-white rounded-lg shadow">
+                                    <div className="admin-content-card">
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full divide-y divide-gray-200">
                                                 <thead className="bg-gray-50">
@@ -4322,7 +4311,7 @@ const Admin = () => {
                                     </div>
 
                                     {/* Tableau des concours */}
-                                    <div className="overflow-hidden bg-white rounded-lg shadow">
+                                    <div className="admin-content-card">
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full divide-y divide-gray-200">
                                                 <thead className="bg-gray-50">
@@ -4742,7 +4731,7 @@ const Admin = () => {
                                     </div>
 
                                     {/* Tableau des membres */}
-                                    <div className="overflow-hidden bg-white rounded-lg shadow">
+                                    <div className="admin-content-card">
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full divide-y divide-gray-200">
                                                 <thead className="bg-gray-50">
@@ -4985,7 +4974,7 @@ const Admin = () => {
                                     </div>
 
                                     {/* Tableau des types de membres */}
-                                    <div className="overflow-hidden bg-white rounded-lg shadow">
+                                    <div className="admin-content-card">
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full divide-y divide-gray-200">
                                                 <thead className="bg-gray-50">
@@ -5195,7 +5184,7 @@ const Admin = () => {
                                     </div>
 
                                     {/* Tableau des équipes */}
-                                    <div className="overflow-hidden bg-white rounded-lg shadow">
+                                    <div className="admin-content-card">
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full divide-y divide-gray-200">
                                                 <thead className="bg-gray-50">
@@ -5398,197 +5387,8 @@ const Admin = () => {
                 </div>
             )}
 
-            {/* Modal Ajouter/Modifier boisson */}
-            {showBarModal && (
-                <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-semibold text-gray-900">
-                                    {modalMode === "add"
-                                        ? "Ajouter une boisson"
-                                        : "Modifier la boisson"}
-                                </h3>
-                                <button
-                                    onClick={() => setShowBarModal(false)}
-                                    className="p-2 rounded-lg transition-colors hover:bg-gray-100"
-                                >
-                                    <X className="w-5 h-5 text-gray-500" />
-                                </button>
-                            </div>
 
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                        Nom *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                name: e.target.value,
-                                            })
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
-                                        placeholder="Nom de la boisson"
-                                    />
-                                </div>
 
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                        Prix (€) *
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={formData.price}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                price: e.target.value,
-                                            })
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
-                                        placeholder="0.00"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                        Stock
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={formData.stock}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                stock:
-                                                    parseInt(e.target.value) ||
-                                                    0,
-                                            })
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
-                                        placeholder="50"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                        Description
-                                    </label>
-                                    <textarea
-                                        value={formData.description}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                description: e.target.value,
-                                            })
-                                        }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
-                                        rows="3"
-                                        placeholder="Description de la boisson"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                                        Image de la boisson
-                                    </label>
-                                    <div className="space-y-3">
-                                        <div className="flex justify-center items-center w-full">
-                                            <label className="flex flex-col justify-center items-center w-full h-32 bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed transition-colors cursor-pointer hover:bg-gray-100">
-                                                <div className="flex flex-col justify-center items-center pt-5 pb-6">
-                                                    <svg
-                                                        className="mb-4 w-8 h-8 text-gray-500"
-                                                        aria-hidden="true"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 20 16"
-                                                    >
-                                                        <path
-                                                            stroke="currentColor"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                                                        />
-                                                    </svg>
-                                                    <p className="mb-2 text-sm text-gray-500">
-                                                        <span className="font-semibold">
-                                                            Cliquez pour
-                                                            télécharger
-                                                        </span>{" "}
-                                                        ou glissez-déposez
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">
-                                                        PNG, JPG, JPEG (MAX.
-                                                        5MB)
-                                                    </p>
-                                                </div>
-                                                <input
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept="image/*"
-                                                    onChange={handleImageChange}
-                                                />
-                                            </label>
-                                        </div>
-
-                                        {imagePreview && (
-                                            <div className="relative">
-                                                <img
-                                                    src={imagePreview}
-                                                    alt="Prévisualisation"
-                                                    className="object-cover w-full h-32 rounded-lg border border-gray-300"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setImagePreview(null);
-                                                        setSelectedImageFile(
-                                                            null
-                                                        );
-                                                        setFormData({
-                                                            ...formData,
-                                                            image: "",
-                                                        });
-                                                    }}
-                                                    className="absolute top-2 right-2 p-1 text-white bg-red-500 rounded-full transition-colors hover:bg-red-600"
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end mt-6 space-x-3">
-                                <button
-                                    onClick={() => setShowBarModal(false)}
-                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg transition-colors hover:bg-gray-200"
-                                >
-                                    Annuler
-                                </button>
-                                <button
-                                    onClick={handleSaveDrink}
-                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
-                                >
-                                    <Save className="w-4 h-4" />
-                                    <span>
-                                        {modalMode === "add"
-                                            ? "Ajouter"
-                                            : "Modifier"}
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Modal de confirmation de suppression */}
             {showDeleteConfirm && (

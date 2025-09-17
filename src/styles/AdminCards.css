@@ -1,0 +1,129 @@
+/* Styles des cartes de la page Admin */
+
+/* Carte principale de gestion */
+.admin-card {
+  @apply p-6 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow border border-gray-200 hover:border-[#425e9b];
+}
+
+/* Contenu de la carte */
+.admin-card-content {
+  @apply flex items-center;
+}
+
+/* Icône de la carte */
+.admin-card-icon {
+  @apply p-3 bg-[#425e9b] bg-opacity-10 rounded-lg;
+}
+
+.admin-card-icon svg {
+  @apply w-6 h-6 text-[#425e9b];
+}
+
+/* Texte de la carte */
+.admin-card-text {
+  @apply ml-4;
+}
+
+.admin-card-title {
+  @apply text-lg font-medium text-gray-900;
+}
+
+.admin-card-subtitle {
+  @apply text-sm text-gray-600;
+}
+
+.admin-card-description {
+  @apply mt-3 text-sm text-gray-500;
+}
+
+/* Carte de statistiques avec compteur */
+.admin-stats-card {
+  @apply p-6 bg-white rounded-lg shadow-md transition-all duration-200 transform cursor-pointer hover:shadow-lg hover:scale-105;
+  pointer-events: auto;
+}
+
+.admin-stats-card-header {
+  @apply flex justify-between items-center mb-4;
+}
+
+.admin-stats-card-info {
+  @apply flex items-center space-x-3;
+}
+
+.admin-stats-card-count {
+  @apply text-right;
+}
+
+.admin-stats-card-number {
+  @apply text-2xl font-bold text-[#425e9b];
+}
+
+.admin-stats-card-footer {
+  @apply flex justify-center items-center py-2;
+}
+
+.admin-stats-card-action {
+  @apply text-sm text-[#425e9b] font-medium;
+}
+
+/* Cartes de contenu avec ombre */
+.admin-content-card {
+  @apply overflow-hidden bg-white rounded-lg shadow;
+}
+
+/* Carte de modal */
+.admin-modal-card {
+  @apply inline-block w-full max-w-6xl p-6 my-8 max-h-[90vh] text-left align-middle transition-all transform bg-white shadow-xl rounded-lg;
+}
+
+/* Carte de formulaire dans modal */
+.admin-form-card {
+  @apply bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto;
+}
+
+/* Styles pour les états de chargement */
+.admin-loading-container {
+  @apply flex justify-center items-center min-h-screen;
+}
+
+.admin-loading-spinner {
+  @apply animate-spin rounded-full h-32 w-32 border-b-2 border-[#425e9b];
+}
+
+/* Container principal */
+.admin-main-container {
+  @apply min-h-screen bg-gray-50;
+}
+
+.admin-content-wrapper {
+  @apply px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8;
+}
+
+/* Grille des cartes */
+.admin-cards-grid {
+  @apply grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3;
+}
+
+/* Styles pour les tableaux dans les cartes */
+.admin-table-card {
+  @apply w-full bg-white border-collapse;
+}
+
+.admin-table-header {
+  @apply bg-gray-50;
+}
+
+.admin-table-cell {
+  @apply px-4 py-3 text-sm font-medium text-left text-gray-900 border border-gray-200;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-cards-grid {
+    @apply grid-cols-1;
+  }
+  
+  .admin-modal-card {
+    @apply max-w-full mx-4;
+  }
+}
