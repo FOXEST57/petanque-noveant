@@ -1,10 +1,18 @@
-import { Edit, Plus, Save, Search, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+    Edit,
+    Plus,
+    Save,
+    Search,
+    Trash2,
+    Users,
+    X,
+} from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { teamsAPI } from "../lib/api";
 import { membersAPI } from "../lib/membersAPI";
 
-const TeamManagement = ({ onStatsUpdate }) => {
+const TeamManagement = ({ onStatsUpdate, onClose }) => {
     // États pour la gestion des équipes
     const [showTeamModal, setShowTeamModal] = useState(false);
     const [teamModalMode, setTeamModalMode] = useState("add");
@@ -165,8 +173,16 @@ const TeamManagement = ({ onStatsUpdate }) => {
     };
 
     const handleSaveTeam = async () => {
-        if (!validateTeamForm()) return;
+        console.log('handleSaveTeam called - teamModalMode:', teamModalMode);
+        console.log('handleSaveTeam called - selectedTeam:', selectedTeam);
+        console.log('handleSaveTeam called - teamFormData:', teamFormData);
+        
+        if (!validateTeamForm()) {
+            console.log('Validation failed');
+            return;
+        }
 
+        console.log('Validation passed, proceeding with save...');
         try {
             const formData = new FormData();
             formData.append("name", teamFormData.name);
@@ -212,23 +228,43 @@ const TeamManagement = ({ onStatsUpdate }) => {
     });
 
     return (
-        <div className="space-y-6">
-            {/* En-tête avec bouton d'ajout */}
-            <div className="flex justify-end items-center">
+        <div className="w-full">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-[#425e9b] bg-opacity-10 rounded-lg">
+                        <Users className="w-6 h-6 text-[#425e9b]" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900">Gestion des Équipes</h2>
+                        <p className="text-gray-600">Gérez les équipes et leurs membres</p>
+                    </div>
+                </div>
                 <button
-                    onClick={handleAddTeam}
-                    className="flex items-center px-4 py-2 space-x-2 text-white bg-[#425e9b] rounded-lg transition-colors hover:bg-[#364a82]"
+                    onClick={onClose}
+                    className="p-2 rounded-lg transition-colors hover:bg-gray-100"
                 >
-                    <Plus className="w-4 h-4" />
-                    <span>Ajouter une équipe</span>
+                    <X className="w-5 h-5 text-gray-500" />
                 </button>
             </div>
+
+            <div className="space-y-6">
+                {/* Bouton d'ajout */}
+                <div className="flex justify-end items-center">
+                    <button
+                        onClick={handleAddTeam}
+                        className="flex items-center px-4 py-2 space-x-2 text-white bg-[#425e9b] rounded-lg transition-colors hover:bg-[#364a82]"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>Ajouter une équipe</span>
+                    </button>
+                </div>
 
             {/* Filtres de recherche */}
             <div className="flex flex-col gap-4 md:flex-row">
                 <div className="flex-1">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Search className="absolute left-3 top-1/2 w-4 h-4 text-gray-400 transform -translate-y-1/2" />
                         <input
                             type="text"
                             placeholder="Rechercher une équipe..."
@@ -241,9 +277,7 @@ const TeamManagement = ({ onStatsUpdate }) => {
                 <div className="md:w-48">
                     <select
                         value={selectedTeamCategory}
-                        onChange={(e) =>
-                            setSelectedTeamCategory(e.target.value)
-                        }
+                        onChange={(e) => setSelectedTeamCategory(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
                     >
                         <option value="">Toutes les catégories</option>
@@ -256,24 +290,24 @@ const TeamManagement = ({ onStatsUpdate }) => {
             </div>
 
             {/* Liste des équipes */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-hidden bg-white rounded-lg shadow">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Équipe
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Catégorie
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Compétition
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Membres
                                 </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">
                                     Actions
                                 </th>
                             </tr>
@@ -287,7 +321,7 @@ const TeamManagement = ({ onStatsUpdate }) => {
                                                 <img
                                                     src={team.photo_url}
                                                     alt={team.name}
-                                                    className="w-10 h-10 rounded-full mr-3 object-cover"
+                                                    className="object-cover mr-3 w-10 h-10 rounded-full"
                                                 />
                                             )}
                                             <div>
@@ -307,13 +341,13 @@ const TeamManagement = ({ onStatsUpdate }) => {
                                             {team.category}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                                         {team.competition || "Aucune"}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                                         {team.members?.length || 0} membre(s)
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                                         <div className="flex justify-end space-x-2">
                                             <button
                                                 onClick={() =>
@@ -340,7 +374,7 @@ const TeamManagement = ({ onStatsUpdate }) => {
                 </div>
 
                 {filteredTeams.length === 0 && (
-                    <div className="text-center py-12">
+                    <div className="py-12 text-center">
                         <div className="text-gray-500">
                             {teamSearchTerm || selectedTeamCategory
                                 ? "Aucune équipe trouvée avec ces critères"
@@ -353,7 +387,7 @@ const TeamManagement = ({ onStatsUpdate }) => {
             {/* Modal d'ajout/modification d'équipe */}
             {showTeamModal && (
                 <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
-                    <div className="w-full max-w-2xl bg-white rounded-lg max-h-[90vh] overflow-y-auto">
+                    <div className="w-full max-w-4xl bg-white rounded-lg max-h-[90vh] overflow-y-auto">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xl font-semibold text-gray-900">
@@ -779,7 +813,7 @@ const TeamManagement = ({ onStatsUpdate }) => {
             {/* Modal de confirmation de suppression équipe */}
             {showTeamDeleteConfirm && (
                 <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
-                    <div className="w-full max-w-md bg-white rounded-lg">
+                    <div className="w-full max-w-lg bg-white rounded-lg">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-semibold text-gray-900">
@@ -822,6 +856,7 @@ const TeamManagement = ({ onStatsUpdate }) => {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 };

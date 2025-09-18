@@ -13,9 +13,10 @@ import {
     Calendar as CalendarIcon,
     Shield
 } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { membersAPI } from '../lib/membersAPI';
 import { formatDateToFrench, formatDateToISO } from '../utils/dateUtils';
+import { generateAvatar } from '../utils/avatarUtils';
 
 const MemberManagement = ({ onClose }) => {
     // États pour la gestion des membres
@@ -29,6 +30,8 @@ const MemberManagement = ({ onClose }) => {
     const [selectedMemberType, setSelectedMemberType] = useState("");
     const [showMemberDeleteConfirm, setShowMemberDeleteConfirm] = useState(false);
     const [memberToDelete, setMemberToDelete] = useState(null);
+    const [selectedMemberImageFile, setSelectedMemberImageFile] = useState(null);
+    const [memberImagePreview, setMemberImagePreview] = useState(null);
 
     const [memberFormData, setMemberFormData] = useState({
         nom: "",
@@ -115,7 +118,44 @@ const MemberManagement = ({ onClose }) => {
             typeMembreId: "",
             photo: "",
         });
+        setSelectedMemberImageFile(null);
+        setMemberImagePreview(null);
         setShowMemberModal(true);
+    };
+
+    const handleMemberImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validation du type de fichier
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                toast.error('Type de fichier non supporté. Utilisez JPG, PNG, GIF ou WebP.');
+                e.target.value = '';
+                return;
+            }
+            
+            // Validation de la taille (max 5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                toast.error('La taille du fichier ne doit pas dépasser 5MB.');
+                e.target.value = '';
+                return;
+            }
+            
+            setSelectedMemberImageFile(file);
+            
+            // Créer une prévisualisation
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setMemberImagePreview(e.target.result);
+            };
+            reader.onerror = () => {
+                toast.error('Erreur lors de la lecture du fichier.');
+                setSelectedMemberImageFile(null);
+                setMemberImagePreview(null);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleEditMember = (member) => {
@@ -133,6 +173,16 @@ const MemberManagement = ({ onClose }) => {
             typeMembreId: member.type_membre_id?.toString() || "",
             photo: member.photo_url || "",
         });
+        
+        // Gérer l'affichage de la photo existante
+        setSelectedMemberImageFile(null);
+        
+        if (member.photo_url && (member.photo_url.startsWith('/uploads/') || member.photo_url.startsWith('uploads/'))) {
+            setMemberImagePreview(`${import.meta.env.VITE_API_URL}/api/members/photos/${member.photo_url.split('/').pop()}`);
+        } else {
+            setMemberImagePreview(null);
+        }
+        
         setShowMemberModal(true);
     };
 
@@ -169,6 +219,24 @@ const MemberManagement = ({ onClose }) => {
             formData.append("date_naissance", memberFormData.dateNaissance ? formatDateToISO(memberFormData.dateNaissance) : "");
             formData.append("type_membre_id", memberFormData.typeMembreId);
 
+            // Ajouter la photo si elle existe
+            if (selectedMemberImageFile) {
+                // Validation finale avant upload
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(selectedMemberImageFile.type)) {
+                    toast.error('Type de fichier non supporté pour la photo.');
+                    return;
+                }
+
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (selectedMemberImageFile.size > maxSize) {
+                    toast.error('La photo est trop volumineuse (max 5MB).');
+                    return;
+                }
+
+                formData.append('photo', selectedMemberImageFile);
+            }
+
             if (memberModalMode === "add") {
                 await membersAPI.create(formData);
                 toast.success("Membre ajouté avec succès");
@@ -178,6 +246,8 @@ const MemberManagement = ({ onClose }) => {
             }
 
             setShowMemberModal(false);
+            setSelectedMemberImageFile(null);
+            setMemberImagePreview(null);
             await loadMembers();
         } catch (error) {
             console.error("Erreur lors de la sauvegarde du membre:", error);
@@ -298,10 +368,13 @@ const MemberManagement = ({ onClose }) => {
                                                         />
                                                     ) : null}
                                                     <div 
-                                                        className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center"
-                                                        style={{ display: member.photo_url && member.photo_url.trim() !== '' ? 'none' : 'flex' }}
+                                                        className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white"
+                                                        style={{ 
+                                                            display: member.photo_url && member.photo_url.trim() !== '' ? 'none' : 'flex',
+                                                            backgroundColor: generateAvatar(member.prenom, member.nom).backgroundColor 
+                                                        }}
                                                     >
-                                                        <Users className="w-5 h-5 text-gray-600" />
+                                                        {generateAvatar(member.prenom, member.nom).initials}
                                                     </div>
                                                 </div>
                                                 <div className="ml-4">
@@ -375,7 +448,7 @@ const MemberManagement = ({ onClose }) => {
             {/* Modal d'ajout/modification de membre */}
             {showMemberModal && (
                 <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                         <form onSubmit={handleMemberSubmit} className="p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-semibold text-gray-900">
@@ -460,6 +533,88 @@ const MemberManagement = ({ onClose }) => {
                                         ))}
                                     </select>
                                 </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <CreditCard className="w-4 h-4 inline mr-1" />
+                                        Numéro de licence
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={memberFormData.numeroLicence}
+                                        onChange={(e) => setMemberFormData({...memberFormData, numeroLicence: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        placeholder="Ex: 123456789"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <CalendarIcon className="w-4 h-4 inline mr-1" />
+                                        Date de naissance
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={memberFormData.dateNaissance}
+                                        onChange={(e) => setMemberFormData({...memberFormData, dateNaissance: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <CalendarIcon className="w-4 h-4 inline mr-1" />
+                                        Date d'entrée
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={memberFormData.dateEntree}
+                                        onChange={(e) => setMemberFormData({...memberFormData, dateEntree: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <MapPin className="w-4 h-4 inline mr-1" />
+                                        Adresse
+                                    </label>
+                                    <textarea
+                                        value={memberFormData.adresse}
+                                        onChange={(e) => setMemberFormData({...memberFormData, adresse: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        rows="2"
+                                        placeholder="Adresse complète"
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Photo
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleMemberImageChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    />
+                                    <div className="mt-2">
+                                        {memberImagePreview ? (
+                                            <img
+                                                src={memberImagePreview}
+                                                alt="Aperçu"
+                                                className="w-20 h-20 object-cover rounded-full border-2 border-gray-300"
+                                            />
+                                        ) : (
+                                            <div 
+                                                className="flex justify-center items-center w-20 h-20 text-lg font-semibold text-white rounded-full border-2 border-gray-300"
+                                                style={{ backgroundColor: generateAvatar(memberFormData.prenom, memberFormData.nom).backgroundColor }}
+                                            >
+                                                {generateAvatar(memberFormData.prenom, memberFormData.nom).initials}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Boutons */}
@@ -486,7 +641,7 @@ const MemberManagement = ({ onClose }) => {
             {/* Modal de confirmation de suppression */}
             {showMemberDeleteConfirm && (
                 <div className="flex fixed inset-0 z-[70] justify-center items-center p-4 bg-black bg-opacity-50">
-                    <div className="p-6 w-full max-w-md bg-white rounded-lg">
+                    <div className="p-6 w-full max-w-lg bg-white rounded-lg">
                         <h3 className="mb-4 text-lg font-semibold text-gray-900">
                             Confirmer la suppression
                         </h3>

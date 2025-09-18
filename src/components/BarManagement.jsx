@@ -314,7 +314,8 @@ const BarManagement = ({ onClose }) => {
 
                 {/* Modal Ajouter/Modifier boisson */}
                 {showBarModal && (
-                <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto border shadow-lg">
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto border shadow-lg m-4">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-semibold text-gray-900">
@@ -448,42 +449,45 @@ const BarManagement = ({ onClose }) => {
                             </div>
                         </div>
                     </div>
-                )}
+                </div>
+            )}
 
                 {/* Modal de confirmation de suppression */}
                 {showDeleteConfirm && (
-                    <div className="bg-white rounded-lg w-full max-w-md border shadow-lg">
-                        <div className="p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-semibold text-gray-900">
-                                    Confirmer la suppression
-                                </h3>
-                                <button
-                                    onClick={() => setShowDeleteConfirm(false)}
-                                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                                >
-                                    <X className="w-5 h-5 text-gray-500" />
-                                </button>
-                            </div>
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg w-full max-w-lg border shadow-lg m-4">
+                            <div className="p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-semibold text-gray-900">
+                                        Confirmer la suppression
+                                    </h3>
+                                    <button
+                                        onClick={() => setShowDeleteConfirm(false)}
+                                        className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                                    >
+                                        <X className="w-5 h-5 text-gray-500" />
+                                    </button>
+                                </div>
 
-                            <p className="text-gray-600 mb-6">
-                                Êtes-vous sûr de vouloir supprimer la boisson "{drinkToDelete?.name}" ? Cette action est irréversible.
-                            </p>
+                                <p className="text-gray-600 mb-6">
+                                    Êtes-vous sûr de vouloir supprimer la boisson "{drinkToDelete?.name}" ? Cette action est irréversible.
+                                </p>
 
-                            <div className="flex justify-end space-x-3">
-                                <button
-                                    onClick={() => setShowDeleteConfirm(false)}
-                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                                >
-                                    Annuler
-                                </button>
-                                <button
-                                    onClick={confirmDelete}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                    <span>Supprimer</span>
-                                </button>
+                                <div className="flex justify-end space-x-3">
+                                    <button
+                                        onClick={() => setShowDeleteConfirm(false)}
+                                        className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button
+                                        onClick={confirmDelete}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        <span>Supprimer</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -243,7 +243,7 @@ const LotoManagement = ({ onClose }) => {
       {/* Modal de confirmation de suppression loto */}
       {showLotoDeleteConfirm && (
         <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
-          <div className="w-full max-w-md bg-white rounded-lg">
+          <div className="w-full max-w-lg bg-white rounded-lg">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
@@ -284,7 +284,7 @@ const LotoManagement = ({ onClose }) => {
       {/* Modal Ajouter/Modifier Loto */}
       {showLotoModal && (
         <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">

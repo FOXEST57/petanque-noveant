@@ -11,7 +11,7 @@ import {
 import { toast } from "react-hot-toast";
 import { eventsAPI } from "../lib/api";
 
-const EventManagement = ({ onStatsUpdate }) => {
+const EventManagement = ({ onStatsUpdate, onClose }) => {
     // États pour la gestion des événements
     const [events, setEvents] = useState([]);
     const [eventToDelete, setEventToDelete] = useState(null);
@@ -304,7 +304,7 @@ const EventManagement = ({ onStatsUpdate }) => {
             {/* Modal de confirmation de suppression */}
             {showEventDeleteConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg max-w-md w-full p-6">
+                    <div className="bg-white rounded-lg max-w-lg w-full p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">
                             Confirmer la suppression
                         </h3>
@@ -334,7 +334,7 @@ const EventManagement = ({ onStatsUpdate }) => {
             {/* Modal d'événement */}
             {showEventModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-lg max-w-[1280px] w-full p-6 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">
                             {eventModalMode === "add" ? "Ajouter un événement" : "Modifier l'événement"}
                         </h3>
@@ -511,11 +511,24 @@ const EventManagement = ({ onStatsUpdate }) => {
             )}
 
             {/* Interface principale de gestion des événements */}
-            <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-semibold text-gray-900">
-                        Gestion des Événements
-                    </h3>
+            <div className="w-full">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-[#425e9b] bg-opacity-10 rounded-lg">
+                            <Calendar className="w-6 h-6 text-[#425e9b]" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900">Gestion des Événements</h2>
+                            <p className="text-gray-600">Gérez les événements et animations</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                        <X className="w-5 h-5 text-gray-500" />
+                    </button>
                 </div>
 
                 {/* Barre de recherche et bouton d'ajout */}

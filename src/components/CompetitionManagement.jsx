@@ -261,7 +261,7 @@ const CompetitionManagement = ({ onClose }) => {
     };
 
     return (
-        <div className="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-hidden">
+        <div className="bg-white rounded-lg w-full max-w-7xl max-h-[90vh] overflow-hidden">
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
                 <h2 className="text-2xl font-bold text-gray-900">Gestion des Compétitions</h2>
@@ -505,7 +505,7 @@ const CompetitionManagement = ({ onClose }) => {
             {/* Modal Ajouter/Modifier Concours */}
             {showConcoursModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
                         <div className="p-6">
                             <h3 className="text-lg font-semibold mb-4">
                                 {concoursModalMode === 'add' ? 'Ajouter un concours' : 'Modifier le concours'}
@@ -765,7 +765,7 @@ const CompetitionManagement = ({ onClose }) => {
             {/* Modal de confirmation de suppression concours */}
             {showConcoursDeleteConfirm && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg w-full max-w-md p-6">
+                    <div className="bg-white rounded-lg w-full max-w-lg p-6">
                         <h3 className="text-lg font-semibold mb-4">Confirmer la suppression</h3>
                         <p className="text-gray-600 mb-6">
                             Êtes-vous sûr de vouloir supprimer le concours "{concoursToDelete?.nom}" ? Cette action est irréversible.
@@ -791,7 +791,7 @@ const CompetitionManagement = ({ onClose }) => {
             {/* Modal de confirmation de suppression loto */}
             {showLotoDeleteConfirm && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg w-full max-w-md p-6">
+                    <div className="bg-white rounded-lg w-full max-w-lg p-6">
                         <h3 className="text-lg font-semibold mb-4">Confirmer la suppression</h3>
                         <p className="text-gray-600 mb-6">
                             Êtes-vous sûr de vouloir supprimer le loto "{lotoToDelete?.nom}" ? Cette action est irréversible.

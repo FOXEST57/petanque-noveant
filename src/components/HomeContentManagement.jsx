@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import {
     Home,
     Save,
@@ -339,10 +339,15 @@ const HomeContentManagement = ({ onClose }) => {
             <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                 {/* En-tête de la modale */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-                    <h2 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
-                        <Home className="w-6 h-6 text-[#425e9b]" />
-                        <span>Gestion de la Page d'Accueil</span>
-                    </h2>
+                    <div>
+                        <h2 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
+                            <Home className="w-6 h-6 text-[#425e9b]" />
+                            <span>Gestion de la Page d'Accueil</span>
+                        </h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                            Gérez le contenu principal de votre page d'accueil : titre, description, images du carrousel et sections d'information.
+                        </p>
+                    </div>
                     <button
                         onClick={onClose}
                         className="p-2 rounded-lg transition-colors hover:bg-gray-100"
@@ -354,19 +359,6 @@ const HomeContentManagement = ({ onClose }) => {
                 {/* Contenu de la modale */}
                 <div className="p-6 overflow-y-auto flex-1">
                     <div className="space-y-6">
-                        {/* Section d'information bleue */}
-                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <div className="flex items-center mb-2 space-x-2">
-                                <Home className="w-5 h-5 text-blue-600" />
-                                <h3 className="text-lg font-semibold text-blue-900">
-                                    Configuration de la Page d'Accueil
-                                </h3>
-                            </div>
-                            <p className="text-sm text-blue-700">
-                                Gérez le contenu principal de votre page d'accueil : titre, description,
-                                images du carrousel et sections d'information.
-                            </p>
-                        </div>
                         {/* Section Contenu Principal */}
                         <div className="p-6 bg-white rounded-lg border border-gray-200">
                             <h4 className="mb-4 text-lg font-semibold text-gray-900">

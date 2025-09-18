@@ -189,7 +189,7 @@ router.put(
             );
 
             // Check if there are any fields to update
-            if (Object.keys(teamData).length === 0) {
+            if (Object.keys(teamData).length === 0 && !req.body.members) {
                 return res.status(400).json({
                     success: false,
                     error: "Aucun champ valide à mettre à jour",
@@ -197,6 +197,28 @@ router.put(
             }
 
             const result = await updateTeam(parseInt(id), teamData);
+
+            // Handle team members update if provided
+            if (req.body.members) {
+                try {
+                    const members = JSON.parse(req.body.members);
+                    console.log("PUT /api/teams/:id - updating members:", members);
+                    
+                    // First, remove all existing members
+                    const existingMembers = await getTeamMembers(parseInt(id));
+                    for (const member of existingMembers) {
+                        await removeTeamMember(parseInt(id), member.id);
+                    }
+                    
+                    // Then add the new members
+                    for (const member of members) {
+                        await addTeamMember(parseInt(id), member.id, member.role || 'membre');
+                    }
+                } catch (memberError) {
+                    console.error("Error updating team members:", memberError);
+                    // Don't fail the entire update if members update fails
+                }
+            }
 
             if (result.changes === 0) {
                 return res.status(404).json({

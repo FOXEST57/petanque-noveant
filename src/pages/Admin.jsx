@@ -916,37 +916,8 @@ const Admin = () => {
                     }}
                 >
                     <div className="admin-modal-card">
-                        {/* Header de la modale */}
-                        {activeModal !== "bar" && activeModal !== "membre" && (
-                            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                                <h2 className="text-2xl font-bold text-gray-900">
-                                    {activeModal === "typeMembre" &&
-                                "Gestion des Types de Membre"}
-                                {activeModal === "droits" &&
-                                    "Gestion des Droits"}
-                                {activeModal === "evenement" &&
-                                    "Gestion des Événements"}
-                                {activeModal === "equipe" &&
-                                    "Gestion des Équipes"}
-                                {activeModal === "resultat" &&
-                                    "Gestion des Résultats"}
-                                {activeModal === "concours" &&
-                                    "Gestion des Concours"}
-                                {activeModal === "loto" && "Gestion des Lotos"}
-                                </h2>
-                                <button
-                                    onClick={() => setActiveModal(null)}
-                                    className="p-2 rounded-lg transition-colors hover:bg-gray-100"
-                                >
-                                    <X className="w-6 h-6 text-gray-500" />
-                                </button>
-                            </div>
-                        )}
-
                         {/* Contenu de la modale */}
-                        <div className={`overflow-y-auto max-h-[calc(90vh-120px)] ${
-                            activeModal === "bar" ? "" : "p-6"
-                        }`}>
+                        <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
 
 
 
@@ -986,7 +957,7 @@ const Admin = () => {
                             {/* Modal Ajouter/Modifier type de membre */}
                             {showTypeMemberModal && (
                                 <div className="flex fixed inset-0 z-[60] justify-center items-center p-4 bg-black bg-opacity-50">
-                                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                    <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                                         <div className="p-6">
                                             <div className="flex justify-between items-center mb-4">
                                                 <h3 className="text-lg font-semibold text-gray-900">
@@ -1236,13 +1207,30 @@ const Admin = () => {
                             )}
 
                             {activeModal === "typeMembre" && (
-                                <div
-                                    className="space-y-6"
-                                    style={{
-                                        minHeight: "200px",
-                                        padding: "20px",
-                                    }}
-                                >
+                                <div className="space-y-6">
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+                                        <div className="flex items-center space-x-3">
+                                             <div className="p-2 bg-gray-100 rounded-lg">
+                                                 <Shield className="w-6 h-6 text-[#425e9b]" />
+                                             </div>
+                                            <div>
+                                                <h2 className="text-xl font-semibold text-gray-900">
+                                                    Gestion des Types de Membre
+                                                </h2>
+                                                <p className="text-sm text-gray-600">
+                                                    Gérez les différents types de membres et leurs droits associés
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setActiveModal(null)}
+                                            className="p-2 rounded-lg transition-colors hover:bg-gray-100"
+                                        >
+                                            <X className="w-5 h-5 text-gray-500" />
+                                        </button>
+                                    </div>
+
                                     {/* Barre de recherche et bouton d'ajout */}
                                     <div className="flex flex-col gap-4 mb-6 sm:flex-row">
                                         <div className="flex-1">
@@ -1423,11 +1411,33 @@ const Admin = () => {
                             )}
 
                             {activeModal === "equipe" && (
-                                <TeamManagement onStatsUpdate={handleStatsUpdate} />
+                                <TeamManagement onStatsUpdate={handleStatsUpdate} onClose={() => setActiveModal(null)} />
                             )}
 
                             {activeModal === "droits" && (
                                 <div className="space-y-6">
+                                    {/* Header du modal de gestion des droits */}
+                                    <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="p-2 bg-gray-100 rounded-lg">
+                                                <Shield className="w-6 h-6 text-[#425e9b]" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl font-semibold text-gray-900">
+                                                    Gestion des Droits
+                                                </h2>
+                                                <p className="text-sm text-gray-600">
+                                                    Configurez les permissions et accès des utilisateurs
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setActiveModal(null)}
+                                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                     {/* Liste des droits disponibles */}
                                     <div className="p-6 bg-white rounded-lg shadow">
                                         <h3 className="flex gap-2 items-center mb-4 text-lg font-semibold text-gray-900">
