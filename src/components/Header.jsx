@@ -48,9 +48,17 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2" onClick={closeMenus}>
-            <div className="w-10 h-10 bg-[var(--primary-color)] rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">P</span>
-            </div>
+            {siteSettings.logoUrl ? (
+              <img
+                src={`/${siteSettings.logoUrl}`}
+                alt={siteSettings.siteName}
+                className="h-10 w-10 object-cover rounded-full"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-[var(--primary-color)] rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-lg">P</span>
+              </div>
+            )}
             <div className="hidden sm:block">
               <h1 className="text-xl font-bold text-gray-900">{siteSettings.siteName}</h1>
               <p className="text-sm text-gray-600">{siteSettings.siteSubtitle}</p>
@@ -100,8 +108,8 @@ const Header = () => {
                   {userProfile?.role && (
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       userProfile.role === 'admin' ? 'bg-red-100 text-red-800' :
-                      userProfile.role === 'responsable' ? 'bg-blue-100 text-blue-800' :
-                      userProfile.role === 'membre' ? 'bg-blue-100 text-blue-800' :
+                      userProfile.role === 'responsable' ? 'bg-[var(--primary-color)] text-white' :
+                      userProfile.role === 'membre' ? 'bg-[var(--primary-color)] text-white' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {userProfile.role}

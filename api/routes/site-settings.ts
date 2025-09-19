@@ -1,7 +1,44 @@
-import { Router } from 'express';
+import express, { type Request, type Response } from "express";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import mysql from 'mysql2/promise';
 
-const router = Router();
+const router = express.Router();
+
+// Configuration multer pour les uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Seuls les fichiers image sont autorisés'), false);
+        }
+    },
+});
+
+// Créer les répertoires d'uploads s'ils n'existent pas
+const uploadsDir = path.join(process.cwd(), "uploads", "logos");
+const faviconsDir = path.join(process.cwd(), "uploads", "favicons");
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+if (!fs.existsSync(faviconsDir)) {
+    fs.mkdirSync(faviconsDir, { recursive: true });
+}
+
+// Helper function to generate unique filename
+const generateUniqueFilename = (originalName: string): string => {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    const extension = path.extname(originalName);
+    return `logo_${timestamp}_${random}${extension}`;
+};
 
 // Configuration de la base de données
 const dbConfig = {
@@ -54,7 +91,7 @@ router.get('/', async (req, res) => {
 });
 
 // PUT /api/site-settings - Mettre à jour les paramètres du site
-router.put('/', async (req, res) => {
+router.put('/', upload.fields([{ name: 'logo', maxCount: 1 }, { name: 'favicon', maxCount: 1 }]), async (req, res) => {
   try {
     const settings = req.body;
     
@@ -66,6 +103,33 @@ router.put('/', async (req, res) => {
     }
     
     const connection = await mysql.createConnection(dbConfig);
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    
+    // Handle logo upload if present
+    if (files && files.logo && files.logo[0]) {
+      const logoFile = files.logo[0];
+      const filename = generateUniqueFilename(logoFile.originalname);
+      const uploadPath = path.join(uploadsDir, filename);
+
+      // Save file to disk
+      await fs.promises.writeFile(uploadPath, logoFile.buffer);
+
+      // Add logo_url to settings
+      settings.logo_url = `uploads/logos/${filename}`;
+    }
+    
+    // Handle favicon upload if present
+    if (files && files.favicon && files.favicon[0]) {
+      const faviconFile = files.favicon[0];
+      const filename = generateUniqueFilename(faviconFile.originalname);
+      const uploadPath = path.join(faviconsDir, filename);
+
+      // Save file to disk
+      await fs.promises.writeFile(uploadPath, faviconFile.buffer);
+
+      // Add favicon_url to settings
+      settings.favicon_url = `uploads/favicons/${filename}`;
+    }
     
     // Mettre à jour chaque paramètre
     for (const [key, value] of Object.entries(settings)) {

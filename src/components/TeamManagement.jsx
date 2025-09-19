@@ -337,7 +337,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="inline-flex px-2 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
+                                        <span className="inline-flex px-2 py-1 text-xs font-semibold text-white bg-[var(--primary-color)] rounded-full">
                                             {team.category}
                                         </span>
                                     </td>

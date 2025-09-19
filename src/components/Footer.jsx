@@ -37,9 +37,17 @@ const Footer = () => {
           {/* Club Info */}
           <div>
             <div className="flex items-center mb-4 space-x-2">
-              <div className="flex justify-center items-center w-10 h-10 bg-[var(--primary-color)] rounded-full">
-                <span className="text-lg font-bold text-white">P</span>
-              </div>
+              {siteSettings.logoUrl ? (
+                <img
+                  src={`/${siteSettings.logoUrl}`}
+                  alt={siteSettings.siteName}
+                  className="h-10 w-10 object-cover rounded-full"
+                />
+              ) : (
+                <div className="flex justify-center items-center w-10 h-10 bg-[var(--primary-color)] rounded-full">
+                  <span className="text-lg font-bold text-white">P</span>
+                </div>
+              )}
               <div>
                 <h3 className="text-lg font-bold">{siteSettings.siteName}</h3>
                 <p className="text-sm text-gray-400">{siteSettings.siteSubtitle}</p>

@@ -64,6 +64,22 @@ const loadSiteSettings = async () => {
         root.style.setProperty('--primary-light', lightColor);
         root.style.setProperty('--primary-dark', darkColor);
       }
+
+      // Mettre à jour le favicon si il existe
+      if (settings.favicon_url) {
+        let faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
+        if (!faviconLink) {
+          faviconLink = document.createElement('link');
+          faviconLink.rel = 'icon';
+          document.head.appendChild(faviconLink);
+        }
+        faviconLink.href = `/${settings.favicon_url}`;
+      }
+
+      // Mettre à jour le titre de la page avec le nom du club
+      if (settings.club_name) {
+        document.title = settings.club_name;
+      }
     }
   } catch (error) {
     console.error('Erreur lors du chargement des paramètres du site:', error);

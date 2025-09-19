@@ -1,4 +1,4 @@
-import { Info, Palette, Save, X } from "lucide-react";
+import { Info, Palette, Save, X, Upload, Image } from "lucide-react";
 import { useEffect, useState } from "react";
 import { HexAlphaColorPicker } from "react-colorful";
 import { toast } from "sonner";
@@ -30,6 +30,10 @@ const SiteManagement = ({ isOpen, onClose }) => {
 
     const [loading, setLoading] = useState(false);
     const [loadingSettings, setLoadingSettings] = useState(true);
+    const [logoFile, setLogoFile] = useState(null);
+    const [logoPreview, setLogoPreview] = useState(null);
+    const [faviconFile, setFaviconFile] = useState(null);
+    const [faviconPreview, setFaviconPreview] = useState(null);
 
     // Couleurs prédéfinies
     const predefinedColors = [
@@ -136,9 +140,66 @@ const SiteManagement = ({ isOpen, onClose }) => {
         );
     };
 
+    // Fonction pour gérer la sélection du logo
+    const handleLogoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Vérifier le type de fichier
+            if (!file.type.startsWith('image/')) {
+                toast.error('Veuillez sélectionner un fichier image');
+                return;
+            }
+            
+            // Vérifier la taille du fichier (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('Le fichier est trop volumineux (5MB maximum)');
+                return;
+            }
+            
+            setLogoFile(file);
+            
+            // Créer un aperçu
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setLogoPreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Fonction pour gérer la sélection du favicon
+    const handleFaviconChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Vérifier le type de fichier
+            if (!file.type.startsWith('image/')) {
+                toast.error('Veuillez sélectionner un fichier image');
+                return;
+            }
+            
+            // Vérifier la taille du fichier (2MB max pour favicon)
+            if (file.size > 2 * 1024 * 1024) {
+                toast.error('Le fichier est trop volumineux (2MB maximum pour le favicon)');
+                return;
+            }
+            
+            setFaviconFile(file);
+            
+            // Créer un aperçu
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setFaviconPreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSave = async () => {
         setLoading(true);
         try {
+            // Créer un FormData pour gérer le fichier et les données
+            const formData = new FormData();
+            
             // Mapper les clés du composant vers les clés de la base de données
             const settingsToSave = {
                 primary_color: siteSettings.primaryColor,
@@ -159,12 +220,24 @@ const SiteManagement = ({ isOpen, onClose }) => {
                 club_description: siteSettings.clubDescription,
             };
 
+            // Ajouter les paramètres au FormData
+            Object.entries(settingsToSave).forEach(([key, value]) => {
+                formData.append(key, value);
+            });
+
+            // Ajouter le fichier logo s'il y en a un
+            if (logoFile) {
+                formData.append('logo', logoFile);
+            }
+
+            // Ajouter le fichier favicon s'il y en a un
+            if (faviconFile) {
+                formData.append('favicon', faviconFile);
+            }
+
             const response = await fetch("/api/site-settings", {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(settingsToSave),
+                body: formData, // Utiliser FormData au lieu de JSON
             });
 
             const result = await response.json();
@@ -220,6 +293,121 @@ const SiteManagement = ({ isOpen, onClose }) => {
                         </div>
                     ) : (
                         <>
+                            {/* Section Logo et Favicon côte à côte */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Section Logo */}
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                                        <Image className="w-5 h-5 mr-2" />
+                                        Logo du Site
+                                    </h3>
+                                    
+                                    <div className="space-y-4">
+                                        {/* Aperçu du logo actuel */}
+                                        {(logoPreview || siteSettings.logoUrl) && (
+                                            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                                                <div className="text-sm font-medium text-gray-700">
+                                                    Logo actuel :
+                                                </div>
+                                                <img
+                                                    src={logoPreview || (siteSettings.logoUrl ? `/${siteSettings.logoUrl}` : '')}
+                                                    alt="Logo du site"
+                                                    className="h-12 w-12 object-cover border border-gray-200 rounded-full"
+                                                />
+                                            </div>
+                                        )}
+                                        
+                                        {/* Upload du logo */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Télécharger un nouveau logo :
+                                            </label>
+                                            <div className="flex items-center space-x-4">
+                                                <label className="cursor-pointer bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2">
+                                                    <Upload className="w-4 h-4" />
+                                                    <span>Choisir un fichier</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleLogoChange}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                                {logoFile && (
+                                                    <span className="text-sm text-gray-600">
+                                                        {logoFile.name}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-gray-500">
+                                                Formats acceptés : JPG, PNG, SVG. Taille maximale : 5MB.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Section Favicon */}
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                                        <Image className="w-5 h-5" />
+                                        <span>Favicon du site</span>
+                                    </h3>
+                                    
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                        <div className="flex items-start space-x-3">
+                                            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                            <div className="text-sm text-blue-800">
+                                                <p className="font-medium mb-1">Qu'est-ce qu'un favicon ?</p>
+                                                <p>Le favicon est la petite icône qui apparaît dans l'onglet de votre navigateur, à côté du titre de votre site. Il aide les utilisateurs à identifier rapidement votre site parmi leurs onglets ouverts.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {/* Aperçu du favicon actuel */}
+                                        {(faviconPreview || siteSettings.faviconUrl) && (
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Favicon actuel :
+                                                </label>
+                                                <img
+                                                    src={faviconPreview || (siteSettings.faviconUrl ? `/${siteSettings.faviconUrl}` : '')}
+                                                    alt="Favicon du site"
+                                                    className="h-8 w-8 object-cover border border-gray-200 rounded-full"
+                                                />
+                                            </div>
+                                        )}
+                                        
+                                        {/* Upload du favicon */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Télécharger un nouveau favicon :
+                                            </label>
+                                            <div className="flex items-center space-x-4">
+                                                <label className="cursor-pointer bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2">
+                                                    <Upload className="w-4 h-4" />
+                                                    <span>Choisir un fichier</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleFaviconChange}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                                {faviconFile && (
+                                                    <span className="text-sm text-gray-600">
+                                                        {faviconFile.name}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-gray-500">
+                                                Formats acceptés : JPG, PNG, SVG, ICO. Taille maximale : 2MB. Recommandé : 32x32 pixels.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Section Couleur Principale */}
                             <div className="space-y-4">
                                 <h3 className="text-lg font-semibold text-gray-900">

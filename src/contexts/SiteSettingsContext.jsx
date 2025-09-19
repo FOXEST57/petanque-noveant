@@ -88,6 +88,30 @@ export const SiteSettingsProvider = ({ children }) => {
         if (newSettings.primaryColor) {
             updateCSSVariables(newSettings.primaryColor);
         }
+
+        // Si le favicon a changé, mettre à jour le favicon
+        if (newSettings.faviconUrl) {
+            updateFavicon(newSettings.faviconUrl);
+        }
+
+        // Si le nom du club a changé, mettre à jour le titre de la page
+        if (newSettings.clubName) {
+            updatePageTitle(newSettings.clubName);
+        }
+    };
+
+    const updateFavicon = (faviconUrl) => {
+        let faviconLink = document.querySelector("link[rel*='icon']");
+        if (!faviconLink) {
+            faviconLink = document.createElement('link');
+            faviconLink.rel = 'icon';
+            document.head.appendChild(faviconLink);
+        }
+        faviconLink.href = `/${faviconUrl}`;
+    };
+
+    const updatePageTitle = (clubName) => {
+        document.title = clubName;
     };
 
     const updateCSSVariables = (primaryColor) => {

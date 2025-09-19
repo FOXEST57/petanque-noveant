@@ -1105,7 +1105,7 @@ const Admin = () => {
                                                                             key={
                                                                                 droitId
                                                                             }
-                                                                            className="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full"
+                                                                            className="px-2 py-1 text-xs font-medium text-white bg-[var(--primary-color)] rounded-full"
                                                                         >
                                                                             {right
                                                                                 ? right.label
@@ -1354,7 +1354,7 @@ const Admin = () => {
                                                                                         key={
                                                                                             droit
                                                                                         }
-                                                                                        className="px-2 py-1 bg-[var(--primary-color)] bg-opacity-10 text-[var(--primary-color)] rounded-full text-xs font-medium"
+                                                                                        className="px-2 py-1 bg-white text-[var(--primary-color)] rounded-full text-xs font-medium"
                                                                                     >
                                                                                         {rightInfo
                                                                                             ? rightInfo.label
