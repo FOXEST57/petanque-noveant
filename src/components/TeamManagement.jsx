@@ -232,8 +232,8 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-[#425e9b] bg-opacity-10 rounded-lg">
-                        <Users className="w-6 h-6 text-[#425e9b]" />
+                    <div className="p-2 bg-white rounded-lg shadow-sm border">
+                        <Users className="w-6 h-6 text-[var(--primary-color)]" />
                     </div>
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900">Gestion des Équipes</h2>
@@ -253,7 +253,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                 <div className="flex justify-end items-center">
                     <button
                         onClick={handleAddTeam}
-                        className="flex items-center px-4 py-2 space-x-2 text-white bg-[#425e9b] rounded-lg transition-colors hover:bg-[#364a82]"
+                        className="flex items-center px-4 py-2 space-x-2 text-white bg-[var(--primary-color)] rounded-lg transition-colors hover:bg-[var(--primary-dark)]"
                     >
                         <Plus className="w-4 h-4" />
                         <span>Ajouter une équipe</span>
@@ -270,7 +270,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                             placeholder="Rechercher une équipe..."
                             value={teamSearchTerm}
                             onChange={(e) => setTeamSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                         />
                     </div>
                 </div>
@@ -278,7 +278,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                     <select
                         value={selectedTeamCategory}
                         onChange={(e) => setSelectedTeamCategory(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                     >
                         <option value="">Toutes les catégories</option>
                         <option value="senior">Senior</option>
@@ -417,7 +417,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                                 name: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Nom de l'équipe"
                                     />
                                 </div>
@@ -434,7 +434,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                                 category: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     >
                                         <option value="">
                                             Sélectionner une catégorie
@@ -458,7 +458,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                                 competition: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     >
                                         <option value="">
                                             Aucune compétition
@@ -483,7 +483,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                                 description: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         rows="3"
                                         placeholder="Description de l'équipe"
                                     />
@@ -497,7 +497,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                         type="file"
                                         accept="image/*"
                                         onChange={handleTeamPhotoChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                     {(teamFormData.teamPhoto ||
                                         teamFormData.photo_url) && (
@@ -562,7 +562,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                                         setIsDropdownOpen(true);
                                                     }
                                                 }}
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                             />
 
                                             {/* Dropdown avec les résultats */}
@@ -649,7 +649,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                                                                     key={
                                                                                         member.id
                                                                                     }
-                                                                                    className="px-4 py-3 hover:bg-gradient-to-r hover:from-[#425e9b]/5 hover:to-[#425e9b]/10 cursor-pointer transition-all duration-200 ease-in-out border-b border-gray-50 last:border-b-0 group"
+                                                                                    className="px-4 py-3 hover:bg-gradient-to-r hover:from-[var(--primary-color)]/5 hover:to-[var(--primary-color)]/10 cursor-pointer transition-all duration-200 ease-in-out border-b border-gray-50 last:border-b-0 group"
                                                                                     onClick={() => {
                                                                                         addMemberToTeam(
                                                                                             member,
@@ -664,7 +664,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                                                                     }}
                                                                                 >
                                                                                     <div className="flex items-center space-x-3">
-                                                                                        <div className="w-8 h-8 bg-gradient-to-br from-[#425e9b] to-[#364a82] rounded-full flex items-center justify-center text-white text-sm font-medium group-hover:scale-110 transition-transform duration-200">
+                                                                                        <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary-color)] to-[var(--primary-dark)] rounded-full flex items-center justify-center text-white text-sm font-medium group-hover:scale-110 transition-transform duration-200">
                                                                                             {member.prenom
                                                                                                 ?.charAt(
                                                                                                     0
@@ -677,7 +677,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                                                                                 ?.toUpperCase()}
                                                                                         </div>
                                                                                         <div>
-                                                                                            <div className="font-medium text-gray-900 group-hover:text-[#425e9b] transition-colors duration-200">
+                                                                                            <div className="font-medium text-gray-900 group-hover:text-[var(--primary-color)] transition-colors duration-200">
                                                                                                 {
                                                                                                     member.prenom
                                                                                                 }{" "}
@@ -702,7 +702,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                                                         10 && (
                                                                         <div className="px-4 py-3 text-xs text-center text-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
                                                                             <span className="inline-flex items-center space-x-1">
-                                                                                <span className="w-2 h-2 bg-[#425e9b] rounded-full"></span>
+                                                                                <span className="w-2 h-2 bg-[var(--primary-color)] rounded-full"></span>
                                                                                 <span>
                                                                                     {
                                                                                         filteredMembers.length
@@ -754,7 +754,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                                                             .value
                                                                     )
                                                                 }
-                                                                className="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                                className="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                             >
                                                                 <option value="Capitaine">
                                                                     Capitaine
@@ -795,7 +795,7 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
                                 </button>
                                 <button
                                     onClick={handleSaveTeam}
-                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                 >
                                     <Save className="w-4 h-4" />
                                     <span>

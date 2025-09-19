@@ -21,7 +21,7 @@ const Home = () => {
                         <div className="space-x-4">
                             <Link
                                 to="/equipes"
-                                className="bg-[#425e9b] hover:bg-[#3a5287] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
+                                className="bg-[var(--primary-color)] hover:bg-[var(--primary-dark)] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
                             >
                                 Découvrir nos équipes
                             </Link>
@@ -42,7 +42,7 @@ const Home = () => {
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                         <div className="text-center">
                             <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 bg-blue-100 rounded-full">
-                                <MapPin className="w-8 h-8 text-[#425e9b]" />
+                                <MapPin className="w-8 h-8 text-[var(--primary-color)]" />
                             </div>
                             <h3 className="mb-2 text-xl font-semibold">
                                 Notre Localisation
@@ -56,7 +56,7 @@ const Home = () => {
 
                         <div className="text-center">
                             <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 bg-blue-100 rounded-full">
-                                <Clock className="w-8 h-8 text-[#425e9b]" />
+                                <Clock className="w-8 h-8 text-[var(--primary-color)]" />
                             </div>
                             <h3 className="mb-2 text-xl font-semibold">
                                 Horaires d'ouverture
@@ -68,7 +68,7 @@ const Home = () => {
 
                         <div className="text-center">
                             <div className="flex justify-center items-center mx-auto mb-4 w-16 h-16 bg-blue-100 rounded-full">
-                                <Users className="w-8 h-8 text-[#425e9b]" />
+                                <Users className="w-8 h-8 text-[var(--primary-color)]" />
                             </div>
                             <h3 className="mb-2 text-xl font-semibold">
                                 Nos Membres
@@ -104,9 +104,9 @@ const Home = () => {
                             <div className="overflow-hidden bg-white rounded-lg shadow-md transition-shadow duration-200 hover:shadow-lg">
                                 <div className="p-6">
                                     <div className="flex justify-center items-center mb-4 w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg transition-colors duration-200 group-hover:from-blue-100 group-hover:to-blue-200">
-                                        <Users className="w-6 h-6 text-[#425e9b]" />
+                                        <Users className="w-6 h-6 text-[var(--primary-color)]" />
                                     </div>
-                                    <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
+                                    <h3 className="text-xl font-semibold mb-2 group-hover:text-[var(--primary-color)] transition-colors duration-200">
                                         Nos Équipes
                                     </h3>
                                     <p className="text-gray-600">
@@ -123,9 +123,9 @@ const Home = () => {
                             <div className="overflow-hidden bg-white rounded-lg shadow-md transition-shadow duration-200 hover:shadow-lg">
                                 <div className="p-6">
                                     <div className="flex justify-center items-center mb-4 w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg transition-colors duration-200 group-hover:from-blue-100 group-hover:to-blue-200">
-                                        <Calendar className="w-6 h-6 text-[#425e9b]" />
+                                        <Calendar className="w-6 h-6 text-[var(--primary-color)]" />
                                     </div>
-                                    <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
+                                    <h3 className="text-xl font-semibold mb-2 group-hover:text-[var(--primary-color)] transition-colors duration-200">
                                         Animations
                                     </h3>
                                     <p className="text-gray-600">
@@ -141,9 +141,9 @@ const Home = () => {
                             <div className="overflow-hidden bg-white rounded-lg shadow-md transition-shadow duration-200 hover:shadow-lg">
                                 <div className="p-6">
                                     <div className="flex justify-center items-center mb-4 w-12 h-12 bg-blue-100 rounded-lg transition-colors duration-200 group-hover:bg-blue-200">
-                                        <Trophy className="w-6 h-6 text-[#425e9b]" />
+                                        <Trophy className="w-6 h-6 text-[var(--primary-color)]" />
                                     </div>
-                                    <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
+                                    <h3 className="text-xl font-semibold mb-2 group-hover:text-[var(--primary-color)] transition-colors duration-200">
                                         Compétitions
                                     </h3>
                                     <p className="text-gray-600">
@@ -177,7 +177,7 @@ const Home = () => {
                                 className="object-cover w-full h-48"
                             />
                             <div className="p-6">
-                                <div className="text-sm text-[#425e9b] font-semibold mb-2">
+                                <div className="text-sm text-[var(--primary-color)] font-semibold mb-2">
                                     15 Juin 2024
                                 </div>
                                 <h3 className="mb-3 text-xl font-semibold">
@@ -190,7 +190,7 @@ const Home = () => {
                                 </p>
                                 <Link
                                     to="/animations"
-                                    className="text-[#425e9b] hover:text-[#3a5287] font-semibold"
+                                    className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] font-semibold"
                                 >
                                     En savoir plus →
                                 </Link>
@@ -205,7 +205,7 @@ const Home = () => {
                                 className="object-cover w-full h-48"
                             />
                             <div className="p-6">
-                                <div className="text-sm text-[#425e9b] font-semibold mb-2">
+                                <div className="text-sm text-[var(--primary-color)] font-semibold mb-2">
                                     10 Juin 2024
                                 </div>
                                 <h3 className="mb-3 text-xl font-semibold">
@@ -218,7 +218,7 @@ const Home = () => {
                                 </p>
                                 <Link
                                     to="/contact"
-                                    className="text-[#425e9b] hover:text-[#3a5287] font-semibold"
+                                    className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] font-semibold"
                                 >
                                     En savoir plus →
                                 </Link>
@@ -233,7 +233,7 @@ const Home = () => {
                                 className="object-cover w-full h-48"
                             />
                             <div className="p-6">
-                                <div className="text-sm text-[#425e9b] font-semibold mb-2">
+                                <div className="text-sm text-[var(--primary-color)] font-semibold mb-2">
                                     5 Juin 2024
                                 </div>
                                 <h3 className="mb-3 text-xl font-semibold">
@@ -245,7 +245,7 @@ const Home = () => {
                                 </p>
                                 <Link
                                     to="/contact"
-                                    className="text-[#425e9b] hover:text-[#3a5287] font-semibold"
+                                    className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] font-semibold"
                                 >
                                     En savoir plus →
                                 </Link>
@@ -256,7 +256,7 @@ const Home = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="py-16 bg-[#425e9b]">
+            <section className="py-16 bg-[var(--primary-color)]">
                 <div className="px-4 mx-auto max-w-7xl text-center sm:px-6 lg:px-8">
                     <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">
                         Rejoignez notre club !
@@ -267,7 +267,7 @@ const Home = () => {
                     </p>
                     <Link
                         to="/contact"
-                        className="bg-white text-[#425e9b] hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 inline-block"
+                        className="bg-white text-[var(--primary-color)] hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 inline-block"
                     >
                         Nous contacter
                     </Link>

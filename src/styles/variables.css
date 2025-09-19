@@ -1,0 +1,41 @@
+/* Variables CSS pour la personnalisation du site */
+:root {
+  /* Couleur principale du site */
+  --primary-color: var(--petanque-green);
+  --primary-color-hover: var(--petanque-green-dark);
+  --primary-color-light: var(--petanque-green-light);
+  --primary-color-very-light: var(--petanque-green-very-light);
+  --primary-color-opacity-10: rgba(46, 125, 50, 0.1);
+  --primary-dark: var(--petanque-green-dark);
+  
+  /* Couleurs dérivées pour différents usages */
+  --primary-bg: var(--primary-color);
+  --primary-text: var(--primary-color);
+  --primary-border: var(--primary-color);
+  --primary-focus: var(--primary-color);
+  
+  /* Couleurs hover et états */
+  --primary-hover-bg: var(--primary-color-hover);
+  --primary-hover-text: var(--primary-color-hover);
+  --primary-hover-border: var(--primary-color-hover);
+  
+  /* Couleurs avec opacité */
+  --primary-bg-opacity: var(--primary-color-opacity-10);
+}
+
+/* Classe utilitaire pour appliquer la couleur principale */
+.primary-color {
+  color: var(--primary-color) !important;
+}
+
+.primary-bg {
+  background-color: var(--primary-color) !important;
+}
+
+.primary-border {
+  border-color: var(--primary-color) !important;
+}
+
+.primary-hover:hover {
+  background-color: var(--primary-color-hover) !important;
+}

@@ -21,12 +21,12 @@ const CartSummary = () => {
       {/* Cart Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-[#425e9b] hover:bg-[#3a5287] text-white p-4 rounded-full shadow-lg transition-colors duration-200 z-40"
+        className="fixed bottom-6 right-6 bg-[var(--primary-color)] hover:bg-[var(--primary-dark)] text-white p-4 rounded-full shadow-lg transition-colors duration-200 z-40"
       >
         <div className="relative">
           <ShoppingCart className="w-6 h-6" />
           {itemCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-[#425e9b] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="absolute -top-2 -right-2 bg-[var(--primary-color)] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
               {itemCount}
             </span>
           )}
@@ -104,7 +104,7 @@ const CartSummary = () => {
                   </button>
                 </div>
                 
-                <button className="w-full bg-[#425e9b] hover:bg-[#3a5287] text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200">
+                <button className="w-full bg-var(--primary-color) hover:bg-var(--primary-dark) text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200">
                   Commander
                 </button>
               </div>

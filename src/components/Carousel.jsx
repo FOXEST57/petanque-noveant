@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 
-const Carousel = () => {
+const Carousel = ({ transitionType = 'slide', transitionDuration = 600 }) => {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   // Fallback images if API fails
   const fallbackImages = [
@@ -73,27 +74,36 @@ const Carousel = () => {
   }, [])
 
   const nextSlide = () => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
     setCurrentSlide((prev) => (prev + 1) % images.length)
+    setTimeout(() => setIsTransitioning(false), transitionDuration)
   }
 
   const prevSlide = () => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
     setCurrentSlide((prev) => (prev - 1 + images.length) % images.length)
+    setTimeout(() => setIsTransitioning(false), transitionDuration)
   }
 
   const goToSlide = (index) => {
+    if (isTransitioning || index === currentSlide) return
+    setIsTransitioning(true)
     setCurrentSlide(index)
+    setTimeout(() => setIsTransitioning(false), transitionDuration)
   }
 
   // Auto-play functionality
   useEffect(() => {
-    if (!isAutoPlaying || images.length <= 1) return
+    if (!isAutoPlaying || images.length <= 1 || isTransitioning) return
 
     const interval = setInterval(() => {
       nextSlide()
     }, 5000) // Change slide every 5 seconds
 
     return () => clearInterval(interval)
-  }, [isAutoPlaying, currentSlide, images.length])
+  }, [isAutoPlaying, currentSlide, images.length, isTransitioning])
 
   // Pause auto-play on hover/touch
   const handleMouseEnter = () => setIsAutoPlaying(false)
@@ -131,6 +141,53 @@ const Carousel = () => {
     setIsAutoPlaying(true)
   }
 
+  // Get transition styles based on type
+  const getTransitionStyles = (index) => {
+    const isActive = index === currentSlide
+    const isPrev = index === (currentSlide - 1 + images.length) % images.length
+    const isNext = index === (currentSlide + 1) % images.length
+
+    switch (transitionType) {
+      case 'slide':
+        return {
+          transform: `translateX(${
+            isActive ? '0%' : 
+            isPrev ? '-100%' : 
+            isNext ? '100%' : 
+            index < currentSlide ? '-100%' : '100%'
+          })`,
+          transition: `transform ${transitionDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`,
+          opacity: 1
+        }
+      
+      case 'fade':
+        return {
+          opacity: isActive ? 1 : 0,
+          transition: `opacity ${transitionDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`,
+          transform: 'translateX(0%)'
+        }
+      
+      case 'zoom':
+        return {
+          opacity: isActive ? 1 : 0,
+          transform: `scale(${isActive ? 1 : 0.8}) translateX(0%)`,
+          transition: `all ${transitionDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`
+        }
+      
+      default:
+        return {
+          transform: `translateX(${
+            isActive ? '0%' : 
+            isPrev ? '-100%' : 
+            isNext ? '100%' : 
+            index < currentSlide ? '-100%' : '100%'
+          })`,
+          transition: `transform ${transitionDuration}ms cubic-bezier(0.4, 0.0, 0.2, 1)`,
+          opacity: 1
+        }
+    }
+  }
+
   // Show loading state
   if (loading) {
     return (
@@ -158,14 +215,13 @@ const Carousel = () => {
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {/* Images */}
+      {/* Images Container */}
       <div className="relative w-full h-full">
         {images.map((image, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
+            className="absolute inset-0 w-full h-full"
+            style={getTransitionStyles(index)}
           >
             <img
               src={image.src}
@@ -185,19 +241,45 @@ const Carousel = () => {
         ))}
       </div>
 
-
+      {/* Navigation Arrows */}
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={prevSlide}
+            disabled={isTransitioning}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-3 rounded-full transition-all duration-200 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed z-10"
+            aria-label="Image précédente"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={nextSlide}
+            disabled={isTransitioning}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-3 rounded-full transition-all duration-200 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed z-10"
+            aria-label="Image suivante"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </>
+      )}
 
       {/* Dots indicator - only show if more than one image */}
       {images.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
           {images.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              disabled={isTransitioning}
+              className={`w-3 h-3 rounded-full transition-all duration-300 disabled:cursor-not-allowed ${
                 index === currentSlide
-                  ? 'bg-white scale-110'
-                  : 'bg-white bg-opacity-50 hover:bg-opacity-75'
+                  ? 'bg-white scale-110 shadow-lg'
+                  : 'bg-white bg-opacity-50 hover:bg-opacity-75 hover:scale-105'
               }`}
               aria-label={`Aller à l'image ${index + 1}`}
             />

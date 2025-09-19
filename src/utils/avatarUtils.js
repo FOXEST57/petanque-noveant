@@ -11,7 +11,7 @@ export const generateAvatar = (prenom, nom) => {
         nom?.charAt(0) || ""
     }`.toUpperCase();
     const colors = [
-        "#425e9b",
+        "var(--primary-color)", // Couleur principale du site (sera remplacée par var(--primary-color))
         "#e74c3c",
         "#3498db",
         "#2ecc71",

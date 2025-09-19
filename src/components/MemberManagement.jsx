@@ -269,8 +269,8 @@ const MemberManagement = ({ onClose }) => {
             <div className="mb-6">
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-start space-x-3">
-                        <div className="p-2 bg-[#425e9b] bg-opacity-10 rounded-lg">
-                            <Users className="w-6 h-6 text-[#425e9b]" />
+                        <div className="p-2 bg-white rounded-lg shadow-sm border">
+                            <Users className="w-6 h-6 text-[var(--primary-color)]" />
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-gray-900">Gestion des Membres</h2>
@@ -289,7 +289,7 @@ const MemberManagement = ({ onClose }) => {
                 <div className="flex justify-end">
                     <button
                         onClick={handleAddMember}
-                        className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center space-x-2"
+                        className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center space-x-2"
                     >
                         <UserPlus className="w-4 h-4" />
                         <span>Ajouter un membre</span>
@@ -306,13 +306,13 @@ const MemberManagement = ({ onClose }) => {
                         placeholder="Rechercher un membre..."
                         value={memberSearchTerm}
                         onChange={(e) => setMemberSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                     />
                 </div>
                 <select
                     value={selectedMemberType}
                     onChange={(e) => setSelectedMemberType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                 >
                     <option value="">Tous les types</option>
                     {memberTypes.map((type) => (
@@ -473,7 +473,7 @@ const MemberManagement = ({ onClose }) => {
                                         required
                                         value={memberFormData.nom}
                                         onChange={(e) => setMemberFormData({...memberFormData, nom: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                 </div>
 
@@ -486,7 +486,7 @@ const MemberManagement = ({ onClose }) => {
                                         required
                                         value={memberFormData.prenom}
                                         onChange={(e) => setMemberFormData({...memberFormData, prenom: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                 </div>
 
@@ -499,7 +499,7 @@ const MemberManagement = ({ onClose }) => {
                                         required
                                         value={memberFormData.email}
                                         onChange={(e) => setMemberFormData({...memberFormData, email: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                 </div>
 
@@ -511,7 +511,7 @@ const MemberManagement = ({ onClose }) => {
                                         type="tel"
                                         value={memberFormData.telephone}
                                         onChange={(e) => setMemberFormData({...memberFormData, telephone: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                 </div>
 
@@ -523,7 +523,7 @@ const MemberManagement = ({ onClose }) => {
                                         required
                                         value={memberFormData.typeMembreId}
                                         onChange={(e) => setMemberFormData({...memberFormData, typeMembreId: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     >
                                         <option value="">Sélectionner un type</option>
                                         {memberTypes.map((type) => (
@@ -543,7 +543,7 @@ const MemberManagement = ({ onClose }) => {
                                         type="text"
                                         value={memberFormData.numeroLicence}
                                         onChange={(e) => setMemberFormData({...memberFormData, numeroLicence: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Ex: 123456789"
                                     />
                                 </div>
@@ -557,7 +557,7 @@ const MemberManagement = ({ onClose }) => {
                                         type="date"
                                         value={memberFormData.dateNaissance}
                                         onChange={(e) => setMemberFormData({...memberFormData, dateNaissance: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                 </div>
 
@@ -570,7 +570,7 @@ const MemberManagement = ({ onClose }) => {
                                         type="date"
                                         value={memberFormData.dateEntree}
                                         onChange={(e) => setMemberFormData({...memberFormData, dateEntree: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                 </div>
 
@@ -582,7 +582,7 @@ const MemberManagement = ({ onClose }) => {
                                     <textarea
                                         value={memberFormData.adresse}
                                         onChange={(e) => setMemberFormData({...memberFormData, adresse: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         rows="2"
                                         placeholder="Adresse complète"
                                     />
@@ -596,7 +596,7 @@ const MemberManagement = ({ onClose }) => {
                                         type="file"
                                         accept="image/*"
                                         onChange={handleMemberImageChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                     <div className="mt-2">
                                         {memberImagePreview ? (
@@ -628,7 +628,7 @@ const MemberManagement = ({ onClose }) => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-[#425e9b] text-white rounded-lg hover:bg-[#364a82] transition-colors"
+                                    className="px-4 py-2 bg-[var(--primary-color)] text-white rounded-lg hover:bg-[var(--primary-dark)] transition-colors"
                                 >
                                     {memberModalMode === "add" ? "Ajouter" : "Modifier"}
                                 </button>

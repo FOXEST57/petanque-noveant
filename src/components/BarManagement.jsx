@@ -183,8 +183,8 @@ const BarManagement = ({ onClose }) => {
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-[#425e9b] bg-opacity-10 rounded-lg">
-                            <Wine className="w-6 h-6 text-[#425e9b]" />
+                        <div className="p-2 bg-white rounded-lg shadow-sm border">
+                            <Wine className="w-6 h-6 text-[var(--primary-color)]" />
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-gray-900">Gestion du Bar</h2>
@@ -208,12 +208,12 @@ const BarManagement = ({ onClose }) => {
                             placeholder="Rechercher une boisson..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                         />
                     </div>
                     <button
                         onClick={handleAddDrink}
-                        className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                        className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                     >
                         <Plus className="w-4 h-4" />
                         <span>Ajouter une boisson</span>
@@ -286,7 +286,7 @@ const BarManagement = ({ onClose }) => {
                                                 <div className="flex space-x-2">
                                                     <button
                                                         onClick={() => handleEditDrink(drink)}
-                                                        className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                        className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                         title="Modifier"
                                                     >
                                                         <Edit className="w-4 h-4" />
@@ -338,7 +338,7 @@ const BarManagement = ({ onClose }) => {
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Nom de la boisson"
                                     />
                                 </div>
@@ -352,7 +352,7 @@ const BarManagement = ({ onClose }) => {
                                         step="0.01"
                                         value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="0.00"
                                     />
                                 </div>
@@ -365,7 +365,7 @@ const BarManagement = ({ onClose }) => {
                                         type="number"
                                         value={formData.stock}
                                         onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="50"
                                     />
                                 </div>
@@ -377,7 +377,7 @@ const BarManagement = ({ onClose }) => {
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         rows="3"
                                         placeholder="Description de la boisson"
                                     />
@@ -441,7 +441,7 @@ const BarManagement = ({ onClose }) => {
                                 </button>
                                 <button
                                     onClick={handleSaveDrink}
-                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                 >
                                     <Save className="w-4 h-4" />
                                     <span>{modalMode === 'add' ? 'Ajouter' : 'Modifier'}</span>

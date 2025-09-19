@@ -1,4 +1,4 @@
-import { deleteEventPhoto, getEventPhotos } from './src/lib/database.js';
+import { deleteEventPhoto, getEventPhotos } from '../src/lib/database.js';
 import fs from 'fs';
 import path from 'path';
 

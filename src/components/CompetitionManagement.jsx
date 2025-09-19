@@ -279,7 +279,7 @@ const CompetitionManagement = ({ onClose }) => {
                     onClick={() => setActiveTab('concours')}
                     className={`px-6 py-3 font-medium text-sm transition-colors ${
                         activeTab === 'concours'
-                            ? 'border-b-2 border-[#425e9b] text-[#425e9b]'
+                            ? 'border-b-2 border-[var(--primary-color)] text-[var(--primary-color)]'
                             : 'text-gray-500 hover:text-gray-700'
                     }`}
                 >
@@ -292,7 +292,7 @@ const CompetitionManagement = ({ onClose }) => {
                     onClick={() => setActiveTab('lotos')}
                     className={`px-6 py-3 font-medium text-sm transition-colors ${
                         activeTab === 'lotos'
-                            ? 'border-b-2 border-[#425e9b] text-[#425e9b]'
+                            ? 'border-b-2 border-[var(--primary-color)] text-[var(--primary-color)]'
                             : 'text-gray-500 hover:text-gray-700'
                     }`}
                 >
@@ -316,12 +316,12 @@ const CompetitionManagement = ({ onClose }) => {
                                     placeholder="Rechercher un concours..."
                                     value={concoursSearchTerm}
                                     onChange={(e) => setConcoursSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                 />
                             </div>
                             <button
                                 onClick={handleAddConcours}
-                                className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                                className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 <span>Ajouter un concours</span>
@@ -373,7 +373,7 @@ const CompetitionManagement = ({ onClose }) => {
                                                         <div className="flex space-x-2">
                                                             <button
                                                                 onClick={() => handleEditConcours(concours)}
-                                                                className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                                 title="Modifier"
                                                             >
                                                                 <Edit className="w-4 h-4" />
@@ -414,12 +414,12 @@ const CompetitionManagement = ({ onClose }) => {
                                     placeholder="Rechercher un loto..."
                                     value={lotoSearchTerm}
                                     onChange={(e) => setLotoSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                 />
                             </div>
                             <button
                                 onClick={handleAddLoto}
-                                className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                                className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 <span>Ajouter un loto</span>
@@ -471,7 +471,7 @@ const CompetitionManagement = ({ onClose }) => {
                                                         <div className="flex space-x-2">
                                                             <button
                                                                 onClick={() => handleEditLoto(loto)}
-                                                                className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                                 title="Modifier"
                                                             >
                                                                 <Edit className="w-4 h-4" />
@@ -523,7 +523,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             ...concoursFormData,
                                             nom: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Nom du concours"
                                     />
                                 </div>
@@ -539,7 +539,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             ...concoursFormData,
                                             date: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                 </div>
 
@@ -553,7 +553,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             ...concoursFormData,
                                             statut: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     >
                                         <option value="planifie">Planifié</option>
                                         <option value="en_cours">En cours</option>
@@ -574,7 +574,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             ...concoursFormData,
                                             prixInscription: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="0.00"
                                     />
                                 </div>
@@ -592,7 +592,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             ...concoursFormData,
                                             prixAGagner: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="0.00"
                                     />
                                 </div>
@@ -608,7 +608,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             description: e.target.value
                                         })}
                                         rows={3}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Description du concours, règles, conditions..."
                                     />
                                 </div>
@@ -623,7 +623,7 @@ const CompetitionManagement = ({ onClose }) => {
                                 </button>
                                 <button
                                     onClick={handleSaveConcours}
-                                    className="px-4 py-2 bg-[#425e9b] text-white rounded-lg hover:bg-[#364a82] transition-colors"
+                                    className="px-4 py-2 bg-[var(--primary-color)] text-white rounded-lg hover:bg-[var(--primary-dark)] transition-colors"
                                 >
                                     {concoursModalMode === 'add' ? 'Ajouter' : 'Modifier'}
                                 </button>
@@ -654,7 +654,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             ...lotoFormData,
                                             nom: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Nom du loto"
                                     />
                                 </div>
@@ -670,7 +670,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             ...lotoFormData,
                                             date: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                 </div>
 
@@ -684,7 +684,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             ...lotoFormData,
                                             statut: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     >
                                         <option value="planifie">Planifié</option>
                                         <option value="en_cours">En cours</option>
@@ -705,7 +705,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             ...lotoFormData,
                                             prixCarton: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="0.00"
                                     />
                                 </div>
@@ -721,7 +721,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             lotsAGagner: e.target.value
                                         })}
                                         rows={2}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Liste des lots à gagner..."
                                     />
                                 </div>
@@ -737,7 +737,7 @@ const CompetitionManagement = ({ onClose }) => {
                                             description: e.target.value
                                         })}
                                         rows={3}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Description du loto..."
                                     />
                                 </div>
@@ -752,7 +752,7 @@ const CompetitionManagement = ({ onClose }) => {
                                 </button>
                                 <button
                                     onClick={handleSaveLoto}
-                                    className="px-4 py-2 bg-[#425e9b] text-white rounded-lg hover:bg-[#364a82] transition-colors"
+                                    className="px-4 py-2 bg-[var(--primary-color)] text-white rounded-lg hover:bg-[var(--primary-dark)] transition-colors"
                                 >
                                     {lotoModalMode === 'add' ? 'Ajouter' : 'Modifier'}
                                 </button>

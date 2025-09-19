@@ -2,7 +2,7 @@
 
 /* Carte principale de gestion */
 .admin-card {
-  @apply p-6 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow border border-gray-200 hover:border-[#425e9b];
+  @apply p-6 bg-white rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow border border-gray-200 hover:border-[var(--primary-color)];
 }
 
 /* Contenu de la carte */
@@ -12,11 +12,11 @@
 
 /* Icône de la carte */
 .admin-card-icon {
-  @apply p-3 bg-[#425e9b] bg-opacity-10 rounded-lg;
+  @apply p-3 bg-[var(--primary-color)] bg-opacity-10 rounded-lg;
 }
 
 .admin-card-icon svg {
-  @apply w-6 h-6 text-[#425e9b];
+  @apply w-6 h-6 text-[var(--primary-color)];
 }
 
 /* Texte de la carte */
@@ -50,12 +50,21 @@
   @apply flex items-center space-x-3;
 }
 
+/* Icône spécifique pour les cartes de statistiques */
+.admin-stats-card .admin-card-icon {
+  @apply p-3 bg-white rounded-lg;
+}
+
+.admin-stats-card .admin-card-icon svg {
+  @apply w-6 h-6 text-[var(--primary-color)];
+}
+
 .admin-stats-card-count {
   @apply text-right;
 }
 
 .admin-stats-card-number {
-  @apply text-2xl font-bold text-[#425e9b];
+  @apply text-2xl font-bold text-[var(--primary-color)];
 }
 
 .admin-stats-card-footer {
@@ -63,7 +72,7 @@
 }
 
 .admin-stats-card-action {
-  @apply text-sm text-[#425e9b] font-medium;
+  @apply text-sm text-[var(--primary-color)] font-medium;
 }
 
 /* Cartes de contenu avec ombre */
@@ -87,7 +96,7 @@
 }
 
 .admin-loading-spinner {
-  @apply animate-spin rounded-full h-32 w-32 border-b-2 border-[#425e9b];
+  @apply animate-spin rounded-full h-32 w-32 border-b-2 border-[var(--primary-color)];
 }
 
 /* Container principal */

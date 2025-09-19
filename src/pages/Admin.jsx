@@ -17,6 +17,7 @@ import {
     Plus,
     Save,
     Search,
+    Settings,
     Shield,
     Trash2,
     Trophy,
@@ -36,6 +37,7 @@ import EventManagement from "../components/EventManagement";
 import CompetitionManagement from "../components/CompetitionManagement";
 import TeamManagement from "../components/TeamManagement";
 import HomeContentManagement from "../components/HomeContentManagement";
+import SiteManagement from "../components/SiteManagement";
 
 import { formatDateToFrench, formatDateToISO, validateFrenchDate } from "../utils/dateUtils";
 import { generateAvatar } from "../utils/avatarUtils";
@@ -902,6 +904,14 @@ const Admin = () => {
                         description="Gestion des lotos et tirages"
                         modalKey="concours"
                     />
+
+                    <ManagementCard
+                        title="Gestion du site"
+                        icon={Settings}
+                        count={1}
+                        description="Configuration et paramètres du site web"
+                        modalKey="gestionSite"
+                    />
                 </div>
             </div>
 
@@ -998,7 +1008,7 @@ const Admin = () => {
                                                                 }
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         placeholder="Ex: Administrateur, Modérateur, Membre standard"
                                                     />
                                                 </div>
@@ -1021,7 +1031,7 @@ const Admin = () => {
                                                                 }
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         rows="3"
                                                         placeholder="Description du rôle et des responsabilités"
                                                     />
@@ -1051,7 +1061,7 @@ const Admin = () => {
                                                                                 right.id
                                                                             )
                                                                         }
-                                                                        className="w-4 h-4 text-[#425e9b] border-gray-300 rounded focus:ring-[#425e9b]"
+                                                                        className="w-4 h-4 text-[var(--primary-color)] border-gray-300 rounded focus:ring-[var(--primary-color)]"
                                                                     />
                                                                     <div className="flex-1">
                                                                         <div className="text-sm font-medium text-gray-900">
@@ -1124,7 +1134,7 @@ const Admin = () => {
                                                     onClick={
                                                         handleSaveTypeMember
                                                     }
-                                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                                 >
                                                     <Save className="w-4 h-4" />
                                                     <span>
@@ -1212,7 +1222,7 @@ const Admin = () => {
                                     <div className="flex items-center justify-between pb-4 border-b border-gray-200">
                                         <div className="flex items-center space-x-3">
                                              <div className="p-2 bg-gray-100 rounded-lg">
-                                                 <Shield className="w-6 h-6 text-[#425e9b]" />
+                                                 <Shield className="w-6 h-6 text-[var(--primary-color)]" />
                                              </div>
                                             <div>
                                                 <h2 className="text-xl font-semibold text-gray-900">
@@ -1245,13 +1255,13 @@ const Admin = () => {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                 />
                                             </div>
                                         </div>
                                         <button
                                             onClick={handleAddTypeMember}
-                                            className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                                            className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                                         >
                                             <Shield className="w-4 h-4" />
                                             Ajouter un type
@@ -1305,7 +1315,7 @@ const Admin = () => {
                                                             >
                                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                                     <div className="flex items-center">
-                                                                        <Shield className="h-5 w-5 text-[#425e9b] mr-2" />
+                                                                        <Shield className="h-5 w-5 text-[var(--primary-color)] mr-2" />
                                                                         <span className="text-sm font-medium text-gray-900">
                                                                             {
                                                                                 type.nom
@@ -1344,7 +1354,7 @@ const Admin = () => {
                                                                                         key={
                                                                                             droit
                                                                                         }
-                                                                                        className="px-2 py-1 bg-[#425e9b] bg-opacity-10 text-[#425e9b] rounded-full text-xs font-medium"
+                                                                                        className="px-2 py-1 bg-[var(--primary-color)] bg-opacity-10 text-[var(--primary-color)] rounded-full text-xs font-medium"
                                                                                     >
                                                                                         {rightInfo
                                                                                             ? rightInfo.label
@@ -1376,7 +1386,7 @@ const Admin = () => {
                                                                                     type
                                                                                 )
                                                                             }
-                                                                            className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                            className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                                             title="Modifier"
                                                                         >
                                                                             <Edit className="w-4 h-4" />
@@ -1414,13 +1424,20 @@ const Admin = () => {
                                 <TeamManagement onStatsUpdate={handleStatsUpdate} onClose={() => setActiveModal(null)} />
                             )}
 
+                            {activeModal === "gestionSite" && (
+                                <SiteManagement 
+                                    isOpen={true}
+                                    onClose={() => setActiveModal(null)} 
+                                />
+                            )}
+
                             {activeModal === "droits" && (
                                 <div className="space-y-6">
                                     {/* Header du modal de gestion des droits */}
                                     <div className="flex justify-between items-center pb-4 border-b border-gray-200">
                                         <div className="flex items-center space-x-3">
                                             <div className="p-2 bg-gray-100 rounded-lg">
-                                                <Shield className="w-6 h-6 text-[#425e9b]" />
+                                                <Shield className="w-6 h-6 text-[var(--primary-color)]" />
                                             </div>
                                             <div>
                                                 <h2 className="text-xl font-semibold text-gray-900">
@@ -1441,7 +1458,7 @@ const Admin = () => {
                                     {/* Liste des droits disponibles */}
                                     <div className="p-6 bg-white rounded-lg shadow">
                                         <h3 className="flex gap-2 items-center mb-4 text-lg font-semibold text-gray-900">
-                                            <Shield className="w-5 h-5 text-[#425e9b]" />
+                                            <Shield className="w-5 h-5 text-[var(--primary-color)]" />
                                             Droits disponibles
                                         </h3>
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -1477,7 +1494,7 @@ const Admin = () => {
                                     {/* Attribution des droits */}
                                     <div className="p-6 bg-white rounded-lg shadow">
                                         <h3 className="flex gap-2 items-center mb-4 text-lg font-semibold text-gray-900">
-                                            <Users className="w-5 h-5 text-[#425e9b]" />
+                                            <Users className="w-5 h-5 text-[var(--primary-color)]" />
                                             Attribution des droits
                                         </h3>
                                         <div className="space-y-4">
@@ -1485,7 +1502,7 @@ const Admin = () => {
                                                 onClick={() =>
                                                     setActiveModal("typeMembre")
                                                 }
-                                                className="w-full bg-[#425e9b] text-white px-4 py-3 rounded-lg hover:bg-[#364a82] transition-colors flex items-center justify-center gap-2"
+                                                className="w-full bg-[var(--primary-color)] text-white px-4 py-3 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center justify-center gap-2"
                                             >
                                                 <Shield className="w-4 h-4" />
                                                 Gérer les types de membre
@@ -1595,7 +1612,7 @@ const Admin = () => {
                                                 nom: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Nom"
                                     />
                                 </div>
@@ -1613,7 +1630,7 @@ const Admin = () => {
                                                 prenom: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Prénom"
                                     />
                                 </div>
@@ -1632,7 +1649,7 @@ const Admin = () => {
                                                 email: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="email@exemple.com"
                                     />
                                 </div>
@@ -1651,7 +1668,7 @@ const Admin = () => {
                                                 telephone: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="0123456789"
                                     />
                                 </div>
@@ -1670,7 +1687,7 @@ const Admin = () => {
                                                 numeroLicence: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="LIC001"
                                     />
                                 </div>
@@ -1688,7 +1705,7 @@ const Admin = () => {
                                                 adresse: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         rows="2"
                                         placeholder="Adresse complète"
                                     />
@@ -1732,7 +1749,7 @@ const Admin = () => {
                                                     "day"
                                                 )
                                             }
-                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateNaissance
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -1771,7 +1788,7 @@ const Admin = () => {
                                                     "month"
                                                 )
                                             }
-                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateNaissance
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -1810,7 +1827,7 @@ const Admin = () => {
                                                     "year"
                                                 )
                                             }
-                                            className={`w-16 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-16 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateNaissance
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -1861,7 +1878,7 @@ const Admin = () => {
                                                     "day"
                                                 )
                                             }
-                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateEntree
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -1899,7 +1916,7 @@ const Admin = () => {
                                                     "month"
                                                 )
                                             }
-                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateEntree
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -1937,7 +1954,7 @@ const Admin = () => {
                                                     "year"
                                                 )
                                             }
-                                            className={`w-16 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-16 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateEntree
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -2040,7 +2057,7 @@ const Admin = () => {
                                                 typeMembreId: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     >
                                         <option value="">
                                             Sélectionner un type
@@ -2066,7 +2083,7 @@ const Admin = () => {
                                 </button>
                                 <button
                                     onClick={handleSaveMember}
-                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                 >
                                     <Save className="w-4 h-4" />
                                     <span>

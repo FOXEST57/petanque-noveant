@@ -2601,8 +2601,8 @@ const Admin = () => {
             >
                 <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-[#425e9b] bg-opacity-10 rounded-lg">
-                            <Icon className="w-6 h-6 text-[#425e9b]" />
+                        <div className="p-2 bg-[var(--primary-color)] bg-opacity-10 rounded-lg">
+                            <Icon className="w-6 h-6 text-[var(--primary-color)]" />
                         </div>
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900">
@@ -2614,13 +2614,13 @@ const Admin = () => {
                         </div>
                     </div>
                     <div className="text-right">
-                        <div className="text-2xl font-bold text-[#425e9b]">
+                        <div className="text-2xl font-bold text-[var(--primary-color)]">
                             {count}
                         </div>
                     </div>
                 </div>
                 <div className="flex justify-center items-center py-2">
-                    <span className="text-sm text-[#425e9b] font-medium">
+                    <span className="text-sm text-[var(--primary-color)] font-medium">
                         Cliquer pour gérer →
                     </span>
                 </div>
@@ -2631,7 +2631,7 @@ const Admin = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#425e9b]"></div>
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[var(--primary-color)]"></div>
             </div>
         );
     }
@@ -2827,7 +2827,7 @@ const Admin = () => {
                                                                 })
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     />
                                                 </div>
                                                 <div>
@@ -2851,7 +2851,7 @@ const Admin = () => {
                                                                 })
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     />
                                                 </div>
                                             </div>
@@ -2881,7 +2881,7 @@ const Admin = () => {
                                                     />
                                                     <label
                                                         htmlFor="carousel-images"
-                                                        className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors text-sm cursor-pointer inline-block"
+                                                        className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors text-sm cursor-pointer inline-block"
                                                     >
                                                         Choisir des images
                                                     </label>
@@ -3209,7 +3209,7 @@ const Admin = () => {
                                                             })
                                                         )
                                                     }
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                                 />
                                             </div>
                                             <div className="p-4 rounded-lg border border-gray-200">
@@ -3233,7 +3233,7 @@ const Admin = () => {
                                                             })
                                                         )
                                                     }
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                                 />
                                             </div>
                                             <div className="p-4 rounded-lg border border-gray-200">
@@ -3257,7 +3257,7 @@ const Admin = () => {
                                                             })
                                                         )
                                                     }
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                                 />
                                             </div>
                                         </div>
@@ -3291,7 +3291,7 @@ const Admin = () => {
                                                                 })
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                                     />
                                                 </div>
 
@@ -3317,7 +3317,7 @@ const Admin = () => {
                                                                 })
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                                     />
                                                 </div>
 
@@ -3346,7 +3346,7 @@ const Admin = () => {
                                                                     })
                                                                 )
                                                             }
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                                         />
                                                     </div>
 
@@ -3373,7 +3373,7 @@ const Admin = () => {
                                                                     })
                                                                 )
                                                             }
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                                         />
                                                     </div>
 
@@ -3400,7 +3400,7 @@ const Admin = () => {
                                                                     })
                                                                 )
                                                             }
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                                         />
                                                     </div>
                                                 </div>
@@ -3418,7 +3418,7 @@ const Admin = () => {
                                         <button
                                             onClick={handleSaveHomeContent}
                                             disabled={homeContentLoading}
-                                            className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                                            className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                                         >
                                             {homeContentLoading && (
                                                 <div className="w-4 h-4 rounded-full border-b-2 border-white animate-spin"></div>
@@ -3446,14 +3446,14 @@ const Admin = () => {
                                                                 e.target.value
                                                             )
                                                         }
-                                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     />
                                                 </div>
                                             </div>
 
                                             <button
                                                 onClick={handleAddDrink}
-                                                className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center space-x-2"
+                                                className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center space-x-2"
                                             >
                                                 <Plus className="w-4 h-4" />
                                                 <span>Ajouter</span>
@@ -3590,7 +3590,7 @@ const Admin = () => {
                                                                                     drink
                                                                                 )
                                                                             }
-                                                                            className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                            className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                                         >
                                                                             <Edit className="w-4 h-4" />
                                                                         </button>
@@ -3655,7 +3655,7 @@ const Admin = () => {
                                                                     .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         placeholder="Titre de l'événement"
                                                     />
                                                 </div>
@@ -3677,7 +3677,7 @@ const Admin = () => {
                                                                     .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     />
                                                 </div>
 
@@ -3697,7 +3697,7 @@ const Admin = () => {
                                                                     .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     />
                                                 </div>
 
@@ -3718,7 +3718,7 @@ const Admin = () => {
                                                                     .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         placeholder="Lieu de l'événement"
                                                     />
                                                 </div>
@@ -3739,7 +3739,7 @@ const Admin = () => {
                                                                         .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     >
                                                         <option value="">
                                                             Sélectionner le
@@ -3790,7 +3790,7 @@ const Admin = () => {
                                                                         .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         rows="4"
                                                         placeholder="Description de l'événement..."
                                                     />
@@ -3808,7 +3808,7 @@ const Admin = () => {
                                                         onChange={
                                                             handleEventPhotosChange
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     />
                                                     <p className="mt-1 text-sm text-gray-500">
                                                         Vous pouvez sélectionner
@@ -3923,7 +3923,7 @@ const Admin = () => {
                                                 </button>
                                                 <button
                                                     onClick={handleSaveEvent}
-                                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                                 >
                                                     <Save className="w-4 h-4" />
                                                     <span>
@@ -4030,12 +4030,12 @@ const Admin = () => {
                                                                         .value
                                                                 )
                                                             }
-                                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         />
                                                     </div>
                                                     <button
                                                         onClick={handleAddEvent}
-                                                        className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                                                        className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                                                     >
                                                         <Plus className="w-4 h-4" />
                                                         <span>
@@ -4132,7 +4132,7 @@ const Admin = () => {
                                                                                                     event
                                                                                                 )
                                                                                             }
-                                                                                            className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                                            className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                                                             title="Modifier"
                                                                                         >
                                                                                             <Edit className="w-4 h-4" />
@@ -4244,7 +4244,7 @@ const Admin = () => {
                                                                     .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         placeholder="Nom du loto"
                                                     />
                                                 </div>
@@ -4265,7 +4265,7 @@ const Admin = () => {
                                                                     .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     />
                                                 </div>
 
@@ -4284,7 +4284,7 @@ const Admin = () => {
                                                                     .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     >
                                                         <option value="en_attente">
                                                             En attente
@@ -4317,7 +4317,7 @@ const Admin = () => {
                                                                         .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         placeholder="0.00"
                                                     />
                                                 </div>
@@ -4339,7 +4339,7 @@ const Admin = () => {
                                                                         .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         placeholder="Ex: Jambon, Bouteilles de vin..."
                                                     />
                                                 </div>
@@ -4360,7 +4360,7 @@ const Admin = () => {
                                                                         .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         rows="3"
                                                         placeholder="Description du loto..."
                                                     />
@@ -4378,7 +4378,7 @@ const Admin = () => {
                                                 </button>
                                                 <button
                                                     onClick={handleSaveLoto}
-                                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                                 >
                                                     <Save className="w-4 h-4" />
                                                     <span>
@@ -4460,12 +4460,12 @@ const Admin = () => {
                                                         e.target.value
                                                     )
                                                 }
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                             />
                                         </div>
                                         <button
                                             onClick={handleAddConcours}
-                                            className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                                            className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                                         >
                                             <Plus className="w-4 h-4" />
                                             <span>Ajouter un concours</span>
@@ -4562,7 +4562,7 @@ const Admin = () => {
                                                                                         concours
                                                                                     )
                                                                                 }
-                                                                                className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                                className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                                                 title="Modifier"
                                                                             >
                                                                                 <Edit className="w-4 h-4" />
@@ -4645,7 +4645,7 @@ const Admin = () => {
                                                                 }
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         placeholder="Nom du concours"
                                                     />
                                                 </div>
@@ -4670,7 +4670,7 @@ const Admin = () => {
                                                                 }
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     />
                                                 </div>
 
@@ -4692,7 +4692,7 @@ const Admin = () => {
                                                                 }
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                     >
                                                         <option value="en_attente">
                                                             En attente
@@ -4728,7 +4728,7 @@ const Admin = () => {
                                                                 }
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         placeholder="0.00"
                                                     />
                                                 </div>
@@ -4755,7 +4755,7 @@ const Admin = () => {
                                                                 }
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         placeholder="0.00"
                                                     />
                                                 </div>
@@ -4778,7 +4778,7 @@ const Admin = () => {
                                                                 }
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         rows="3"
                                                         placeholder="Description du concours, règles, conditions..."
                                                     />
@@ -4798,7 +4798,7 @@ const Admin = () => {
                                                 </button>
                                                 <button
                                                     onClick={handleSaveConcours}
-                                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                                 >
                                                     <Save className="w-4 h-4" />
                                                     <span>
@@ -4885,13 +4885,13 @@ const Admin = () => {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                 />
                                             </div>
                                         </div>
                                         <button
                                             onClick={handleAddConcours}
-                                            className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                                            className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                                         >
                                             <Plus className="w-4 h-4" />
                                             Ajouter un concours
@@ -4993,7 +4993,7 @@ const Admin = () => {
                                                                                     concours
                                                                                 )
                                                                             }
-                                                                            className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                            className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                                             title="Modifier"
                                                                         >
                                                                             <Edit className="w-4 h-4" />
@@ -5070,7 +5070,7 @@ const Admin = () => {
                                                                 }
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         placeholder="Ex: Administrateur, Modérateur, Membre standard"
                                                     />
                                                 </div>
@@ -5093,7 +5093,7 @@ const Admin = () => {
                                                                 }
                                                             )
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                         rows="3"
                                                         placeholder="Description du rôle et des responsabilités"
                                                     />
@@ -5123,7 +5123,7 @@ const Admin = () => {
                                                                                 right.id
                                                                             )
                                                                         }
-                                                                        className="w-4 h-4 text-[#425e9b] border-gray-300 rounded focus:ring-[#425e9b]"
+                                                                        className="w-4 h-4 text-[var(--primary-color)] border-gray-300 rounded focus:ring-[var(--primary-color)]"
                                                                     />
                                                                     <div className="flex-1">
                                                                         <div className="text-sm font-medium text-gray-900">
@@ -5196,7 +5196,7 @@ const Admin = () => {
                                                     onClick={
                                                         handleSaveTypeMember
                                                     }
-                                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                                 >
                                                     <Save className="w-4 h-4" />
                                                     <span>
@@ -5284,7 +5284,7 @@ const Admin = () => {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                 />
                                             </div>
                                         </div>
@@ -5295,7 +5295,7 @@ const Admin = () => {
                                                     e.target.value
                                                 )
                                             }
-                                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         >
                                             <option value="">
                                                 Tous les types
@@ -5311,7 +5311,7 @@ const Admin = () => {
                                         </select>
                                         <button
                                             onClick={handleAddMember}
-                                            className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                                            className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                                         >
                                             <UserPlus className="w-4 h-4" />
                                             Ajouter un membre
@@ -5452,7 +5452,7 @@ const Admin = () => {
                                                                     }
                                                                 </td>
                                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                                    <span className="px-2 py-1 bg-[#425e9b] bg-opacity-10 text-[#425e9b] rounded-full text-sm font-medium">
+                                                                    <span className="px-2 py-1 bg-[var(--primary-color)] bg-opacity-10 text-[var(--primary-color)] rounded-full text-sm font-medium">
                                                                         {getMemberTypeName(
                                                                             member.type_membre_id
                                                                         )}
@@ -5475,7 +5475,7 @@ const Admin = () => {
                                                                                     member
                                                                                 )
                                                                             }
-                                                                            className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                            className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                                             title="Modifier"
                                                                         >
                                                                             <Edit className="w-4 h-4" />
@@ -5530,13 +5530,13 @@ const Admin = () => {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                 />
                                             </div>
                                         </div>
                                         <button
                                             onClick={handleAddTypeMember}
-                                            className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                                            className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                                         >
                                             <Shield className="w-4 h-4" />
                                             Ajouter un type
@@ -5590,7 +5590,7 @@ const Admin = () => {
                                                             >
                                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                                     <div className="flex items-center">
-                                                                        <Shield className="h-5 w-5 text-[#425e9b] mr-2" />
+                                                                        <Shield className="h-5 w-5 text-[var(--primary-color)] mr-2" />
                                                                         <span className="text-sm font-medium text-gray-900">
                                                                             {
                                                                                 type.nom
@@ -5629,7 +5629,7 @@ const Admin = () => {
                                                                                         key={
                                                                                             droit
                                                                                         }
-                                                                                        className="px-2 py-1 bg-[#425e9b] bg-opacity-10 text-[#425e9b] rounded-full text-xs font-medium"
+                                                                                        className="px-2 py-1 bg-[var(--primary-color)] bg-opacity-10 text-[var(--primary-color)] rounded-full text-xs font-medium"
                                                                                     >
                                                                                         {rightInfo
                                                                                             ? rightInfo.label
@@ -5661,7 +5661,7 @@ const Admin = () => {
                                                                                     type
                                                                                 )
                                                                             }
-                                                                            className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                            className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                                             title="Modifier"
                                                                         >
                                                                             <Edit className="w-4 h-4" />
@@ -5717,7 +5717,7 @@ const Admin = () => {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                 />
                                             </div>
                                         </div>
@@ -5729,7 +5729,7 @@ const Admin = () => {
                                                         e.target.value
                                                     )
                                                 }
-                                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                             >
                                                 <option value="">
                                                     Toutes les catégories
@@ -5749,7 +5749,7 @@ const Admin = () => {
                                             </select>
                                             <button
                                                 onClick={handleAddTeam}
-                                                className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                                                className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                                             >
                                                 <Trophy className="w-4 h-4" />
                                                 Ajouter une équipe
@@ -5814,7 +5814,7 @@ const Admin = () => {
                                                                                 }
                                                                             />
                                                                         ) : (
-                                                                            <div className="h-10 w-10 rounded-full bg-[#425e9b] flex items-center justify-center mr-3">
+                                                                            <div className="h-10 w-10 rounded-full bg-[var(--primary-color)] flex items-center justify-center mr-3">
                                                                                 <Trophy className="w-5 h-5 text-white" />
                                                                             </div>
                                                                         )}
@@ -5826,7 +5826,7 @@ const Admin = () => {
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                                    <span className="px-2 py-1 bg-[#425e9b] bg-opacity-10 text-[#425e9b] rounded-full text-xs font-medium">
+                                                                    <span className="px-2 py-1 bg-[var(--primary-color)] bg-opacity-10 text-[var(--primary-color)] rounded-full text-xs font-medium">
                                                                         {team.category ||
                                                                             "Non définie"}
                                                                     </span>
@@ -5851,7 +5851,7 @@ const Admin = () => {
                                                                                     team
                                                                                 )
                                                                             }
-                                                                            className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                                            className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                                             title="Modifier"
                                                                         >
                                                                             <Edit className="w-4 h-4" />
@@ -5889,7 +5889,7 @@ const Admin = () => {
                                     {/* Liste des droits disponibles */}
                                     <div className="p-6 bg-white rounded-lg shadow">
                                         <h3 className="flex gap-2 items-center mb-4 text-lg font-semibold text-gray-900">
-                                            <Shield className="w-5 h-5 text-[#425e9b]" />
+                                            <Shield className="w-5 h-5 text-[var(--primary-color)]" />
                                             Droits disponibles
                                         </h3>
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -5925,7 +5925,7 @@ const Admin = () => {
                                     {/* Attribution des droits */}
                                     <div className="p-6 bg-white rounded-lg shadow">
                                         <h3 className="flex gap-2 items-center mb-4 text-lg font-semibold text-gray-900">
-                                            <Users className="w-5 h-5 text-[#425e9b]" />
+                                            <Users className="w-5 h-5 text-[var(--primary-color)]" />
                                             Attribution des droits
                                         </h3>
                                         <div className="space-y-4">
@@ -5933,7 +5933,7 @@ const Admin = () => {
                                                 onClick={() =>
                                                     setActiveModal("typeMembre")
                                                 }
-                                                className="w-full bg-[#425e9b] text-white px-4 py-3 rounded-lg hover:bg-[#364a82] transition-colors flex items-center justify-center gap-2"
+                                                className="w-full bg-[var(--primary-color)] text-white px-4 py-3 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center justify-center gap-2"
                                             >
                                                 <Shield className="w-4 h-4" />
                                                 Gérer les types de membre
@@ -6008,7 +6008,7 @@ const Admin = () => {
                                                 name: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Nom de la boisson"
                                     />
                                 </div>
@@ -6027,7 +6027,7 @@ const Admin = () => {
                                                 price: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="0.00"
                                     />
                                 </div>
@@ -6047,7 +6047,7 @@ const Admin = () => {
                                                     0,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="50"
                                     />
                                 </div>
@@ -6064,7 +6064,7 @@ const Admin = () => {
                                                 description: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         rows="3"
                                         placeholder="Description de la boisson"
                                     />
@@ -6152,7 +6152,7 @@ const Admin = () => {
                                 </button>
                                 <button
                                     onClick={handleSaveDrink}
-                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                 >
                                     <Save className="w-4 h-4" />
                                     <span>
@@ -6243,7 +6243,7 @@ const Admin = () => {
                                                 nom: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Nom"
                                     />
                                 </div>
@@ -6261,7 +6261,7 @@ const Admin = () => {
                                                 prenom: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Prénom"
                                     />
                                 </div>
@@ -6280,7 +6280,7 @@ const Admin = () => {
                                                 email: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="email@exemple.com"
                                     />
                                 </div>
@@ -6299,7 +6299,7 @@ const Admin = () => {
                                                 telephone: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="0123456789"
                                     />
                                 </div>
@@ -6318,7 +6318,7 @@ const Admin = () => {
                                                 numeroLicence: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="LIC001"
                                     />
                                 </div>
@@ -6336,7 +6336,7 @@ const Admin = () => {
                                                 adresse: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         rows="2"
                                         placeholder="Adresse complète"
                                     />
@@ -6380,7 +6380,7 @@ const Admin = () => {
                                                     "day"
                                                 )
                                             }
-                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateNaissance
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -6419,7 +6419,7 @@ const Admin = () => {
                                                     "month"
                                                 )
                                             }
-                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateNaissance
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -6458,7 +6458,7 @@ const Admin = () => {
                                                     "year"
                                                 )
                                             }
-                                            className={`w-16 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-16 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateNaissance
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -6509,7 +6509,7 @@ const Admin = () => {
                                                     "day"
                                                 )
                                             }
-                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateEntree
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -6547,7 +6547,7 @@ const Admin = () => {
                                                     "month"
                                                 )
                                             }
-                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-12 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateEntree
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -6585,7 +6585,7 @@ const Admin = () => {
                                                     "year"
                                                 )
                                             }
-                                            className={`w-16 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent ${
+                                            className={`w-16 px-2 py-2 text-center border rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent ${
                                                 dateErrors.dateEntree
                                                     ? "border-red-500"
                                                     : "border-gray-300"
@@ -6688,7 +6688,7 @@ const Admin = () => {
                                                 typeMembreId: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     >
                                         <option value="">
                                             Sélectionner un type
@@ -6714,7 +6714,7 @@ const Admin = () => {
                                 </button>
                                 <button
                                     onClick={handleSaveMember}
-                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                 >
                                     <Save className="w-4 h-4" />
                                     <span>
@@ -6809,7 +6809,7 @@ const Admin = () => {
                                                 name: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         placeholder="Nom de l'équipe"
                                     />
                                 </div>
@@ -6826,7 +6826,7 @@ const Admin = () => {
                                                 category: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     >
                                         <option value="">
                                             Sélectionner une catégorie
@@ -6850,7 +6850,7 @@ const Admin = () => {
                                                 competition: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     >
                                         <option value="">
                                             Aucune compétition
@@ -6875,7 +6875,7 @@ const Admin = () => {
                                                 description: e.target.value,
                                             })
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         rows="3"
                                         placeholder="Description de l'équipe"
                                     />
@@ -6889,7 +6889,7 @@ const Admin = () => {
                                         type="file"
                                         accept="image/*"
                                         onChange={handleTeamPhotoChange}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                     {(teamFormData.teamPhoto ||
                                         teamFormData.photo_url) && (
@@ -6954,7 +6954,7 @@ const Admin = () => {
                                                         setIsDropdownOpen(true);
                                                     }
                                                 }}
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                             />
 
                                             {/* Dropdown avec les résultats */}
@@ -7041,7 +7041,7 @@ const Admin = () => {
                                                                                     key={
                                                                                         member.id
                                                                                     }
-                                                                                    className="px-4 py-3 hover:bg-gradient-to-r hover:from-[#425e9b]/5 hover:to-[#425e9b]/10 cursor-pointer transition-all duration-200 ease-in-out border-b border-gray-50 last:border-b-0 group"
+                                                                                    className="px-4 py-3 hover:bg-gradient-to-r hover:from-[var(--primary-color)]/5 hover:to-[var(--primary-color)]/10 cursor-pointer transition-all duration-200 ease-in-out border-b border-gray-50 last:border-b-0 group"
                                                                                     onClick={() => {
                                                                                         addMemberToTeam(
                                                                                             member,
@@ -7056,7 +7056,7 @@ const Admin = () => {
                                                                                     }}
                                                                                 >
                                                                                     <div className="flex items-center space-x-3">
-                                                                                        <div className="w-8 h-8 bg-gradient-to-br from-[#425e9b] to-[#364a82] rounded-full flex items-center justify-center text-white text-sm font-medium group-hover:scale-110 transition-transform duration-200">
+                                                                                        <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary-color)] to-[var(--primary-dark)] rounded-full flex items-center justify-center text-white text-sm font-medium group-hover:scale-110 transition-transform duration-200">
                                                                                             {member.prenom
                                                                                                 ?.charAt(
                                                                                                     0
@@ -7069,7 +7069,7 @@ const Admin = () => {
                                                                                                 ?.toUpperCase()}
                                                                                         </div>
                                                                                         <div>
-                                                                                            <div className="font-medium text-gray-900 group-hover:text-[#425e9b] transition-colors duration-200">
+                                                                                            <div className="font-medium text-gray-900 group-hover:text-[var(--primary-color)] transition-colors duration-200">
                                                                                                 {
                                                                                                     member.prenom
                                                                                                 }{" "}
@@ -7094,7 +7094,7 @@ const Admin = () => {
                                                                         10 && (
                                                                         <div className="px-4 py-3 text-xs text-center text-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
                                                                             <span className="inline-flex items-center space-x-1">
-                                                                                <span className="w-2 h-2 bg-[#425e9b] rounded-full"></span>
+                                                                                <span className="w-2 h-2 bg-[var(--primary-color)] rounded-full"></span>
                                                                                 <span>
                                                                                     {
                                                                                         filteredMembers.length
@@ -7146,7 +7146,7 @@ const Admin = () => {
                                                                             .value
                                                                     )
                                                                 }
-                                                                className="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                                                className="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                                             >
                                                                 <option value="Capitaine">
                                                                     Capitaine
@@ -7187,7 +7187,7 @@ const Admin = () => {
                                 </button>
                                 <button
                                     onClick={handleSaveTeam}
-                                    className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                                    className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                                 >
                                     <Save className="w-4 h-4" />
                                     <span>

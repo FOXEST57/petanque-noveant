@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSiteSettings } from '../contexts/SiteSettingsContext.jsx';
 
 const Contact = () => {
+  const { siteSettings } = useSiteSettings();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -109,29 +111,38 @@ const Contact = () => {
             </h2>
             
             <div className="space-y-6">
-              <div className="flex items-start space-x-4">
-                <Mail className="w-6 h-6 text-blue-600 mt-1" />
-                <div>
-                  <h3 className="font-semibold text-gray-900">Email</h3>
-                  <p className="text-gray-600">contact@petanque-noveant.fr</p>
-                </div>
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Nos Coordonnées</h2>
               </div>
               
-              <div className="flex items-start space-x-4">
-                <Phone className="w-6 h-6 text-blue-600 mt-1" />
-                <div>
-                  <h3 className="font-semibold text-gray-900">Téléphone</h3>
-                  <p className="text-gray-600">06 45 20 66 XX</p>
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <MapPin className="w-5 h-5 text-[var(--primary-color)] mt-1 flex-shrink-0" />
+                  <div>
+                    {siteSettings.address ? (
+                      siteSettings.address.split('\n').map((line, index) => (
+                        <p key={index} className="text-gray-600">{line}</p>
+                      ))
+                    ) : (
+                      <>
+                        <p className="text-gray-600">Veloroute Charles le téméraire</p>
+                        <p className="text-gray-600">57680 Novéant-sur-Moselle, France</p>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-start space-x-4">
-                <MapPin className="w-6 h-6 text-blue-600 mt-1" />
-                <div>
-                  <h3 className="font-semibold text-gray-900">Adresse</h3>
+                
+                {siteSettings.phoneVisible && siteSettings.phone && (
+                  <div className="flex items-center space-x-3">
+                    <Phone className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" />
+                    <p className="text-gray-600">{siteSettings.phone}</p>
+                  </div>
+                )}
+                
+                <div className="flex items-center space-x-3">
+                  <Mail className="w-5 h-5 text-[var(--primary-color)] flex-shrink-0" />
                   <p className="text-gray-600">
-                    Club de Pétanque Véloroute Charles le Téméraire<br />
-                    57680 Novéant-sur-Moselle, France
+                    {siteSettings.email || 'contact@petanque-noveant.fr'}
                   </p>
                 </div>
               </div>
@@ -228,7 +239,7 @@ const Contact = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="w-full bg-[var(--primary-color)] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[var(--primary-dark)] focus:ring-2 focus:ring-[var(--primary-color)] focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 {isLoading ? (
                   <>

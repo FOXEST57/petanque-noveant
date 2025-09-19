@@ -85,7 +85,7 @@ const Dashboard = () => {
         return (
             <div className="flex justify-center items-center min-h-screen bg-gray-50">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#425e9b] mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary-color)] mx-auto mb-4"></div>
                     <p className="text-gray-600">
                         Chargement de votre tableau de bord...
                     </p>
@@ -197,7 +197,7 @@ const Dashboard = () => {
                                                 onClick={() =>
                                                     setEditingProfile(true)
                                                 }
-                                                className="flex items-center space-x-2 text-[#425e9b] hover:text-[#3a5287]"
+                                                className="flex items-center space-x-2 text-[var(--primary-color)] hover:text-[var(--primary-dark)]"
                                             >
                                                 <Edit3 className="w-4 h-4" />
                                                 <span>Modifier</span>
@@ -225,7 +225,7 @@ const Dashboard = () => {
                                                                         .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#425e9b] focus:border-[#425e9b]"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
                                                     />
                                                 ) : (
                                                     <p className="text-gray-900">
@@ -254,7 +254,7 @@ const Dashboard = () => {
                                                                         .value,
                                                             })
                                                         }
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#425e9b] focus:border-[#425e9b]"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
                                                     />
                                                 ) : (
                                                     <p className="text-gray-900">
@@ -290,7 +290,7 @@ const Dashboard = () => {
                                                                 .value,
                                                         })
                                                     }
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#425e9b] focus:border-[#425e9b]"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
                                                 />
                                             ) : (
                                                 <p className="text-gray-900">
@@ -308,7 +308,7 @@ const Dashboard = () => {
                                                         handleProfileUpdate
                                                     }
                                                     disabled={saving}
-                                                    className="flex items-center space-x-2 bg-[#425e9b] text-white px-4 py-2 rounded-md hover:bg-[#3a5287] disabled:opacity-50"
+                                                    className="flex items-center space-x-2 bg-[var(--primary-color)] text-white px-4 py-2 rounded-md hover:bg-[var(--primary-dark)] disabled:opacity-50"
                                                 >
                                                     <Save className="w-4 h-4" />
                                                     <span>

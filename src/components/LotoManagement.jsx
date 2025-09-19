@@ -140,12 +140,12 @@ const LotoManagement = ({ onClose }) => {
                 placeholder="Rechercher un loto..."
                 value={lotoSearchTerm}
                 onChange={(e) => setLotoSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
               />
             </div>
             <button
               onClick={handleAddLoto}
-              className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center space-x-2"
+              className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center space-x-2"
             >
               <Plus className="w-4 h-4" />
               <span>Ajouter un loto</span>
@@ -310,7 +310,7 @@ const LotoManagement = ({ onClose }) => {
                       ...lotoFormData,
                       nom: e.target.value
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                     placeholder="Nom du loto"
                   />
                 </div>
@@ -326,7 +326,7 @@ const LotoManagement = ({ onClose }) => {
                       ...lotoFormData,
                       date: e.target.value
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                   />
                 </div>
 
@@ -340,7 +340,7 @@ const LotoManagement = ({ onClose }) => {
                       ...lotoFormData,
                       statut: e.target.value
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                   >
                     <option value="en_attente">En attente</option>
                     <option value="actif">Actif</option>
@@ -361,7 +361,7 @@ const LotoManagement = ({ onClose }) => {
                       ...lotoFormData,
                       prixCarton: e.target.value
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                     placeholder="0.00"
                   />
                 </div>
@@ -377,7 +377,7 @@ const LotoManagement = ({ onClose }) => {
                       ...lotoFormData,
                       lotsAGagner: e.target.value
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                     placeholder="Ex: Jambon, Bouteilles de vin..."
                   />
                 </div>
@@ -392,7 +392,7 @@ const LotoManagement = ({ onClose }) => {
                       ...lotoFormData,
                       description: e.target.value
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                     rows="3"
                     placeholder="Description du loto..."
                   />
@@ -408,7 +408,7 @@ const LotoManagement = ({ onClose }) => {
                 </button>
                 <button
                   onClick={handleSaveLoto}
-                  className="px-4 py-2 bg-[#425e9b] text-white hover:bg-[#364a82] rounded-lg transition-colors flex items-center space-x-2"
+                  className="px-4 py-2 bg-[var(--primary-color)] text-white hover:bg-[var(--primary-dark)] rounded-lg transition-colors flex items-center space-x-2"
                 >
                   <Save className="w-4 h-4" />
                   <span>{lotoModalMode === 'add' ? 'Ajouter' : 'Modifier'}</span>

@@ -1,4 +1,4 @@
-import { initDatabase, getHomeCarouselImages, addHomeCarouselImage, closeDatabase } from './src/lib/database.js';
+import { initDatabase, getHomeCarouselImages, addHomeCarouselImage, closeDatabase } from '../src/lib/database.js';
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 

@@ -30,12 +30,12 @@ const DrinkCard = ({ drink }) => {
         
         {/* Price and Button */}
         <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-[#425e9b]">
+          <div className="text-2xl font-bold text-[var(--primary-color)]">
             {parseFloat(drink.price || 0).toFixed(2)}€
           </div>
           <button
             onClick={handleAddToCart}
-            className="bg-[#425e9b] hover:bg-[#3a5287] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 font-medium"
+            className="bg-var(--primary-color) hover:bg-var(--primary-dark) text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 font-medium"
           >
             <Plus className="w-4 h-4" />
             Ajouter

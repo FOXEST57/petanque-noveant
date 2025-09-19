@@ -341,7 +341,7 @@ const HomeContentManagement = ({ onClose }) => {
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
                     <div>
                         <h2 className="text-xl font-semibold text-gray-900 flex items-center space-x-2">
-                            <Home className="w-6 h-6 text-[#425e9b]" />
+                            <Home className="w-6 h-6 text-[var(--primary-color)]" />
                             <span>Gestion de la Page d'Accueil</span>
                         </h2>
                         <p className="text-sm text-gray-600 mt-1">
@@ -379,7 +379,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                 title: e.target.value,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                 </div>
                                 <div>
@@ -396,7 +396,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                 description: e.target.value,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                     />
                                 </div>
                             </div>
@@ -418,7 +418,7 @@ const HomeContentManagement = ({ onClose }) => {
                                     multiple
                                     accept="image/*"
                                     onChange={handleCarouselImagesChange}
-                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                 />
                                 <p className="mt-2 text-xs text-gray-500">
                                     Formats acceptés : JPG, PNG, GIF. Taille maximale : 5MB par image.
@@ -610,7 +610,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                 location: e.target.value,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                     />
                                 </div>
                                 <div className="p-4 border border-gray-200 rounded-lg">
@@ -627,7 +627,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                 openingHours: e.target.value,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                     />
                                 </div>
                                 <div className="p-4 border border-gray-200 rounded-lg">
@@ -644,7 +644,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                 members: e.target.value,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                     />
                                 </div>
                             </div>
@@ -672,7 +672,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                 clubTitle: e.target.value,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                     />
                                 </div>
 
@@ -691,7 +691,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                 clubDescription: e.target.value,
                                             }))
                                         }
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                     />
                                 </div>
 
@@ -712,7 +712,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                     teamsContent: e.target.value,
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                         />
                                     </div>
 
@@ -731,7 +731,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                     animationsContent: e.target.value,
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                         />
                                     </div>
 
@@ -750,7 +750,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                     tournamentsContent: e.target.value,
                                                 }))
                                             }
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent text-sm"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent text-sm"
                                         />
                                     </div>
                                 </div>
@@ -770,7 +770,7 @@ const HomeContentManagement = ({ onClose }) => {
                     <button
                         onClick={handleSaveHomeContent}
                         disabled={homeContentLoading}
-                        className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                        className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                     >
                         {homeContentLoading && (
                             <div className="w-4 h-4 border-b-2 border-white rounded-full animate-spin"></div>

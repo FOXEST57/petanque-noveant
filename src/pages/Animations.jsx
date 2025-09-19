@@ -113,7 +113,7 @@ const Animations = () => {
     return (
       <div className="mt-4">
         <div className="flex items-center mb-3">
-          <Image className="w-4 h-4 mr-2 text-[#425e9b]" />
+          <Image className="w-4 h-4 mr-2 text-[var(--primary-color)]" />
           <span className="text-sm font-medium text-gray-700">
             Photos de l'événement ({photos.length})
           </span>
@@ -156,7 +156,7 @@ const Animations = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#425e9b] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary-color)] mx-auto mb-4"></div>
           <p className="text-gray-600">Chargement des animations...</p>
         </div>
       </div>
@@ -172,7 +172,7 @@ const Animations = () => {
           <p className="text-gray-600 mb-4">{error}</p>
           <button 
             onClick={fetchEvents}
-            className="bg-[#425e9b] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#3a5287] transition-colors duration-200"
+            className="bg-[var(--primary-color)] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[var(--primary-dark)] transition-colors duration-200"
           >
             Réessayer
           </button>
@@ -184,7 +184,7 @@ const Animations = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-[#425e9b] text-white py-16">
+      <section className="bg-[var(--primary-color)] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -205,7 +205,7 @@ const Animations = () => {
               onClick={() => setFilter('all')}
               className={`px-6 py-2 rounded-full font-medium transition-colors duration-200 ${
                 filter === 'all'
-                  ? 'bg-[#425e9b] text-white'
+                  ? 'bg-[var(--primary-color)] text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
@@ -215,7 +215,7 @@ const Animations = () => {
               onClick={() => setFilter('upcoming')}
               className={`px-6 py-2 rounded-full font-medium transition-colors duration-200 ${
                 filter === 'upcoming'
-                  ? 'bg-[#425e9b] text-white'
+                  ? 'bg-[var(--primary-color)] text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
@@ -225,7 +225,7 @@ const Animations = () => {
               onClick={() => setFilter('past')}
               className={`px-6 py-2 rounded-full font-medium transition-colors duration-200 ${
                 filter === 'past'
-                  ? 'bg-[#425e9b] text-white'
+                  ? 'bg-[var(--primary-color)] text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
@@ -264,7 +264,7 @@ const Animations = () => {
                     key={event.id} 
                     id={`event-${event.id}`}
                     className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 ${
-                      isUpcoming ? 'border-l-4 border-[#425e9b]' : 'border-l-4 border-gray-300'
+                      isUpcoming ? 'border-l-4 border-[var(--primary-color)]' : 'border-l-4 border-gray-300'
                     } ${
                       highlightedEventId === event.id.toString() 
                         ? 'ring-4 ring-blue-500 shadow-xl transform scale-105' 
@@ -290,22 +290,22 @@ const Animations = () => {
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-600">
                             <div className="flex items-center">
-                              <Calendar className="w-4 h-4 mr-2 text-[#425e9b]" />
+                              <Calendar className="w-4 h-4 mr-2 text-[var(--primary-color)]" />
                               <span>{formatDate(event.date)}</span>
                             </div>
                             
                             <div className="flex items-center">
-                              <Clock className="w-4 h-4 mr-2 text-[#425e9b]" />
+                              <Clock className="w-4 h-4 mr-2 text-[var(--primary-color)]" />
                               <span>{event.heure || formatTime(event.date)}</span>
                             </div>
                             
                             <div className="flex items-center">
-                              <MapPin className="w-4 h-4 mr-2 text-[#425e9b]" />
+                              <MapPin className="w-4 h-4 mr-2 text-[var(--primary-color)]" />
                               <span>{event.lieu || 'Terrain du club'}</span>
                             </div>
                             
                             <div className="flex items-center">
-                              <Users className="w-4 h-4 mr-2 text-[#425e9b]" />
+                              <Users className="w-4 h-4 mr-2 text-[var(--primary-color)]" />
                               <span>
                                 {event.publicCible || 'Ouvert à tous'}
                               </span>
@@ -321,7 +321,7 @@ const Animations = () => {
                         
                         {isUpcoming && (
                           <div className="mt-4 lg:mt-0 lg:ml-6">
-                            <button className="bg-[#425e9b] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#3a5287] transition-colors duration-200">
+                            <button className="bg-[var(--primary-color)] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[var(--primary-dark)] transition-colors duration-200">
                               S'inscrire
                             </button>
                           </div>

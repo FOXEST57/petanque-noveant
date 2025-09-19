@@ -143,7 +143,7 @@ const Login = () => {
                         required={!isLogin}
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#425e9b] focus:border-[#425e9b]"
+                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
                         placeholder="Prénom"
                       />
                       <User className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
@@ -162,7 +162,7 @@ const Login = () => {
                         required={!isLogin}
                         value={formData.lastName}
                         onChange={handleInputChange}
-                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#425e9b] focus:border-[#425e9b]"
+                        className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
                         placeholder="Nom"
                       />
                       <User className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
@@ -181,7 +181,7 @@ const Login = () => {
                       type="tel"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#425e9b] focus:border-[#425e9b]"
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
                       placeholder="Numéro de téléphone"
                     />
                   </div>
@@ -202,7 +202,7 @@ const Login = () => {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#425e9b] focus:border-[#425e9b]"
+                  className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
                   placeholder="votre@email.com"
                 />
                 <Mail className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
@@ -222,7 +222,7 @@ const Login = () => {
                   required
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="appearance-none block w-full px-3 py-2 pl-10 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#425e9b] focus:border-[#425e9b]"
+                  className="appearance-none block w-full px-3 py-2 pl-10 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
                   placeholder="Mot de passe"
                 />
                 <Lock className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
@@ -254,7 +254,7 @@ const Login = () => {
                     required={!isLogin}
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[#425e9b] focus:border-[#425e9b]"
+                    className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
                     placeholder="Confirmer le mot de passe"
                   />
                   <Lock className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
@@ -266,7 +266,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#425e9b] hover:bg-[#3a5287] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#425e9b] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--primary-color)] hover:bg-[var(--primary-dark)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="flex items-center">
@@ -294,7 +294,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={toggleMode}
-                className="text-[#425e9b] hover:text-[#3a5287] font-medium"
+                className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] font-medium"
               >
                 {isLogin 
                   ? 'Pas encore de compte ? S\'inscrire' 

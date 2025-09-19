@@ -515,8 +515,8 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-[#425e9b] bg-opacity-10 rounded-lg">
-                            <Calendar className="w-6 h-6 text-[#425e9b]" />
+                        <div className="p-2 bg-white rounded-lg shadow-sm border">
+                            <Calendar className="w-6 h-6 text-[var(--primary-color)]" />
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-gray-900">Gestion des Événements</h2>
@@ -540,12 +540,12 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                             placeholder="Rechercher un événement..."
                             value={eventSearchTerm}
                             onChange={(e) => setEventSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                         />
                     </div>
                     <button
                         onClick={handleAddEvent}
-                        className="bg-[#425e9b] text-white px-4 py-2 rounded-lg hover:bg-[#364a82] transition-colors flex items-center gap-2"
+                        className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-dark)] transition-colors flex items-center gap-2"
                     >
                         <Plus className="w-4 h-4" />
                         <span>Ajouter un événement</span>
@@ -616,7 +616,7 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                                                 <div className="flex space-x-2">
                                                     <button
                                                         onClick={() => handleEditEvent(event)}
-                                                        className="text-[#425e9b] hover:text-[#364a82] transition-colors"
+                                                        className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] transition-colors"
                                                         title="Modifier"
                                                     >
                                                         <Edit className="w-4 h-4" />

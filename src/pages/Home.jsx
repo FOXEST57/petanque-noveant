@@ -116,7 +116,7 @@ const Home = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#425e9b] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[var(--primary-color)] mx-auto mb-4"></div>
           <p className="text-gray-600">Chargement...</p>
         </div>
       </div>
@@ -141,7 +141,7 @@ const Home = () => {
             <div className="space-x-4">
               <Link
                 to="/equipes"
-                className="bg-[#425e9b] hover:bg-[#3a5287] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
+                className="bg-[var(--primary-color)] hover:bg-[var(--primary-dark)] text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
               >
                 Découvrir nos équipes
               </Link>
@@ -162,7 +162,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="w-8 h-8 text-[#425e9b]" />
+                <MapPin className="w-8 h-8 text-[var(--primary-color)]" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Notre Localisation</h3>
               <p className="text-gray-600">
@@ -172,7 +172,7 @@ const Home = () => {
             
             <div className="text-center">
               <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-8 h-8 text-[#425e9b]" />
+                <Clock className="w-8 h-8 text-[var(--primary-color)]" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Horaires d'ouverture</h3>
               <p className="text-gray-600">
@@ -182,7 +182,7 @@ const Home = () => {
             
             <div className="text-center">
               <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-[#425e9b]" />
+                <Users className="w-8 h-8 text-[var(--primary-color)]" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Nos Membres</h3>
               <p className="text-gray-600">
@@ -211,9 +211,9 @@ const Home = () => {
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="p-6 text-center">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:from-blue-100 group-hover:to-blue-200 transition-colors duration-200 mx-auto">
-                  <Users className="w-6 h-6 text-[#425e9b]" />
+                  <Users className="w-6 h-6 text-[var(--primary-color)]" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[var(--primary-color)] transition-colors duration-200">
                     Nos Équipes
                   </h3>
                   <p className="text-gray-600">
@@ -228,9 +228,9 @@ const Home = () => {
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="p-6 text-center">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:from-blue-100 group-hover:to-blue-200 transition-colors duration-200 mx-auto">
-                  <Calendar className="w-6 h-6 text-[#425e9b]" />
+                  <Calendar className="w-6 h-6 text-[var(--primary-color)]" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[var(--primary-color)] transition-colors duration-200">
                      Nos Animations
                   </h3>
                   <p className="text-gray-600">
@@ -245,9 +245,9 @@ const Home = () => {
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="p-6 text-center">
                   <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200 mx-auto">
-                  <Trophy className="w-6 h-6 text-[#425e9b]" />
+                  <Trophy className="w-6 h-6 text-[var(--primary-color)]" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[#425e9b] transition-colors duration-200">
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-[var(--primary-color)] transition-colors duration-200">
                      Nos Tournois
                   </h3>
                   <p className="text-gray-600">
@@ -304,7 +304,7 @@ const Home = () => {
                       <div className="flex items-center justify-between">
                         <Link 
                           to={`/animations?id=${event.id}`} 
-                          className="text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+                          className="text-[var(--primary-color)] hover:text-[var(--primary-dark)] font-medium transition-colors duration-200"
                         >
                           Lire la suite →
                         </Link>
@@ -330,7 +330,7 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-[#425e9b]">
+      <section className="py-16 bg-[var(--primary-color)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Rejoignez notre club !
@@ -340,7 +340,7 @@ const Home = () => {
           </p>
           <Link
             to="/contact"
-            className="bg-white text-[#425e9b] hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 inline-block"
+            className="bg-white text-[var(--primary-color)] hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 inline-block"
           >
             Nous contacter
           </Link>

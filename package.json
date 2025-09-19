@@ -6,11 +6,15 @@
   "scripts": {
     "client:dev": "vite",
     "build": "tsc -b && vite build",
+    "build:prod": "tsc -b && vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
+    "preview:prod": "vite preview --mode production",
     "check": "tsc --noEmit",
     "server:dev": "nodemon",
-    "dev": "concurrently \"npm run client:dev\" \"npm run server:dev\""
+    "server:prod": "node api/server.js",
+    "dev": "concurrently \"npm run client:dev\" \"npm run server:dev\"",
+    "start": "npm run server:prod"
   },
   "dependencies": {
     "@types/multer": "^2.0.0",
@@ -26,6 +30,7 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.6",
     "react": "^18.2.0",
+    "react-colorful": "^5.6.1",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.8.1",

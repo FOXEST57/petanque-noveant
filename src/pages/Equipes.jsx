@@ -25,7 +25,7 @@ const Equipes = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#425e9b] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary-color)] mx-auto mb-4"></div>
           <p className="text-gray-600">Chargement des équipes...</p>
         </div>
       </div>
@@ -35,7 +35,7 @@ const Equipes = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-[#425e9b] text-white py-16">
+      <section className="bg-[var(--primary-color)] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -90,14 +90,14 @@ const Equipes = () => {
                       <h3 className="text-xl font-semibold text-gray-900">
                         {team.name}
                       </h3>
-                      <div className="bg-blue-100 p-2 rounded-full">
-                    <Users className="w-5 h-5 text-[#425e9b]" />
+                      <div className="bg-white p-2 rounded-full">
+                    <Users className="w-5 h-5 text-[var(--primary-color)]" />
                       </div>
                     </div>
                     
                     {team.category && (
                       <div className="mb-2">
-                        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">
+                        <span className="inline-block bg-[var(--primary-color-very-light)] text-[var(--primary-color)] text-xs px-2 py-1 rounded-full font-medium">
                           {team.category}
                         </span>
                       </div>
@@ -148,13 +148,13 @@ const Equipes = () => {
           <div className="space-x-4">
             <a
               href="/contact"
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 inline-block"
+              className="bg-[var(--primary-color)] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[var(--primary-dark)] transition-colors duration-200 inline-block"
             >
               Nous contacter
             </a>
             <a
               href="/login"
-              className="bg-transparent border-2 border-[#425e9b] text-[#425e9b] hover:bg-[#425e9b] hover:text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
+              className="bg-transparent border-2 border-[var(--primary-color)] text-[var(--primary-color)] hover:bg-[var(--primary-color)] hover:text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
             >
               S'inscrire
             </a>
