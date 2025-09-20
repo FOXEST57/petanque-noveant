@@ -15,6 +15,9 @@ import Contact from './pages/Contact'
 import Equipes from './pages/Equipes'
 import Login from './pages/Login'
 import TestTeamManagement from './pages/TestTeamManagement'
+import MembershipRequest from './pages/MembershipRequest'
+import RegisterInvitation from './pages/RegisterInvitation'
+import RegisterRedirect from './components/RegisterRedirect'
 
 // Placeholder components for other pages
 const Dashboard = () => <div className="min-h-screen bg-gray-50 py-12"><div className="max-w-7xl mx-auto px-4 text-center"><h1 className="text-3xl font-bold mb-4">Tableau de bord</h1><p className="text-gray-600">Page en cours de développement...</p></div></div>
@@ -98,7 +101,10 @@ export default function App() {
       <SiteSettingsProvider>
         <DrinksProvider>
           <CartProvider>
-            <Router>
+            <Router future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true
+            }}>
           <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-grow">
@@ -106,13 +112,14 @@ export default function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/equipes" element={<Equipes />} />
                 <Route path="/animations" element={<Animations />} />
-
                 <Route path="/bar" element={<Bar />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/test-team-management" element={<TestTeamManagement />} />
+                <Route path="/membership-request" element={<MembershipRequest />} />
+                <Route path="/register/:token" element={<RegisterInvitation />} />
               </Routes>
             </main>
             <Footer />

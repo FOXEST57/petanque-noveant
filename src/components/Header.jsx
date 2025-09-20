@@ -103,7 +103,7 @@ const Header = () => {
                 >
                   <User className="w-5 h-5" />
                   <span className="hidden sm:inline text-sm font-medium">
-                    {userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : user.email}
+                    {userProfile ? `${userProfile.prenom} ${userProfile.nom}` : user.email}
                   </span>
                   {userProfile?.role && (
                     <span className={`text-xs px-2 py-1 rounded-full ${

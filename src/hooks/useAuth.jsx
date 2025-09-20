@@ -15,50 +15,132 @@ export const AuthProvider = ({ children }) => {
     const [userProfile, setUserProfile] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // TODO: Remplacer par votre système d'authentification local
-    // Pour l'instant, on simule un utilisateur connecté
+    // Vérifier si un token existe au démarrage
     useEffect(() => {
-        // Simulation d'un utilisateur pour les tests
-        const mockUser = {
-            id: 'mock-user-id',
-            email: 'admin@petanque-noveant.fr'
-        };
-        
-        const mockProfile = {
-            first_name: 'Admin',
-            last_name: 'Pétanque',
-            phone: '0123456789',
-            role: 'admin'
-        };
-        
-        setUser(mockUser);
-        setUserProfile(mockProfile);
-        setLoading(false);
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            // Vérifier la validité du token en récupérant le profil
+            fetchUserProfile();
+        }
     }, []);
 
-    const fetchUserProfile = async (userId) => {
-        // TODO: Implémenter la récupération du profil utilisateur depuis votre API locale
-        console.log('fetchUserProfile appelé pour:', userId);
-        return null;
+    const fetchUserProfile = async () => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return;
+
+            const response = await fetch('/api/auth/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const userData = await response.json();
+                setUser(userData.user);
+                setUserProfile(userData.user);
+            } else {
+                // Token invalide, le supprimer
+                localStorage.removeItem('auth_token');
+                setUser(null);
+                setUserProfile(null);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la récupération du profil:', error);
+            localStorage.removeItem('auth_token');
+            setUser(null);
+            setUserProfile(null);
+        }
     };
 
     const signUp = async (email, password, userData) => {
-        // TODO: Implémenter l'inscription avec votre API locale
-        console.log('signUp appelé:', { email, userData });
-        throw new Error('Inscription non implémentée - remplacer par votre API locale');
+        try {
+            setLoading(true);
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    ...userData
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem('auth_token', data.token);
+                setUser(data.user);
+                setUserProfile(data.user);
+                return { success: true, user: data.user };
+            } else {
+                throw new Error(data.error || 'Erreur lors de l\'inscription');
+            }
+        } catch (error) {
+            console.error('Erreur d\'inscription:', error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
     };
 
     const signIn = async (email, password) => {
-        // TODO: Implémenter la connexion avec votre API locale
-        console.log('signIn appelé:', { email });
-        throw new Error('Connexion non implémentée - remplacer par votre API locale');
+        try {
+            setLoading(true);
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email,
+                    password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem('auth_token', data.token);
+                setUser(data.user);
+                setUserProfile(data.user);
+                return { success: true, user: data.user };
+            } else {
+                throw new Error(data.error || 'Erreur lors de la connexion');
+            }
+        } catch (error) {
+            console.error('Erreur de connexion:', error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
     };
 
     const signOut = async () => {
-        // TODO: Implémenter la déconnexion avec votre API locale
-        setUser(null);
-        setUserProfile(null);
-        console.log('Utilisateur déconnecté');
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                // Appeler l'API de déconnexion si disponible
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Erreur lors de la déconnexion:', error);
+        } finally {
+            // Nettoyer l'état local dans tous les cas
+            localStorage.removeItem('auth_token');
+            setUser(null);
+            setUserProfile(null);
+            console.log('Utilisateur déconnecté');
+        }
     };
 
     const getCurrentUser = () => {
@@ -66,7 +148,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const onAuthStateChange = (callback) => {
-        // TODO: Implémenter l'écoute des changements d'état d'authentification
+        // Implémenter l'écoute des changements d'état d'authentification
         console.log('onAuthStateChange appelé');
         return { unsubscribe: () => {} };
     };
@@ -78,28 +160,39 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateProfile = async (updates) => {
-        // TODO: Implémenter la mise à jour du profil avec votre API locale
-        console.log('updateProfile appelé:', updates);
-        // Simulation de mise à jour locale
-        if (user) {
-            const updatedUser = {
-                ...user,
-                user_metadata: {
-                    ...user.user_metadata,
-                    ...updates
-                }
-            };
-            setUser(updatedUser);
-            setUserProfile(updatedUser.user_metadata);
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) throw new Error('Non authentifié');
+
+            const response = await fetch('/api/auth/profile', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updates)
+            });
+
+            if (response.ok) {
+                // Recharger le profil utilisateur
+                await fetchUserProfile();
+                return { success: true };
+            } else {
+                const data = await response.json();
+                throw new Error(data.error || 'Erreur lors de la mise à jour');
+            }
+        } catch (error) {
+            console.error('Erreur de mise à jour du profil:', error);
+            throw error;
         }
     };
 
     const isAdmin = () => {
-        return userProfile?.role === 'admin';
+        return userProfile?.role === 'president' || userProfile?.role === 'vice_president';
     };
 
     const isMembre = () => {
-        return userProfile?.role === 'admin' || userProfile?.role === 'responsable' || userProfile?.role === 'membre';
+        return userProfile?.role === 'president' || userProfile?.role === 'vice_president' || userProfile?.role === 'secretaire' || userProfile?.role === 'tresorier' || userProfile?.role === 'membre';
     };
 
     const value = {

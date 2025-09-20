@@ -154,87 +154,90 @@ const getQuery = async (sql, params = []) => {
 };
 
 // === FONCTIONS CRUD POUR LES MEMBRES ===
-export const getMembers = async () => {
+export const getMembers = async (clubId = 1) => {
   return await getAllQuery(`
-    SELECT m.*, mt.nom as type_nom 
+    SELECT m.*, mt.nom as type_nom,
+           CASE WHEN u.id IS NOT NULL THEN 1 ELSE 0 END as has_user_account
     FROM members m 
     LEFT JOIN member_types mt ON m.type_membre_id = mt.id 
+    LEFT JOIN users u ON m.email = u.email AND u.statut = 'actif'
+    WHERE m.club_id = ?
     ORDER BY m.nom, m.prenom
-  `);
+  `, [clubId]);
 };
 
-export const getMemberById = async (id) => {
-  return await getQuery('SELECT * FROM members WHERE id = ?', [id]);
+export const getMemberById = async (id, clubId = 1) => {
+  return await getQuery('SELECT * FROM members WHERE id = ? AND club_id = ?', [id, clubId]);
 };
 
-export const createMember = async (memberData) => {
+export const createMember = async (memberData, clubId = 1) => {
   const { nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url } = memberData;
   return await runQuery(
-    'INSERT INTO members (nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
-    [nom || null, prenom || null, adresse || null, telephone || null, email || null, numero_licence || null, date_entree || null, date_naissance || null, type_membre_id || null, photo_url || null]
+    'INSERT INTO members (nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url, club_id, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+    [nom || null, prenom || null, adresse || null, telephone || null, email || null, numero_licence || null, date_entree || null, date_naissance || null, type_membre_id || null, photo_url || null, clubId]
   );
 };
 
-export const updateMember = async (id, memberData) => {
+export const updateMember = async (id, memberData, clubId = 1) => {
   const { nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url } = memberData;
   return await runQuery(
-    'UPDATE members SET nom = ?, prenom = ?, adresse = ?, telephone = ?, email = ?, numero_licence = ?, date_entree = ?, date_naissance = ?, type_membre_id = ?, photo_url = ?, updated_at = NOW() WHERE id = ?',
-    [nom || null, prenom || null, adresse || null, telephone || null, email || null, numero_licence || null, date_entree || null, date_naissance || null, type_membre_id || null, photo_url || null, id]
+    'UPDATE members SET nom = ?, prenom = ?, adresse = ?, telephone = ?, email = ?, numero_licence = ?, date_entree = ?, date_naissance = ?, type_membre_id = ?, photo_url = ?, updated_at = NOW() WHERE id = ? AND club_id = ?',
+    [nom || null, prenom || null, adresse || null, telephone || null, email || null, numero_licence || null, date_entree || null, date_naissance || null, type_membre_id || null, photo_url || null, id, clubId]
   );
 };
 
-export const deleteMember = async (id) => {
-  return await runQuery('DELETE FROM members WHERE id = ?', [id]);
+export const deleteMember = async (id, clubId = 1) => {
+  return await runQuery('DELETE FROM members WHERE id = ? AND club_id = ?', [id, clubId]);
 };
 
 // === FONCTIONS CRUD POUR LES TYPES DE MEMBRES ===
-export const getMemberTypes = async () => {
-  return await getAllQuery('SELECT * FROM member_types ORDER BY nom');
+export const getMemberTypes = async (clubId = 1) => {
+  return await getAllQuery('SELECT * FROM member_types WHERE club_id = ? ORDER BY nom', [clubId]);
 };
 
-export const createMemberType = async (typeData) => {
+export const createMemberType = async (typeData, clubId = 1) => {
   const { nom, description, droits } = typeData;
   return await runQuery(
-    'INSERT INTO member_types (nom, description, droits, updated_at) VALUES (?, ?, ?, NOW())',
-    [nom, description, JSON.stringify(droits)]
+    'INSERT INTO member_types (nom, description, droits, club_id, updated_at) VALUES (?, ?, ?, ?, NOW())',
+    [nom, description, JSON.stringify(droits), clubId]
   );
 };
 
-export const updateMemberType = async (id, typeData) => {
+export const updateMemberType = async (id, typeData, clubId = 1) => {
   const { nom, description, droits } = typeData;
   return await runQuery(
-    'UPDATE member_types SET nom = ?, description = ?, droits = ?, updated_at = NOW() WHERE id = ?',
-    [nom, description, JSON.stringify(droits), id]
+    'UPDATE member_types SET nom = ?, description = ?, droits = ?, updated_at = NOW() WHERE id = ? AND club_id = ?',
+    [nom, description, JSON.stringify(droits), id, clubId]
   );
 };
 
-export const deleteMemberType = async (id) => {
-  return await runQuery('DELETE FROM member_types WHERE id = ?', [id]);
+export const deleteMemberType = async (id, clubId = 1) => {
+  return await runQuery('DELETE FROM member_types WHERE id = ? AND club_id = ?', [id, clubId]);
 };
 
 // === FONCTIONS CRUD POUR LES ÉVÉNEMENTS ===
-export const getEvents = async () => {
-  return await getAllQuery('SELECT * FROM events ORDER BY date DESC');
+export const getEvents = async (clubId = 1) => {
+  return await getAllQuery('SELECT * FROM events WHERE club_id = ? ORDER BY date DESC', [clubId]);
 };
 
-export const createEvent = async (eventData) => {
+export const createEvent = async (eventData, clubId = 1) => {
   const { title, description, date, heure, lieu, publicCible, photos } = eventData;
   return await runQuery(
-    'INSERT INTO events (title, description, date, heure, lieu, publicCible, photos, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-    [title, description, date, heure || '', lieu || '', publicCible || '', JSON.stringify(photos || [])]
+    'INSERT INTO events (title, description, date, heure, lieu, publicCible, photos, club_id, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+    [title, description, date, heure || '', lieu || '', publicCible || '', JSON.stringify(photos || []), clubId]
   );
 };
 
-export const updateEvent = async (id, eventData) => {
+export const updateEvent = async (id, eventData, clubId = 1) => {
   const { title, description, date, heure, lieu, publicCible, photos } = eventData;
   return await runQuery(
-    'UPDATE events SET title = ?, description = ?, date = ?, heure = ?, lieu = ?, publicCible = ?, photos = ?, updated_at = NOW() WHERE id = ?',
-    [title, description, date, heure || '', lieu || '', publicCible || '', JSON.stringify(photos || []), id]
+    'UPDATE events SET title = ?, description = ?, date = ?, heure = ?, lieu = ?, publicCible = ?, photos = ?, updated_at = NOW() WHERE id = ? AND club_id = ?',
+    [title, description, date, heure || '', lieu || '', publicCible || '', JSON.stringify(photos || []), id, clubId]
   );
 };
 
-export const deleteEvent = async (id) => {
-  return await runQuery('DELETE FROM events WHERE id = ?', [id]);
+export const deleteEvent = async (id, clubId = 1) => {
+  return await runQuery('DELETE FROM events WHERE id = ? AND club_id = ?', [id, clubId]);
 };
 
 // === FONCTIONS CRUD POUR LES PHOTOS D'ÉVÉNEMENTS ===
@@ -265,11 +268,11 @@ export const deleteEventPhoto = async (id) => {
 };
 
 // === FONCTIONS CRUD POUR LES BOISSONS ===
-export const getDrinks = async () => {
-  return await getAllQuery('SELECT * FROM drinks ORDER BY name');
+export const getDrinks = async (clubId = 1) => {
+  return await getAllQuery('SELECT * FROM drinks WHERE club_id = ? ORDER BY name', [clubId]);
 };
 
-export const createDrink = async (drinkData) => {
+export const createDrink = async (drinkData, clubId = 1) => {
   const { name, price, description, image_url, stock } = drinkData;
   // Convertir les valeurs undefined en null pour éviter l'erreur MySQL
   const params = [
@@ -277,15 +280,16 @@ export const createDrink = async (drinkData) => {
     price ?? null,
     description ?? null,
     image_url ?? null,
-    stock ?? 0
+    stock ?? 0,
+    clubId
   ];
   return await runQuery(
-    'INSERT INTO drinks (name, price, description, image_url, stock, updated_at) VALUES (?, ?, ?, ?, ?, NOW())',
+    'INSERT INTO drinks (name, price, description, image_url, stock, club_id, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
     params
   );
 };
 
-export const updateDrink = async (id, drinkData) => {
+export const updateDrink = async (id, drinkData, clubId = 1) => {
   // Build dynamic query based on provided fields
   const fields = [];
   const values = [];
@@ -316,22 +320,22 @@ export const updateDrink = async (id, drinkData) => {
   }
   
   fields.push('updated_at = NOW()');
-  values.push(id);
+  values.push(id, clubId);
   
-  const query = `UPDATE drinks SET ${fields.join(', ')} WHERE id = ?`;
+  const query = `UPDATE drinks SET ${fields.join(', ')} WHERE id = ? AND club_id = ?`;
   return await runQuery(query, values);
 };
 
-export const deleteDrink = async (id) => {
-  return await runQuery('DELETE FROM drinks WHERE id = ?', [id]);
+export const deleteDrink = async (id, clubId = 1) => {
+  return await runQuery('DELETE FROM drinks WHERE id = ? AND club_id = ?', [id, clubId]);
 };
 
 // === FONCTIONS POUR LES STATISTIQUES ===
-export const getStats = async () => {
+export const getStats = async (clubId = 1) => {
   try {
-    const [membersCount] = await getAllQuery('SELECT COUNT(*) as count FROM members');
-    const [eventsCount] = await getAllQuery('SELECT COUNT(*) as count FROM events');
-    const [drinksCount] = await getAllQuery('SELECT COUNT(*) as count FROM drinks');
+    const [membersCount] = await getAllQuery('SELECT COUNT(*) as count FROM members WHERE club_id = ?', [clubId]);
+    const [eventsCount] = await getAllQuery('SELECT COUNT(*) as count FROM events WHERE club_id = ?', [clubId]);
+    const [drinksCount] = await getAllQuery('SELECT COUNT(*) as count FROM drinks WHERE club_id = ?', [clubId]);
     
     return {
       members: membersCount.count || 0,
@@ -349,68 +353,40 @@ export const getStats = async () => {
 };
 
 // === FONCTIONS CRUD POUR LES ÉQUIPES ===
-export const getTeams = async () => {
+export const getTeams = async (clubId = 1) => {
   return await getAllQuery(`
     SELECT t.*, 
            COUNT(tm.member_id) as member_count
     FROM teams t 
     LEFT JOIN team_members tm ON t.id = tm.team_id 
+    WHERE t.club_id = ?
     GROUP BY t.id 
     ORDER BY t.name
-  `);
+  `, [clubId]);
 };
 
-export const getTeamById = async (id) => {
-  return await getQuery('SELECT * FROM teams WHERE id = ?', [id]);
+export const getTeamById = async (id, clubId = 1) => {
+  return await getQuery('SELECT * FROM teams WHERE id = ? AND club_id = ?', [id, clubId]);
 };
 
-export const createTeam = async (teamData) => {
+export const createTeam = async (teamData, clubId = 1) => {
   const { name, category, description, photo_url, competition } = teamData;
   return await runQuery(
-    'INSERT INTO teams (name, category, description, photo_url, competition, updated_at) VALUES (?, ?, ?, ?, ?, NOW())',
-    [name, category || '', description || '', photo_url || '', competition || '']
+    'INSERT INTO teams (name, category, description, photo_url, competition, club_id, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+    [name, category || '', description || '', photo_url || '', competition || '', clubId]
   );
 };
 
-export const updateTeam = async (id, teamData) => {
-  // Build dynamic query based on provided fields
-  const fields = [];
-  const values = [];
-  
-  if (teamData.name !== undefined) {
-    fields.push('name = ?');
-    values.push(teamData.name);
-  }
-  if (teamData.category !== undefined) {
-    fields.push('category = ?');
-    values.push(teamData.category || '');
-  }
-  if (teamData.description !== undefined) {
-    fields.push('description = ?');
-    values.push(teamData.description || '');
-  }
-  if (teamData.photo_url !== undefined) {
-    fields.push('photo_url = ?');
-    values.push(teamData.photo_url || '');
-  }
-  if (teamData.competition !== undefined) {
-    fields.push('competition = ?');
-    values.push(teamData.competition || '');
-  }
-  
-  if (fields.length === 0) {
-    throw new Error('No fields to update');
-  }
-  
-  fields.push('updated_at = NOW()');
-  values.push(id);
-  
-  const query = `UPDATE teams SET ${fields.join(', ')} WHERE id = ?`;
-  return await runQuery(query, values);
+export const updateTeam = async (id, teamData, clubId = 1) => {
+  const { name, category, description, photo_url, competition } = teamData;
+  return await runQuery(
+    'UPDATE teams SET name = ?, category = ?, description = ?, photo_url = ?, competition = ?, updated_at = NOW() WHERE id = ? AND club_id = ?',
+    [name, category || '', description || '', photo_url || '', competition || '', id, clubId]
+  );
 };
 
-export const deleteTeam = async (id) => {
-  return await runQuery('DELETE FROM teams WHERE id = ?', [id]);
+export const deleteTeam = async (id, clubId = 1) => {
+  return await runQuery('DELETE FROM teams WHERE id = ? AND club_id = ?', [id, clubId]);
 };
 
 // === FONCTIONS CRUD POUR LES MEMBRES D'ÉQUIPES ===

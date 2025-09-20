@@ -38,6 +38,7 @@ import CompetitionManagement from "../components/CompetitionManagement";
 import TeamManagement from "../components/TeamManagement";
 import HomeContentManagement from "../components/HomeContentManagement";
 import SiteManagement from "../components/SiteManagement";
+import MembershipRequestManagement from "../components/MembershipRequestManagement";
 
 import { formatDateToFrench, formatDateToISO, validateFrenchDate } from "../utils/dateUtils";
 import { generateAvatar } from "../utils/avatarUtils";
@@ -53,6 +54,7 @@ const Admin = () => {
         events: 0,
         drinks: 0,
         results: 0,
+        membershipRequests: 0,
     });
 
     // État pour la gestion des modales
@@ -154,6 +156,9 @@ const Admin = () => {
             setLoading(true);
             const eventsCount = await eventsAPI.getCount();
             const teamsCount = await teamsAPI.getCount();
+            
+            // Charger le compteur des demandes d'adhésion
+            const membershipRequestsCount = await loadMembershipRequestsCount();
 
             setStats((prevStats) => ({
                 ...prevStats,
@@ -163,6 +168,7 @@ const Admin = () => {
                 albums: 0, // TODO: Implémenter l'API des albums
                 // drinks: drinks.length, // Ne pas écraser le compteur de boissons ici
                 results: 0, // TODO: Implémenter l'API des résultats
+                membershipRequests: membershipRequestsCount,
             }));
         } catch (error) {
             console.error(
@@ -186,6 +192,29 @@ const Admin = () => {
                 error
             );
             toast.error("Erreur lors du chargement des types de membres");
+        }
+    };
+
+    // Fonction pour charger le compteur des demandes d'adhésion
+    const loadMembershipRequestsCount = async () => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch('/api/membership/requests?status=en_attente', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors du chargement des demandes');
+            }
+
+            const data = await response.json();
+            return data.requests ? data.requests.length : 0;
+        } catch (error) {
+            console.error('Erreur lors du chargement du compteur des demandes:', error);
+            return 0;
         }
     };
 
@@ -850,6 +879,14 @@ const Admin = () => {
                     />
 
                     <ManagementCard
+                        title="Demandes d'adhésion"
+                        icon={UserPlus}
+                        count={stats.membershipRequests}
+                        description="Gérer les demandes d'adhésion en attente"
+                        modalKey="membershipRequests"
+                    />
+
+                    <ManagementCard
                         title="Types de Membre"
                         icon={Shield}
                         count={memberTypes.length}
@@ -951,7 +988,10 @@ const Admin = () => {
                                 <EventManagement onClose={() => setActiveModal(null)} />
                             )}
 
-
+                            {/* Gestion des Demandes d'adhésion */}
+                            {activeModal === "membershipRequests" && (
+                                <MembershipRequestManagement onClose={() => setActiveModal(null)} />
+                            )}
 
                             {/* Modal Gestion des Concours et Lotos */}
                             {(activeModal === "concours" || activeModal === "loto") && (

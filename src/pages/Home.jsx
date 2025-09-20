@@ -165,7 +165,7 @@ const Home = () => {
                 Découvrir nos équipes
               </Link>
               <Link
-                to="/contact"
+                to="/membership-request"
                 className="bg-transparent border-2 border-white hover:bg-white hover:text-gray-900 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-block"
               >
                 Nous rejoindre

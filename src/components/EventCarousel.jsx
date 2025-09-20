@@ -7,19 +7,6 @@ const EventCarousel = ({ images, eventTitle }) => {
   const intervalRef = useRef(null);
   const pauseTimeoutRef = useRef(null);
 
-  if (!images || images.length === 0) {
-    // Fallback image if no images available
-    return (
-      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-        <img 
-          src={`https://trae-api-us.mchost.guru/api/ide/v1/text_to_image?prompt=petanque%20event%20outdoor%20sport%20boules%20game%20competition&image_size=landscape_4_3`}
-          alt={eventTitle || 'Événement de pétanque'}
-          className="w-full h-full object-cover"
-        />
-      </div>
-    );
-  }
-
   // Auto-play functionality
   useEffect(() => {
     if (!images || images.length <= 1) return;
@@ -45,6 +32,19 @@ const EventCarousel = ({ images, eventTitle }) => {
       if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
     };
   }, [isAutoPlaying, images]);
+
+  if (!images || images.length === 0) {
+    // Fallback image if no images available
+    return (
+      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+        <img 
+          src={`https://trae-api-us.mchost.guru/api/ide/v1/text_to_image?prompt=petanque%20event%20outdoor%20sport%20boules%20game%20competition&image_size=landscape_4_3`}
+          alt={eventTitle || 'Événement de pétanque'}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
 
   const pauseAutoPlay = () => {
     setIsAutoPlaying(false);
