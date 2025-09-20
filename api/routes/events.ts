@@ -51,13 +51,46 @@ const ensureUploadDir = (dirPath: string) => {
   }
 };
 
-// GET /api/events - Get all events
+// GET /api/events - Get all events with filtering based on user role
 router.get('/', async (req: Request, res: Response) => {
   try {
     const events = await getEvents();
+    
+    // Get user role from query parameter (for now, until proper auth is implemented)
+    const userRole = req.query.userRole as string;
+    const isConnected = req.query.isConnected === 'true';
+    
+    let filteredEvents = events;
+    
+    if (!isConnected) {
+      // Non-connected users: only public events
+      filteredEvents = events.filter(event => 
+        event.publicCible && (
+          event.publicCible.toLowerCase().includes('tous') ||
+          event.publicCible.toLowerCase().includes('public') ||
+          event.publicCible.toLowerCase().includes('tout public')
+        )
+      );
+    } else if (userRole === 'licencie' || userRole === 'membre') {
+      // Connected licensed users: public + licensed events
+      filteredEvents = events.filter(event => 
+        event.publicCible && (
+          event.publicCible.toLowerCase().includes('tous') ||
+          event.publicCible.toLowerCase().includes('public') ||
+          event.publicCible.toLowerCase().includes('tout public') ||
+          event.publicCible.toLowerCase().includes('membre') ||
+          event.publicCible.toLowerCase().includes('licencié') ||
+          event.publicCible.toLowerCase().includes('licencie')
+        )
+      );
+    } else if (userRole === 'admin' || userRole === 'comite') {
+      // Committee members: all events
+      filteredEvents = events;
+    }
+    
     res.json({
       success: true,
-      data: events
+      data: filteredEvents
     });
   } catch (error) {
     console.error('Error fetching events:', error);

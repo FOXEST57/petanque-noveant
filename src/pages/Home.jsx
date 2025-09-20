@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Calendar, Users, Trophy, MapPin, Clock } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useAuth } from '../hooks/useAuth'
 import Carousel from '../components/Carousel'
 import EventCarousel from '../components/EventCarousel'
 
@@ -9,6 +10,7 @@ const Home = () => {
   const [events, setEvents] = useState([])
   const [eventPhotos, setEventPhotos] = useState({})
   const [loading, setLoading] = useState(true)
+  const { user, userProfile } = useAuth()
 
   // Function to get the 3 most relevant events
   const getRelevantEvents = (events) => {
@@ -72,8 +74,25 @@ const Home = () => {
           }
         }
 
-        // Fetch events
-        const eventsResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/events`)
+        // Determine user role and connection status for event filtering
+        const isConnected = !!user
+        let userRole = 'public'
+        
+        if (userProfile?.role === 'admin') {
+          userRole = 'admin'
+        } else if (userProfile?.role === 'responsable' || userProfile?.role === 'comite') {
+          userRole = 'comite'
+        } else if (userProfile?.role === 'membre') {
+          userRole = 'licencie'
+        }
+
+        // Fetch events with filtering
+        const params = new URLSearchParams({
+          isConnected: isConnected.toString(),
+          userRole: userRole
+        })
+        
+        const eventsResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/events?${params}`)
         if (eventsResponse.ok) {
           const eventsData = await eventsResponse.json()
           
@@ -110,7 +129,7 @@ const Home = () => {
     }
 
     fetchData()
-  }, [])
+  }, [user, userProfile])
 
   if (loading) {
     return (

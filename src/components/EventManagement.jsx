@@ -400,13 +400,22 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Public cible
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     name="publicCible"
                                     value={eventFormData.publicCible}
                                     onChange={handleEventFormChange}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
+                                    required
+                                >
+                                    <option value="">Sélectionner le public cible</option>
+                                    <option value="Tous public">Tous public</option>
+                                    <option value="Tous membres">Tous membres</option>
+                                    <option value="Licenciés">Licenciés</option>
+                                    <option value="Jeunes 8-16 ans">Jeunes 8-16 ans</option>
+                                    <option value="Adultes">Adultes</option>
+                                    <option value="Comité">Comité</option>
+                                    <option value="Responsables">Responsables</option>
+                                </select>
                             </div>
                             
                             <div>

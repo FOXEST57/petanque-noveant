@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth'
 import { Calendar, MapPin, Clock, Users } from 'lucide-react'
 
 const Evenements = () => {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const location = useLocation()
+  const { user, userProfile } = useAuth()
   
   // Récupérer l'ID de l'événement depuis l'URL
   const urlParams = new URLSearchParams(location.search)
@@ -14,7 +15,7 @@ const Evenements = () => {
 
   useEffect(() => {
     fetchEvents()
-  }, [])
+  }, [user, userProfile])
 
   useEffect(() => {
     // Scroll vers l'événement spécifique si un ID est fourni
@@ -33,15 +34,35 @@ const Evenements = () => {
 
   const fetchEvents = async () => {
     try {
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .order('date', { ascending: true })
+      // Determine user role and connection status
+      const isConnected = !!user
+      let userRole = 'public'
+      
+      if (userProfile?.role === 'admin') {
+        userRole = 'admin'
+      } else if (userProfile?.role === 'responsable' || userProfile?.role === 'comite') {
+        userRole = 'comite'
+      } else if (userProfile?.role === 'membre') {
+        userRole = 'licencie'
+      }
 
-      if (error) throw error
-      setEvents(data || [])
+      // Build API URL with filtering parameters
+      const apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3002'}/api/events`
+      const params = new URLSearchParams({
+        isConnected: isConnected.toString(),
+        userRole: userRole
+      })
+
+      const response = await fetch(`${apiUrl}?${params}`)
+      if (!response.ok) throw new Error('Failed to fetch events')
+      
+      const result = await response.json()
+      const eventsData = result.success ? result.data : result
+      
+      setEvents(eventsData || [])
     } catch (error) {
       console.error('Erreur lors du chargement des événements:', error)
+      setEvents([])
     } finally {
       setLoading(false)
     }
