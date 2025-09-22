@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { authenticateToken } from '../middleware/auth.js';
 import { 
   getHomeContent, 
   updateHomeContent, 
@@ -48,8 +49,11 @@ const generateUniqueFilename = (originalName: string): string => {
 // GET /api/home-content - Récupérer le contenu de la page d'accueil
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const content = await getHomeContent();
-    const carouselImages = await getHomeCarouselImages();
+    // Récupérer le club_id depuis l'utilisateur authentifié ou utiliser 1 par défaut pour l'endpoint public
+    const clubId = (req as any).user?.clubId || 1;
+    
+    const content = await getHomeContent(clubId);
+    const carouselImages = await getHomeCarouselImages(clubId);
     
     // Mapper les champs pour le frontend
     const responseData = {
@@ -76,135 +80,112 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/home-content - Mettre à jour le contenu de la page d'accueil
-router.put('/', upload.array('carouselImages', 10), async (req: Request, res: Response) => {
+router.put('/', authenticateToken, async (req: Request, res: Response) => {
   try {
-    console.log('PUT /api/home-content - req.body:', req.body);
-    console.log('PUT /api/home-content - req.files:', req.files);
+    // Récupérer le club_id depuis l'utilisateur authentifié
+    const clubId = (req as any).user?.clubId;
     
-    // Parser les données JSON du FormData
-    let homeContentData = {};
-    if (req.body.homeContent) {
-      try {
-        homeContentData = JSON.parse(req.body.homeContent);
-        console.log('PUT /api/home-content - homeContentData parsed:', homeContentData);
-      } catch (error) {
-        console.error('Erreur lors du parsing des données homeContent:', error);
-        return res.status(400).json({ success: false, error: 'Données invalides' });
-      }
+    if (!clubId) {
+      return res.status(400).json({ success: false, error: 'Club ID manquant' });
     }
     
-    const { title, description, openingHours, contact, practicalInfo, location, members, clubTitle, clubDescription, teamsContent, animationsContent, tournamentsContent } = homeContentData as any;
-    const { existingImages } = req.body;
-    
-    // Construire l'objet de données pour la mise à jour
-    const contentData: any = {};
-    
-    // Mapper les champs du frontend vers la base de données
-    if (title !== undefined) contentData.title = title;
-    if (description !== undefined) contentData.description = description;
-    if (openingHours !== undefined) contentData.schedules = openingHours;
-    if (contact !== undefined) contentData.contact = contact;
-    if (practicalInfo !== undefined) contentData.practical_info = practicalInfo;
-    if (location !== undefined) contentData.location = location;
-    if (members !== undefined) contentData.members = members;
-    if (clubTitle !== undefined) contentData.club_title = clubTitle;
-    if (clubDescription !== undefined) contentData.club_description = clubDescription;
-    if (teamsContent !== undefined) contentData.teams_content = teamsContent;
-    if (animationsContent !== undefined) contentData.animations_content = animationsContent;
-    if (tournamentsContent !== undefined) contentData.tournaments_content = tournamentsContent;
+    const {
+      title,
+      description,
+      openingHours,
+      contact,
+      practicalInfo,
+      location,
+      members,
+      clubTitle,
+      clubDescription,
+      teamsContent,
+      animationsContent,
+      tournamentsContent,
+      carouselImages
+    } = req.body;
 
-    // Mettre à jour le contenu principal s'il y a des champs à modifier
-    let updatedContent = null;
-    if (Object.keys(contentData).length > 0) {
-      updatedContent = await updateHomeContent(contentData);
-    }
+    // Mapper les champs frontend vers les champs de la base de données
+    const contentData = {
+      title,
+      description,
+      schedules: openingHours,
+      contact,
+      practical_info: practicalInfo,
+      location,
+      members,
+      club_title: clubTitle,
+      club_description: clubDescription,
+      teams_content: teamsContent,
+      animations_content: animationsContent,
+      tournaments_content: tournamentsContent
+    };
+
+    // Mettre à jour le contenu principal
+    await updateHomeContent(contentData, clubId);
 
     // Gérer les images du carrousel
-    let carouselImages = [];
-    
-    // Traiter les images existantes (ne supprimer que si explicitement demandé)
-    if (existingImages) {
-      try {
-        const existingImagesArray = JSON.parse(existingImages);
-        // Récupérer toutes les images actuelles
-        const currentImages = await getHomeCarouselImages();
-        
-        // Supprimer seulement les images qui ont été explicitement supprimées par l'utilisateur
-        for (const currentImage of currentImages) {
-          const stillExists = existingImagesArray.find(img => img.id === currentImage.id);
-          if (!stillExists) {
-            // Supprimer le fichier physique
-            const filePath = path.join(process.cwd(), currentImage.image_url);
-            if (fs.existsSync(filePath)) {
-              fs.unlinkSync(filePath);
-            }
-            // Supprimer de la base de données
-            await deleteHomeCarouselImage(currentImage.id);
-          }
+    if (carouselImages && Array.isArray(carouselImages)) {
+      // Récupérer les images existantes
+      const existingImages = await getHomeCarouselImages(clubId);
+      const existingIds = existingImages.map(img => img.id);
+      
+      // Supprimer les images qui ne sont plus dans la liste
+      const newImageIds = carouselImages
+        .filter(img => img.id)
+        .map(img => img.id);
+      
+      for (const existingId of existingIds) {
+        if (!newImageIds.includes(existingId)) {
+          await deleteHomeCarouselImage(existingId, clubId);
         }
+      }
+      
+      // Mettre à jour l'ordre et les titres des images existantes, ajouter les nouvelles
+      for (let i = 0; i < carouselImages.length; i++) {
+        const image = carouselImages[i];
         
-        // Mettre à jour l'ordre et les titres des images existantes si nécessaire
-        for (const existingImg of existingImagesArray) {
-          const currentImg = currentImages.find(img => img.id === existingImg.id);
-          
-          if (existingImg.display_order !== undefined) {
-            await updateHomeCarouselImageOrder(existingImg.id, existingImg.display_order);
+        if (image.id) {
+          // Image existante - mettre à jour l'ordre et le titre
+          await updateHomeCarouselImageOrder(image.id, i + 1, clubId);
+          if (image.title !== undefined) {
+            await updateHomeCarouselImageTitle(image.id, image.title, clubId);
           }
-          
-          // Vérifier si le titre a changé
-          if (existingImg.title !== undefined && currentImg && existingImg.title !== currentImg.title) {
-            await updateHomeCarouselImageTitle(existingImg.id, existingImg.title);
-            console.log(`Titre mis à jour pour l'image ${existingImg.id}: ${existingImg.title}`);
-          }
+        } else if (image.image_url) {
+          // Nouvelle image - l'ajouter
+          await addHomeCarouselImage({
+            image_url: image.image_url,
+            display_order: i + 1,
+            title: image.title || ''
+          }, clubId);
         }
-      } catch (error) {
-        console.error('Erreur lors du traitement des images existantes:', error);
       }
     }
-    
-    // Ajouter les nouvelles images
-    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-      for (const file of req.files) {
-        const filename = generateUniqueFilename(file.originalname);
-        const uploadPath = path.join(uploadsDir, filename);
-        
-        // Sauvegarder le fichier
-        await fs.promises.writeFile(uploadPath, file.buffer);
-        
-        // Ajouter à la base de données - laisser addHomeCarouselImage calculer automatiquement display_order
-        const imageUrl = `uploads/home-carousel/${filename}`;
-        await addHomeCarouselImage({
-          image_url: imageUrl
-          // display_order sera calculé automatiquement par la fonction addHomeCarouselImage
-        });
-      }
-    }
-    
+
     // Récupérer les données mises à jour
-    const finalContent = await getHomeContent();
-    carouselImages = await getHomeCarouselImages();
+    const updatedContent = await getHomeContent(clubId);
+    const updatedCarouselImages = await getHomeCarouselImages(clubId);
     
-    // Mapper les champs de retour pour le frontend
     const responseData = {
-      title: finalContent.title,
-      description: finalContent.description,
-      openingHours: finalContent.schedules,
-      contact: finalContent.contact,
-      practicalInfo: finalContent.practical_info,
-      location: finalContent.location,
-      members: finalContent.members,
-      clubTitle: finalContent.club_title,
-      clubDescription: finalContent.club_description,
-      teamsContent: finalContent.teams_content,
-      animationsContent: finalContent.animations_content,
-      tournamentsContent: finalContent.tournaments_content,
-      carouselImages: carouselImages
+      title: updatedContent.title,
+      description: updatedContent.description,
+      openingHours: updatedContent.schedules,
+      contact: updatedContent.contact,
+      practicalInfo: updatedContent.practical_info,
+      location: updatedContent.location,
+      members: updatedContent.members,
+      clubTitle: updatedContent.club_title,
+      clubDescription: updatedContent.club_description,
+      teamsContent: updatedContent.teams_content,
+      animationsContent: updatedContent.animations_content,
+      tournamentsContent: updatedContent.tournaments_content,
+      carouselImages: updatedCarouselImages
     };
 
     res.json({ success: true, data: responseData });
   } catch (error) {
     console.error('Erreur lors de la mise à jour du contenu de la page d\'accueil:', error);
-    res.status(500).json({ success: false, error: 'Erreur lors de la sauvegarde' });
+    res.status(500).json({ success: false, error: 'Server internal error' });
   }
 });
 

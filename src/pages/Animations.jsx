@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Users, X, Image } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { eventsAPI } from '../lib/api';
+import { useAuth } from '../hooks/useAuth.jsx';
 
 const Animations = () => {
+  const { user, userProfile } = useAuth()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -15,7 +17,7 @@ const Animations = () => {
 
   useEffect(() => {
     fetchEvents()
-  }, [])
+  }, [user, userProfile])
 
   // Gérer l'ID de l'événement depuis l'URL
   useEffect(() => {
@@ -34,7 +36,7 @@ const Animations = () => {
 
   const fetchEventPhotos = async (eventId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${eventId}/photos`)
+      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/${eventId}/photos`)
       if (response.ok) {
         const photos = await response.json()
         return photos
@@ -50,15 +52,16 @@ const Animations = () => {
     try {
       setLoading(true)
       setError(null)
-      const eventsData = await eventsAPI.getAll()
       
-      if (!eventsData || !Array.isArray(eventsData)) {
+      const data = await eventsAPI.getAll()
+      
+      if (!data || !Array.isArray(data)) {
         setError('Format de données invalide')
         return
       }
       
       // Trier par date décroissante (le plus récent en haut)
-      const sortedEvents = eventsData.sort((a, b) => new Date(b.date) - new Date(a.date))
+      const sortedEvents = data.sort((a, b) => new Date(b.date) - new Date(a.date))
       setEvents(sortedEvents)
       
       // Charger les photos pour chaque événement
@@ -313,10 +316,39 @@ const Animations = () => {
                           </div>
                           
                           {/* Photo Gallery */}
-                          <PhotoGallery 
-                            photos={eventPhotos[event.id]} 
-                            eventTitle={event.title}
-                          />
+                          {eventPhotos[event.id] && eventPhotos[event.id].length > 0 && (
+                            <div className="mt-6">
+                              <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                <Image className="w-5 h-5 mr-2 text-[var(--primary-color)]" />
+                                Photos de l'événement
+                              </h4>
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                {eventPhotos[event.id].slice(0, 8).map((photo, index) => (
+                                  <div
+                                    key={index}
+                                    className="relative aspect-square cursor-pointer group overflow-hidden rounded-lg"
+                                    onClick={() => setSelectedPhoto({
+                                      src: `${import.meta.env.VITE_API_URL}/uploads/events/${photo.filename}`,
+                                      alt: `Photo ${index + 1} - ${event.title}`,
+                                      title: event.title
+                                    })}
+                                  >
+                                    <img
+                                      src={`${import.meta.env.VITE_API_URL}/uploads/events/${photo.filename}`}
+                                      alt={`Photo ${index + 1} - ${event.title}`}
+                                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300" />
+                                  </div>
+                                ))}
+                                {eventPhotos[event.id].length > 8 && (
+                                  <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 font-medium">
+                                    +{eventPhotos[event.id].length - 8} photos
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                         
                         {isUpcoming && (

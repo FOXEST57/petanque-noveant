@@ -11,6 +11,7 @@ import {
   updateCarouselImageOrder, 
   deleteCarouselImage 
 } from '../../src/lib/database.js';
+import { authenticateToken, canManageEvents, ensureClubAccess } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -45,10 +46,11 @@ const generateUniqueFilename = (originalName: string): string => {
   return `carousel_${timestamp}_${random}${extension}`;
 };
 
-// GET /api/carousel - Récupérer toutes les images actives du carrousel
-router.get('/', async (req: Request, res: Response) => {
+// GET /api/carousel - Récupérer toutes les images actives du carrousel (requires authentication and club access)
+router.get('/', authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
   try {
-    const images = await getCarouselImages();
+    const clubId = (req as any).user?.club_id || 1;
+    const images = await getCarouselImages(clubId);
     res.json({ success: true, data: images });
   } catch (error) {
     console.error('Erreur lors de la récupération des images du carrousel:', error);
@@ -56,10 +58,11 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/carousel/all - Récupérer toutes les images du carrousel (actives et inactives)
-router.get('/all', async (req: Request, res: Response) => {
+// GET /api/carousel/all - Récupérer toutes les images du carrousel (actives et inactives) (requires authentication and club access)
+router.get('/all', authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
   try {
-    const images = await getAllCarouselImages();
+    const clubId = (req as any).user?.club_id || 1;
+    const images = await getAllCarouselImages(clubId);
     res.json({ success: true, data: images });
   } catch (error) {
     console.error('Erreur lors de la récupération de toutes les images du carrousel:', error);
@@ -67,11 +70,12 @@ router.get('/all', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/carousel/:id - Récupérer une image spécifique
-router.get('/:id', async (req: Request, res: Response) => {
+// GET /api/carousel/:id - Récupérer une image spécifique (requires authentication and club access)
+router.get('/:id', authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const image = await getCarouselImageById(parseInt(id));
+    const clubId = (req as any).user?.club_id || 1;
+    const image = await getCarouselImageById(parseInt(id), clubId);
     
     if (!image) {
       return res.status(404).json({ success: false, error: 'Image non trouvée' });
@@ -84,10 +88,11 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/carousel - Ajouter une nouvelle image au carrousel
-router.post('/', upload.single('image'), async (req: Request, res: Response) => {
+// POST /api/carousel - Ajouter une nouvelle image au carrousel (requires authentication and management permissions)
+router.post('/', authenticateToken, canManageEvents, upload.single('image'), async (req: Request, res: Response) => {
   try {
     const { title, display_order, is_active } = req.body;
+    const clubId = (req as any).user?.club_id || 1;
     
     if (!req.file) {
       return res.status(400).json({ 
@@ -115,7 +120,7 @@ router.post('/', upload.single('image'), async (req: Request, res: Response) => 
       imageData.display_order = parseInt(display_order);
     }
 
-    const result = await addCarouselImage(imageData);
+    const result = await addCarouselImage(imageData, clubId);
     res.status(201).json({ success: true, data: result });
   } catch (error) {
     console.error('Erreur lors de l\'ajout de l\'image du carrousel:', error);
@@ -123,11 +128,12 @@ router.post('/', upload.single('image'), async (req: Request, res: Response) => 
   }
 });
 
-// PUT /api/carousel/:id - Mettre à jour une image du carrousel
-router.put('/:id', upload.single('image'), async (req: Request, res: Response) => {
+// PUT /api/carousel/:id - Mettre à jour une image du carrousel (requires authentication and management permissions)
+router.put('/:id', authenticateToken, canManageEvents, upload.single('image'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { title, display_order, is_active } = req.body;
+    const clubId = (req as any).user?.club_id || 1;
     
     // Prepare update data
     const updateData: any = {};
@@ -156,7 +162,7 @@ router.put('/:id', upload.single('image'), async (req: Request, res: Response) =
       });
     }
     
-    const result = await updateCarouselImage(parseInt(id), updateData);
+    const result = await updateCarouselImage(parseInt(id), updateData, clubId);
     res.json({ success: true, data: result });
   } catch (error) {
     console.error('Erreur lors de la mise à jour de l\'image du carrousel:', error);
@@ -164,11 +170,12 @@ router.put('/:id', upload.single('image'), async (req: Request, res: Response) =
   }
 });
 
-// PUT /api/carousel/:id/order - Mettre à jour l'ordre d'affichage d'une image
-router.put('/:id/order', async (req: Request, res: Response) => {
+// PUT /api/carousel/:id/order - Mettre à jour l'ordre d'affichage d'une image (requires authentication and management permissions)
+router.put('/:id/order', authenticateToken, canManageEvents, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { display_order } = req.body;
+    const clubId = (req as any).user?.club_id || 1;
     
     if (display_order === undefined) {
       return res.status(400).json({
@@ -177,7 +184,7 @@ router.put('/:id/order', async (req: Request, res: Response) => {
       });
     }
     
-    const result = await updateCarouselImageOrder(parseInt(id), parseInt(display_order));
+    const result = await updateCarouselImageOrder(parseInt(id), parseInt(display_order), clubId);
     res.json({ success: true, data: result });
   } catch (error) {
     console.error('Erreur lors de la mise à jour de l\'ordre:', error);
@@ -185,15 +192,16 @@ router.put('/:id/order', async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/carousel/:id - Supprimer une image du carrousel
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE /api/carousel/:id - Supprimer une image du carrousel (requires authentication and management permissions)
+router.delete('/:id', authenticateToken, canManageEvents, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const clubId = (req as any).user?.club_id || 1;
     
     // Get image info before deletion to remove file
-    const image = await getCarouselImageById(parseInt(id));
+    const image = await getCarouselImageById(parseInt(id), clubId);
     
-    const result = await deleteCarouselImage(parseInt(id));
+    const result = await deleteCarouselImage(parseInt(id), clubId);
     
     // Remove file from disk if it exists
     if (image && image.image_url) {

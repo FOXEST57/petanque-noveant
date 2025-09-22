@@ -11,16 +11,17 @@ import express, {
 } from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import authRoutes from "./routes/auth.js";
-import carouselRoutes from "./routes/carousel.js";
-import contactRoutes from "./routes/contact.js";
-import drinksRoutes from "./routes/drinks.js";
-import eventsRoutes from "./routes/events.js";
-import homeContentRoutes from "./routes/home-content.js";
-import membersRoutes from "./routes/members.js";
+import authRoutes from "./routes/auth.ts";
+import carouselRoutes from "./routes/carousel.ts";
+import clubsRoutes from "./routes/clubs.ts";
+import contactRoutes from "./routes/contact.ts";
+import drinksRoutes from "./routes/drinks.ts";
+import eventsRoutes from "./routes/events.ts";
+import homeContentRoutes from "./routes/home-content.ts";
+import membersRoutes from "./routes/members.ts";
 import membershipRoutes from "./routes/membership.js";
-import siteSettingsRoutes from "./routes/site-settings.js";
-import teamsRoutes from "./routes/teams.js";
+import siteSettingsRoutes from "./routes/site-settings.ts";
+import teamsRoutes from "./routes/teams.ts";
 
 // for esm mode
 const __filename = fileURLToPath(import.meta.url);
@@ -35,6 +36,13 @@ app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+// Middleware de débogage global pour tracer toutes les requêtes
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log('🔍 Global middleware - Request received:', req.method, req.url);
+  console.log('🔍 Global middleware - Headers:', req.headers);
+  next();
+});
+
 // Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
@@ -42,6 +50,16 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
  * API Routes
  */
 app.use("/api/auth", authRoutes);
+app.use("/api/clubs", clubsRoutes);
+
+// Middleware de débogage spécifique pour /api/events
+app.use("/api/events", (req: Request, res: Response, next: NextFunction) => {
+  console.log('🔍 Before events router - Request:', req.method, req.url);
+  console.log('🔍 Before events router - Path:', req.path);
+  console.log('🔍 Before events router - Original URL:', req.originalUrl);
+  next();
+});
+
 app.use("/api/events", eventsRoutes);
 app.use("/api/members", membersRoutes);
 app.use("/api/membership", membershipRoutes);
@@ -86,3 +104,4 @@ app.use((req: Request, res: Response) => {
 });
 
 export default app;
+

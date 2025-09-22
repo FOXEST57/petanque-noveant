@@ -3,6 +3,7 @@ import fs from "fs";
 import multer from "multer";
 import mysql from "mysql2/promise";
 import path from "path";
+import { authenticateToken, ensureClubAccess } from "../middleware/auth";
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ const upload = multer({
         if (file.mimetype.startsWith("image/")) {
             cb(null, true);
         } else {
-            cb(new Error("Seuls les fichiers image sont autorisés"), false);
+            cb(null, false);
         }
     },
 });
@@ -48,14 +49,89 @@ const dbConfig = {
     database: "petanque_noveant",
 };
 
-// GET /api/site-settings - Récupérer tous les paramètres du site
-router.get("/", async (req, res) => {
+// GET /api/site-settings/public - Récupérer les paramètres publics du site (sans authentification)
+router.get("/public", async (req, res) => {
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+
+        // Déterminer le club_id basé sur le sous-domaine
+        let clubId = 1; // Par défaut
+        
+        // Extraire le sous-domaine depuis le header Host
+        const host = req.get('host') || '';
+        const hostname = host.split(':')[0]; // Enlever le port si présent
+        
+        console.log('🔍 Host détecté:', host);
+        console.log('🔍 Hostname:', hostname);
+        
+        // Vérifier si c'est un sous-domaine
+        if (hostname.includes('.localhost') || hostname.includes('.petanque-club.fr')) {
+            const subdomain = hostname.split('.')[0];
+            console.log('🔍 Sous-domaine détecté:', subdomain);
+            
+            // Récupérer le club_id basé sur le sous-domaine
+            const [clubRows] = await connection.execute(
+                "SELECT id FROM clubs WHERE subdomain = ?",
+                [subdomain]
+            );
+            
+            if ((clubRows as any[]).length > 0) {
+                clubId = (clubRows as any[])[0].id;
+                console.log('✅ Club trouvé:', clubId, 'pour le sous-domaine:', subdomain);
+            } else {
+                console.log('⚠️ Aucun club trouvé pour le sous-domaine:', subdomain);
+            }
+        } else {
+            console.log('🏠 Domaine principal détecté, utilisation du club par défaut');
+        }
+
+        // Récupérer les paramètres publics pour le club déterminé
+        const [rows] = await connection.execute(
+            "SELECT setting_key, setting_value, setting_type FROM site_settings WHERE club_id = ? AND setting_key IN ('site_name', 'site_subtitle', 'club_name', 'primary_color', 'logo_url', 'favicon_url') ORDER BY setting_key",
+            [clubId]
+        );
+
+        await connection.end();
+
+        // Transformer les résultats en objet clé-valeur
+        const settings = {};
+        (rows as any[]).forEach((row) => {
+            let value = row.setting_value;
+
+            // Convertir selon le type
+            if (row.setting_type === "number") {
+                value = parseFloat(value) || 0;
+            } else if (row.setting_type === "boolean") {
+                value = value === "true" || value === "1";
+            } else if (row.setting_type === "json") {
+                try {
+                    value = JSON.parse(value);
+                } catch (e) {
+                    value = {};
+                }
+            }
+
+            settings[row.setting_key] = value;
+        });
+
+        res.json({ success: true, data: settings });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des paramètres publics:", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération des paramètres publics du site",
+        });
+    }
+});
+
+// GET /api/site-settings - Récupérer tous les paramètres du site (authentifié)
+router.get("/", authenticateToken, ensureClubAccess(), async (req, res) => {
     try {
         const connection = await mysql.createConnection(dbConfig);
 
         const [rows] = await connection.execute(
             "SELECT setting_key, setting_value, setting_type FROM site_settings WHERE club_id = ? ORDER BY setting_key",
-            [1]
+            [req.user.clubId]
         );
 
         await connection.end();
@@ -94,6 +170,8 @@ router.get("/", async (req, res) => {
 // PUT /api/site-settings - Mettre à jour les paramètres du site
 router.put(
     "/",
+    authenticateToken,
+    ensureClubAccess(),
     upload.fields([
         { name: "logo", maxCount: 1 },
         { name: "favicon", maxCount: 1 },
@@ -165,7 +243,7 @@ router.put(
          setting_value = VALUES(setting_value), 
          setting_type = VALUES(setting_type),
          updated_at = CURRENT_TIMESTAMP`,
-                    [key, stringValue, settingType, 1]
+                    [key, stringValue, settingType, req.user.clubId]
                 );
             }
 
@@ -189,14 +267,14 @@ router.put(
 );
 
 // GET /api/site-settings/:key - Récupérer un paramètre spécifique
-router.get("/:key", async (req, res) => {
+router.get("/:key", authenticateToken, ensureClubAccess(), async (req, res) => {
     try {
         const { key } = req.params;
         const connection = await mysql.createConnection(dbConfig);
 
         const [rows] = await connection.execute(
             "SELECT setting_value, setting_type FROM site_settings WHERE setting_key = ? AND club_id = ?",
-            [key, 1]
+            [key, req.user.clubId]
         );
 
         await connection.end();

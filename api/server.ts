@@ -2,7 +2,13 @@
  * local server entry file, for local development
  * Updated to trigger restart - port 9000
  */
-import app from "./app.js";
+import dotenv from "dotenv";
+import path from "path";
+
+// Charger les variables d'environnement depuis le répertoire parent
+dotenv.config({ path: path.join(process.cwd(), '..', '.env') });
+
+import app from "./app.ts";
 
 /**
  * start server with port
@@ -33,3 +39,4 @@ process.on("SIGINT", () => {
 });
 
 export default app;
+

@@ -1,6 +1,27 @@
 // API client pour les membres
 const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'http://localhost:3002/api';
 
+// Fonction utilitaire pour récupérer le token d'authentification
+const getAuthToken = () => {
+  return localStorage.getItem('auth_token');
+};
+
+// Fonction utilitaire pour créer les headers avec authentification
+const getAuthHeaders = (isFormData = false) => {
+  const token = getAuthToken();
+  const headers = {};
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+  
+  return headers;
+};
+
 // Fonction utilitaire pour gérer les réponses API
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -15,7 +36,9 @@ const handleResponse = async (response) => {
 export const membersAPI = {
   // Récupérer tous les membres
   getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/members`);
+    const response = await fetch(`${API_BASE_URL}/members`, {
+      headers: getAuthHeaders()
+    });
     return handleResponse(response);
   },
 
@@ -25,9 +48,7 @@ export const membersAPI = {
     
     const response = await fetch(`${API_BASE_URL}/members`, {
       method: 'POST',
-      headers: isFormData ? {} : {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(isFormData),
       body: isFormData ? memberData : JSON.stringify(memberData),
     });
     return handleResponse(response);
@@ -39,9 +60,7 @@ export const membersAPI = {
     
     const response = await fetch(`${API_BASE_URL}/members/${id}`, {
       method: 'PUT',
-      headers: isFormData ? {} : {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(isFormData),
       body: isFormData ? memberData : JSON.stringify(memberData),
     });
     return handleResponse(response);
@@ -51,20 +70,25 @@ export const membersAPI = {
   delete: async (id) => {
     const response = await fetch(`${API_BASE_URL}/members/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders()
     });
     return handleResponse(response);
   },
 
   // Récupérer le nombre total de membres
   getCount: async () => {
-    const response = await fetch(`${API_BASE_URL}/members/count`);
+    const response = await fetch(`${API_BASE_URL}/members/count`, {
+      headers: getAuthHeaders()
+    });
     const data = await handleResponse(response);
     return data.count;
   },
 
   // Récupérer les types de membres
   getTypes: async () => {
-    const response = await fetch(`${API_BASE_URL}/members/types`);
+    const response = await fetch(`${API_BASE_URL}/members/types`, {
+      headers: getAuthHeaders()
+    });
     return handleResponse(response);
   },
 
@@ -72,9 +96,7 @@ export const membersAPI = {
   createType: async (typeData) => {
     const response = await fetch(`${API_BASE_URL}/members/types`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(typeData),
     });
     return handleResponse(response);
@@ -84,9 +106,7 @@ export const membersAPI = {
   updateType: async (id, typeData) => {
     const response = await fetch(`${API_BASE_URL}/members/types/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(typeData),
     });
     return handleResponse(response);
@@ -96,6 +116,7 @@ export const membersAPI = {
   deleteType: async (id) => {
     const response = await fetch(`${API_BASE_URL}/members/types/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders()
     });
     return handleResponse(response);
   }

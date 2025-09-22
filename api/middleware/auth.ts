@@ -4,10 +4,12 @@ import * as mysql from 'mysql2/promise';
 
 // Interface pour les données utilisateur dans le token JWT
 interface JWTPayload {
-  userId: number;
-  clubId: number;
+  userId?: number;
+  id?: number; // Support des anciens tokens
+  clubId?: number;
   email: string;
   role: string;
+  isSuperAdmin?: boolean;
 }
 
 // Extension de l'interface Request pour inclure les données utilisateur
@@ -62,6 +64,16 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     }
 
     const decoded = jwt.verify(token, jwtSecret) as JWTPayload;
+    
+    // Vérifier que userId existe dans le token
+    const userId = decoded.userId || decoded.id; // Support des anciens tokens avec 'id'
+    if (!userId) {
+      console.error('Token invalide - userId manquant:', decoded);
+      return res.status(401).json({ 
+        error: 'Token invalide',
+        code: 'INVALID_TOKEN' 
+      });
+    }
 
     // Récupérer les informations complètes de l'utilisateur depuis la base de données
     const connection = await mysql.createConnection(dbConfig);
@@ -71,7 +83,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
         `SELECT id, club_id, nom, prenom, email, role, statut 
          FROM users 
          WHERE id = ? AND statut = 'actif'`,
-        [decoded.userId]
+        [userId]
       );
 
       const users = rows as any[];
@@ -85,9 +97,11 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       const user = users[0];
 
       // Ajouter les informations utilisateur à la requête
+      // Pour les super admins, utiliser le clubId du token (sélection temporaire)
+      // Pour les utilisateurs normaux, utiliser le club_id de la base de données
       req.user = {
         id: user.id,
-        clubId: user.club_id,
+        clubId: decoded.clubId || user.club_id, // Priorité au clubId du token
         email: user.email,
         role: user.role,
         nom: user.nom,
@@ -167,6 +181,18 @@ export const canManageMembers = requireRole(['president', 'vice_president', 'sec
 export const canManageEvents = requireRole(['president', 'vice_president', 'secretaire', 'tresorier', 'membre']);
 
 /**
+ * Middleware pour vérifier que l'utilisateur peut gérer les équipes
+ * Président, vice-président, secrétaire et trésorier peuvent gérer
+ */
+export const canManageTeams = requireRole(['president', 'vice_president', 'secretaire', 'tresorier']);
+
+/**
+ * Middleware pour vérifier que l'utilisateur peut gérer les boissons
+ * Président, vice-président, secrétaire et trésorier peuvent gérer
+ */
+export const canManageDrinks = requireRole(['president', 'vice_president', 'secretaire', 'tresorier']);
+
+/**
  * Middleware pour vérifier que l'utilisateur peut accéder aux données d'administration
  * Seuls président, vice-président, secrétaire et trésorier ont accès
  */
@@ -206,15 +232,19 @@ export const ensureClubAccess = (clubIdParam?: string) => {
  */
 export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log('🔍 optionalAuth middleware called');
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
+    console.log('🔍 Token found:', !!token);
 
     if (!token) {
+      console.log('🔍 No token, continuing without auth');
       return next(); // Pas de token, continuer sans authentification
     }
 
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
+      console.log('🔍 No JWT secret, continuing without auth');
       return next(); // Pas de configuration JWT, continuer sans authentification
     }
 
@@ -241,6 +271,7 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
           nom: user.nom,
           prenom: user.prenom
         };
+        console.log('🔍 User authenticated:', req.user.email);
       }
     } finally {
       await connection.end();
@@ -248,6 +279,7 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
 
     next();
   } catch (error) {
+    console.log('🔍 Error in optionalAuth, continuing without auth:', error);
     // En cas d'erreur, continuer sans authentification
     next();
   }

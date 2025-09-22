@@ -1,6 +1,11 @@
 // Service API pour communiquer avec le backend Express
 const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'http://localhost:3002/api';
 
+// Fonction utilitaire pour récupérer le token d'authentification
+const getAuthToken = () => {
+  return localStorage.getItem('auth_token');
+};
+
 // Fonction utilitaire pour les appels API
 const apiCall = async (endpoint, options = {}) => {
   try {
@@ -8,6 +13,12 @@ const apiCall = async (endpoint, options = {}) => {
     const headers = {};
     if (!(options.body instanceof FormData)) {
       headers['Content-Type'] = 'application/json';
+    }
+    
+    // Ajouter automatiquement le token d'authentification si disponible
+    const token = getAuthToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
     
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -19,6 +30,14 @@ const apiCall = async (endpoint, options = {}) => {
     });
 
     if (!response.ok) {
+      // Si erreur 401, le token est probablement expiré
+      if (response.status === 401) {
+        localStorage.removeItem('auth_token');
+        // Rediriger vers la page de connexion si nécessaire
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
@@ -32,8 +51,14 @@ const apiCall = async (endpoint, options = {}) => {
 
 // API des événements
 export const eventsAPI = {
-  // Récupérer tous les événements
+  // Récupérer tous les événements (version publique)
   getAll: async () => {
+    const response = await apiCall('/events/public');
+    return response.data;
+  },
+
+  // Récupérer tous les événements (version authentifiée pour l'administration)
+  getAllAuth: async () => {
     const response = await apiCall('/events');
     return response.data;
   },
@@ -49,13 +74,11 @@ export const eventsAPI = {
     const response = await apiCall('/events', {
       method: 'POST',
       body: JSON.stringify({
-        title: eventData.titre,
+        name: eventData.titre,
         description: eventData.description,
         date: eventData.date,
-        heure: eventData.heure,
-        lieu: eventData.lieu,
-        publicCible: eventData.publicCible,
-        photos: JSON.stringify(eventData.photos || [])
+        location: eventData.lieu,
+        maxParticipants: eventData.publicCible
       }),
     });
     return response.data;
@@ -149,8 +172,14 @@ export const drinksAPI = {
 
 // API des équipes
 export const teamsAPI = {
-  // Récupérer toutes les équipes
+  // Récupérer toutes les équipes (version publique)
   getAll: async () => {
+    const response = await apiCall('/teams/public');
+    return response.data;
+  },
+
+  // Récupérer toutes les équipes (version authentifiée pour l'administration)
+  getAllAuth: async () => {
     const response = await apiCall('/teams');
     return response.data;
   },

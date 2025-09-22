@@ -122,9 +122,19 @@ const Admin = () => {
 
 
     useEffect(() => {
-        loadMembers(); // Les stats seront mises à jour automatiquement après le chargement des membres
-        loadMemberTypes();
-        // loadLotos maintenant dans CompetitionManagement.jsx
+        const initializeAdmin = async () => {
+            try {
+                await loadMembers(); // Les stats seront mises à jour automatiquement après le chargement des membres
+                await loadMemberTypes();
+                // loadLotos maintenant dans CompetitionManagement.jsx
+            } catch (error) {
+                console.error("Erreur lors de l'initialisation de l'admin:", error);
+            } finally {
+                setLoading(false); // S'assurer que le loading se termine
+            }
+        };
+        
+        initializeAdmin();
     }, []);
 
     // Mettre à jour les stats quand les boissons changent
@@ -206,6 +216,12 @@ const Admin = () => {
                 }
             });
 
+            if (response.status === 403) {
+                // L'utilisateur n'a pas les permissions pour voir les demandes d'adhésion
+                console.log('Utilisateur sans permissions pour voir les demandes d\'adhésion');
+                return 0;
+            }
+
             if (!response.ok) {
                 throw new Error('Erreur lors du chargement des demandes');
             }
@@ -264,7 +280,7 @@ const Admin = () => {
                         const response = await fetch(
                             `${
                                 import.meta.env.VITE_API_URL ||
-                                "http://localhost:3001"
+                                "http://localhost:3002"
                             }/api/events/${event.id}/photos`
                         );
                         const photos = response.ok ? await response.json() : [];

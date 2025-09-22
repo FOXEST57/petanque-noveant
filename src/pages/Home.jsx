@@ -48,7 +48,7 @@ const Home = () => {
   // Function to fetch photos for an event
   const fetchEventPhotos = async (eventId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/events/${eventId}/photos`)
+      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/${eventId}/photos`)
       if (response.ok) {
         const photos = await response.json()
         return photos || []
@@ -87,12 +87,28 @@ const Home = () => {
         }
 
         // Fetch events with filtering
-        const params = new URLSearchParams({
+        // For public access (non-authenticated users), use the public endpoint
+        const eventsEndpoint = isConnected ? '/api/events' : '/api/events/public'
+        const params = isConnected ? new URLSearchParams({
           isConnected: isConnected.toString(),
           userRole: userRole
-        })
+        }) : ''
         
-        const eventsResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/events?${params}`)
+        const eventsUrl = params ? `${import.meta.env.VITE_API_URL}${eventsEndpoint}?${params}` : `${import.meta.env.VITE_API_URL}${eventsEndpoint}`
+        
+        // Prepare headers for authenticated requests
+        const headers = {
+          'Content-Type': 'application/json'
+        }
+        
+        if (isConnected) {
+          const token = localStorage.getItem('auth_token')
+          if (token) {
+            headers.Authorization = `Bearer ${token}`
+          }
+        }
+        
+        const eventsResponse = await fetch(eventsUrl, { headers })
         if (eventsResponse.ok) {
           const eventsData = await eventsResponse.json()
           

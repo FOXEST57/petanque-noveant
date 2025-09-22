@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { initDatabase, getMembers, createMember, updateMember, deleteMember, getMemberTypes, createMemberType, updateMemberType, deleteMemberType } from '../../src/lib/database.js';
+import { authenticateToken, canManageMembers, ensureClubAccess } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -42,10 +43,11 @@ const init = async () => {
 // Initialize database on module load
 init();
 
-// GET /api/members - Get all members
-router.get('/', async (req: Request, res: Response) => {
+// GET /api/members - Get all members (requires authentication and club isolation)
+router.get('/', authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
   try {
-    const members = await getMembers();
+    const clubId = req.user!.clubId;
+    const members = await getMembers(clubId);
     res.json({
       success: true,
       data: members
@@ -59,10 +61,11 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/members - Create new member
-router.post('/', upload.single('photo'), async (req: Request, res: Response) => {
+// POST /api/members - Create new member (requires authentication and management permissions)
+router.post('/', authenticateToken, canManageMembers, upload.single('photo'), async (req: Request, res: Response) => {
   try {
     const memberData = req.body;
+    const clubId = req.user!.clubId;
     
     // Validate required fields
     if (!memberData.nom || !memberData.prenom) {
@@ -83,7 +86,7 @@ router.post('/', upload.single('photo'), async (req: Request, res: Response) => 
       memberData.photo_url = filename; // Utiliser photo_url au lieu de photo
     }
 
-    const result = await createMember(memberData);
+    const result = await createMember(memberData, clubId);
     
     res.status(201).json({
       success: true,
@@ -106,11 +109,12 @@ const generateUniqueFilename = (originalName: string): string => {
   return `${timestamp}_${random}${extension}`;
 };
 
-// PUT /api/members/:id - Update member
-router.put('/:id', upload.single('photo'), async (req: Request, res: Response) => {
+// PUT /api/members/:id - Update member (requires authentication and management permissions)
+router.put('/:id', authenticateToken, canManageMembers, upload.single('photo'), async (req: Request, res: Response) => {
   try {
     const memberId = parseInt(req.params.id);
     const memberData = req.body;
+    const clubId = req.user!.clubId;
     
     if (isNaN(memberId)) {
       return res.status(400).json({
@@ -131,7 +135,7 @@ router.put('/:id', upload.single('photo'), async (req: Request, res: Response) =
       memberData.photo_url = `uploads/members/${filename}`;
     }
 
-    const result = await updateMember(memberId, memberData);
+    const result = await updateMember(memberId, memberData, clubId);
     
     if (result.changes === 0) {
       return res.status(404).json({
@@ -153,10 +157,11 @@ router.put('/:id', upload.single('photo'), async (req: Request, res: Response) =
   }
 });
 
-// DELETE /api/members/:id - Delete member
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE /api/members/:id - Delete member (requires authentication and management permissions)
+router.delete('/:id', authenticateToken, canManageMembers, async (req: Request, res: Response) => {
   try {
     const memberId = parseInt(req.params.id);
+    const clubId = req.user!.clubId;
     
     if (isNaN(memberId)) {
       return res.status(400).json({
@@ -165,7 +170,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
       });
     }
     
-    const result = await deleteMember(memberId);
+    const result = await deleteMember(memberId, clubId);
     
     if (result.changes === 0) {
       return res.status(404).json({
@@ -205,14 +210,15 @@ router.get('/photos/:filename', (req: Request, res: Response) => {
   }
 });
 
-// GET /api/members/types - Get all member types
-router.get('/types', async (req: Request, res: Response) => {
+// GET /api/members/types - Get member types (requires authentication and club isolation)
+router.get('/types', authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
   try {
-    const memberTypes = await getMemberTypes();
+    const clubId = req.user!.clubId;
+    const types = await getMemberTypes(clubId);
     res.json({
-      success: true,
-      data: memberTypes
-    });
+        success: true,
+        data: types
+      });
   } catch (error) {
     console.error('Error fetching member types:', error);
     res.status(500).json({

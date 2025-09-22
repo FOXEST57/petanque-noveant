@@ -253,9 +253,6 @@ router.post('/login', loginLimiter, async (req: Request, res: Response): Promise
       return;
     }
 
-    // Note: Le champ derniere_connexion n'existe pas dans la table users
-    // Cette fonctionnalité pourra être ajoutée plus tard si nécessaire
-
     // Générer le token JWT
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
@@ -285,7 +282,8 @@ router.post('/login', loginLimiter, async (req: Request, res: Response): Promise
         telephone: user.telephone,
         numeroLicence: user.numero_licence,
         role: user.role,
-        photoUrl: user.photo_url
+        photoUrl: user.photo_url,
+        is_super_admin: user.is_super_admin
       },
       token
     });
@@ -571,6 +569,121 @@ router.put('/change-email', authenticateToken, async (req: Request, res: Respons
 
   } catch (error) {
     console.error('Erreur lors du changement d\'email:', error);
+    res.status(500).json({
+      error: 'Erreur interne du serveur',
+      code: 'INTERNAL_ERROR'
+    });
+  } finally {
+    await connection.end();
+  }
+});
+
+/**
+ * Connexion super admin avec sélection de club
+ * POST /api/auth/super-admin-login
+ */
+router.post('/super-admin-login', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+  const connection = await mysql.createConnection(dbConfig);
+  
+  try {
+    const { clubId } = req.body;
+    const userId = req.user!.id;
+
+    // Vérifier que l'utilisateur est bien un super admin
+    const [users] = await connection.execute(
+      'SELECT is_super_admin FROM users WHERE id = ?',
+      [userId]
+    );
+
+    const user = (users as any[])[0];
+    if (!user || !user.is_super_admin) {
+      res.status(403).json({
+        error: 'Accès refusé - Super admin requis',
+        code: 'ACCESS_DENIED'
+      });
+      return;
+    }
+
+    // Validation du club
+    if (!clubId) {
+      res.status(400).json({
+        error: 'ID du club requis',
+        code: 'MISSING_CLUB_ID'
+      });
+      return;
+    }
+
+    // Vérifier que le club existe
+    const [clubs] = await connection.execute(
+      'SELECT id, nom, subdomain FROM clubs WHERE id = ?',
+      [clubId]
+    );
+
+    const club = (clubs as any[])[0];
+    if (!club) {
+      res.status(404).json({
+        error: 'Club non trouvé',
+        code: 'CLUB_NOT_FOUND'
+      });
+      return;
+    }
+
+    // Récupérer les informations de l'utilisateur sans modifier sa base de données
+    const [userRows] = await connection.execute(
+      `SELECT u.*, c.nom as club_nom, c.subdomain as club_subdomain 
+       FROM users u 
+       JOIN clubs c ON c.id = ? 
+       WHERE u.id = ?`,
+      [clubId, userId]
+    );
+
+    const userInfo = (userRows as any[])[0];
+    
+    // Créer un objet utilisateur avec le club sélectionné (temporaire pour cette session)
+    const updatedUser = {
+      ...userInfo,
+      club_id: clubId,
+      club_nom: club.nom,
+      club_subdomain: club.subdomain
+    };
+
+    // Générer un nouveau token avec le nouveau club
+    const tokenPayload = {
+      userId: updatedUser.id,
+      clubId: updatedUser.club_id,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      isSuperAdmin: updatedUser.is_super_admin
+    };
+
+    const token = jwt.sign(
+      tokenPayload,
+      process.env.JWT_SECRET!,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+    );
+
+    res.json({
+      message: 'Connexion super admin réussie',
+      user: {
+        id: updatedUser.id,
+        clubId: updatedUser.club_id,
+        clubName: updatedUser.club_nom,
+        clubSubdomain: updatedUser.club_subdomain,
+        nom: updatedUser.nom,
+        prenom: updatedUser.prenom,
+        surnom: updatedUser.surnom,
+        email: updatedUser.email,
+        telephone: updatedUser.telephone,
+        numeroLicence: updatedUser.numero_licence,
+        role: updatedUser.role,
+        photoUrl: updatedUser.photo_url,
+        isSuperAdmin: updatedUser.is_super_admin
+      },
+      token
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la connexion super admin:', error);
     res.status(500).json({
       error: 'Erreur interne du serveur',
       code: 'INTERNAL_ERROR'

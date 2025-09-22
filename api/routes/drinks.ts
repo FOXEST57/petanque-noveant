@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { authenticateToken, canManageDrinks, ensureClubAccess } from '../middleware/auth.js';
 import { getDrinks, createDrink, updateDrink, deleteDrink } from '../../src/lib/database.js';
 
 const router = express.Router();
@@ -37,10 +38,12 @@ const generateUniqueFilename = (originalName: string): string => {
   return `${timestamp}_${random}${extension}`;
 };
 
-// GET /api/drinks - Récupérer toutes les boissons
+// GET /api/drinks - Get all drinks (public access for visitors)
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const drinks = await getDrinks();
+    // Pour les visiteurs, utiliser le club ID par défaut (1)
+    const clubId = 1;
+    const drinks = await getDrinks(clubId);
     res.json({ success: true, data: drinks });
   } catch (error) {
     console.error('Erreur lors de la récupération des boissons:', error);
@@ -48,10 +51,11 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/drinks - Créer une nouvelle boisson
-router.post('/', upload.single('photo'), async (req: Request, res: Response) => {
+// POST /api/drinks - Create new drink (requires authentication and management permissions)
+router.post('/', authenticateToken, canManageDrinks, upload.single('photo'), async (req: Request, res: Response) => {
   try {
     const { name, price, description, stock } = req.body;
+    const clubId = req.user!.clubId;
     
     if (!name || !price) {
       return res.status(400).json({ 
@@ -80,7 +84,7 @@ router.post('/', upload.single('photo'), async (req: Request, res: Response) => 
       cleanData.image_url = `uploads/drinks/${filename}`;
     }
 
-    const result = await createDrink(cleanData);
+    const result = await createDrink(cleanData, clubId);
     res.status(201).json({ success: true, data: result });
   } catch (error) {
     console.error('Erreur lors de la création de la boisson:', error);
@@ -88,15 +92,16 @@ router.post('/', upload.single('photo'), async (req: Request, res: Response) => 
   }
 });
 
-// PUT /api/drinks/:id - Mettre à jour une boisson (données JSON seulement)
-router.put('/:id', async (req: Request, res: Response) => {
+// PUT /api/drinks/:id - Update drink (requires authentication and management permissions)
+router.put('/:id', authenticateToken, canManageDrinks, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const drinkId = parseInt(req.params.id);
     const { name, price, description, stock } = req.body;
+    const clubId = req.user!.clubId;
     
     // Logs de débogage
     console.log('=== DEBUG UPDATE DRINK (JSON) ===');
-    console.log('ID:', id);
+    console.log('ID:', drinkId);
     console.log('Request body:', req.body);
     console.log('Content-Type:', req.headers['content-type']);
     console.log('Stock value:', stock, 'Type:', typeof stock);
@@ -129,7 +134,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       });
     }
     
-    const result = await updateDrink(parseInt(id), cleanData);
+    const result = await updateDrink(drinkId, cleanData, clubId);
     res.json({ success: true, data: result });
   } catch (error) {
     console.error('Erreur lors de la mise à jour de la boisson:', error);
@@ -137,15 +142,16 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// PUT /api/drinks/:id/upload - Mettre à jour une boisson avec fichier
-router.put('/:id/upload', upload.single('photo'), async (req: Request, res: Response) => {
+// PUT /api/drinks/:id/upload - Update drink with file upload (requires authentication and management permissions)
+router.put('/:id/upload', authenticateToken, canManageDrinks, upload.single('photo'), async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const drinkId = parseInt(req.params.id);
     const { name, price, description, stock } = req.body;
+    const clubId = req.user!.clubId;
     
     // Logs de débogage
     console.log('=== DEBUG UPDATE DRINK (WITH FILE) ===');
-    console.log('ID:', id);
+    console.log('ID:', drinkId);
     console.log('Request body:', req.body);
     console.log('File:', req.file);
     
@@ -181,7 +187,7 @@ router.put('/:id/upload', upload.single('photo'), async (req: Request, res: Resp
     console.log('Clean data to update:', cleanData);
     
     // Mettre à jour la boisson
-    const result = await updateDrink(parseInt(id), cleanData);
+    const result = await updateDrink(drinkId, cleanData, clubId);
     
     if (!result) {
       return res.status(404).json({ error: 'Boisson non trouvée' });
@@ -194,11 +200,12 @@ router.put('/:id/upload', upload.single('photo'), async (req: Request, res: Resp
   }
 });
 
-// DELETE /api/drinks/:id - Supprimer une boisson
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE /api/drinks/:id - Delete drink (requires authentication and management permissions)
+router.delete('/:id', authenticateToken, canManageDrinks, async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const result = await deleteDrink(parseInt(id));
+    const drinkId = parseInt(req.params.id);
+    const clubId = req.user!.clubId;
+    const result = await deleteDrink(drinkId, clubId);
     res.json({ success: true, data: result });
   } catch (error) {
     console.error('Erreur lors de la suppression de la boisson:', error);

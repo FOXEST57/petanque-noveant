@@ -37,10 +37,24 @@ const Header = () => {
     { path: '/', label: 'Accueil' },
     { path: '/equipes', label: 'Équipes' },
     { path: '/animations', label: 'Événements' },
-
-    { path: '/bar', label: 'Bar' },
     { path: '/contact', label: 'Contact' }
   ]
+
+  // Filtrer les éléments de navigation selon l'état de connexion
+  const getVisibleNavigationItems = () => {
+    if (!user) {
+      // Pour les visiteurs non connectés, afficher seulement les pages publiques
+      return navigationItems.filter(item => 
+        ['/', '/equipes', '/animations', '/contact'].includes(item.path)
+      )
+    }
+    
+    // Pour les utilisateurs connectés, afficher toutes les pages
+    return [
+      ...navigationItems,
+      { path: '/bar', label: 'Bar' }
+    ]
+  }
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -67,7 +81,7 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            {navigationItems.map((item) => (
+            {getVisibleNavigationItems().map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -80,16 +94,18 @@ const Header = () => {
                 {item.label}
               </Link>
             ))}
-            <Link 
-              to="/admin" 
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                isActive('/admin')
-                  ? 'text-[var(--primary-color)] bg-gradient-to-br from-blue-50 to-blue-100'
-                  : 'text-gray-700 hover:text-[var(--primary-color)] hover:from-blue-50 hover:to-blue-100'
-              }`}
-            >
-              Admin
-            </Link>
+            {(isAdmin() || isMembre()) && (
+              <Link 
+                to="/admin" 
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                  isActive('/admin')
+                    ? 'text-[var(--primary-color)] bg-gradient-to-br from-blue-50 to-blue-100'
+                    : 'text-gray-700 hover:text-[var(--primary-color)] hover:from-blue-50 hover:to-blue-100'
+                }`}
+              >
+                Admin
+              </Link>
+            )}
           </nav>
 
           {/* User Menu & Mobile Menu Button */}
@@ -105,7 +121,7 @@ const Header = () => {
                   <span className="hidden sm:inline text-sm font-medium">
                     {userProfile ? `${userProfile.prenom} ${userProfile.nom}` : user.email}
                   </span>
-                  {userProfile?.role && (
+                  {userProfile?.role && userProfile.role !== 'super_admin' && (
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       userProfile.role === 'admin' ? 'bg-red-100 text-red-800' :
                       userProfile.role === 'responsable' ? 'bg-[var(--primary-color)] text-white' :
@@ -175,7 +191,7 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-200">
             <nav className="py-4 space-y-2">
-              {navigationItems.map((item) => (
+              {getVisibleNavigationItems().map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -189,17 +205,19 @@ const Header = () => {
                   {item.label}
                 </Link>
               ))}
-              <Link 
-                to="/admin" 
-                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-                  isActive('/admin')
-                    ? 'text-[var(--primary-color)] bg-blue-50'
-                    : 'text-gray-700 hover:text-[var(--primary-color)] hover:bg-blue-50'
-                }`} 
-                onClick={closeMenus}
-              >
-                Admin
-              </Link>
+              {(isAdmin() || isMembre()) && (
+                <Link 
+                  to="/admin" 
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                    isActive('/admin')
+                      ? 'text-[var(--primary-color)] bg-blue-50'
+                      : 'text-gray-700 hover:text-[var(--primary-color)] hover:bg-blue-50'
+                  }`} 
+                  onClick={closeMenus}
+                >
+                  Admin
+                </Link>
+              )}
             </nav>
           </div>
         )}

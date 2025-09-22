@@ -37,10 +37,38 @@ export const SiteSettingsProvider = ({ children }) => {
         loadSiteSettings();
     }, []);
 
+    // Écouter les changements de club pour recharger les paramètres
+    useEffect(() => {
+        const handleClubChange = () => {
+            loadSiteSettings();
+        };
+
+        window.addEventListener('clubChanged', handleClubChange);
+        
+        return () => {
+            window.removeEventListener('clubChanged', handleClubChange);
+        };
+    }, []);
+
     const loadSiteSettings = async () => {
         try {
             setLoading(true);
-            const response = await fetch("/api/site-settings");
+            const token = localStorage.getItem('auth_token');
+            
+            // Utiliser la route publique pour les paramètres de base si pas de token
+            // ou la route authentifiée pour tous les paramètres si token présent
+            const endpoint = token ? "/api/site-settings" : "/api/site-settings/public";
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const response = await fetch(endpoint, {
+                headers
+            });
             const result = await response.json();
 
             if (result.success) {

@@ -241,8 +241,14 @@ export const deleteEvent = async (id, clubId = 1) => {
 };
 
 // === FONCTIONS CRUD POUR LES PHOTOS D'ÉVÉNEMENTS ===
-export const getEventPhotos = async (eventId) => {
-  const photos = await getAllQuery('SELECT * FROM event_photos WHERE event_id = ? ORDER BY upload_date DESC', [eventId]);
+export const getEventPhotos = async (eventId, clubId = 1) => {
+  const photos = await getAllQuery(`
+    SELECT ep.* 
+    FROM event_photos ep
+    JOIN events e ON ep.event_id = e.id
+    WHERE ep.event_id = ? AND e.club_id = ?
+    ORDER BY ep.upload_date DESC
+  `, [eventId, clubId]);
   
   // Construire les URLs complètes pour chaque photo avec le serveur backend
   return photos.map(photo => ({
@@ -251,19 +257,43 @@ export const getEventPhotos = async (eventId) => {
   }));
 };
 
-export const getEventPhotoById = async (id) => {
-  return await getQuery('SELECT * FROM event_photos WHERE id = ?', [id]);
+export const getEventPhotoById = async (id, clubId = 1) => {
+  return await getQuery(`
+    SELECT ep.* 
+    FROM event_photos ep
+    JOIN events e ON ep.event_id = e.id
+    WHERE ep.id = ? AND e.club_id = ?
+  `, [id, clubId]);
 };
 
-export const createEventPhoto = async (photoData) => {
+export const createEventPhoto = async (photoData, clubId = 1) => {
   const { event_id, filename, original_name, file_path, file_size, mime_type } = photoData;
+  
+  // Vérifier que l'événement appartient au club
+  const eventCheck = await getQuery('SELECT id FROM events WHERE id = ? AND club_id = ?', [event_id, clubId]);
+  if (!eventCheck) {
+    throw new Error('L\'événement n\'appartient pas au club spécifié');
+  }
+  
   return await runQuery(
     'INSERT INTO event_photos (event_id, filename, original_name, file_path, file_size, mime_type) VALUES (?, ?, ?, ?, ?, ?)',
     [event_id, filename, original_name, file_path, file_size, mime_type]
   );
 };
 
-export const deleteEventPhoto = async (id) => {
+export const deleteEventPhoto = async (id, clubId = 1) => {
+  // Vérifier que la photo appartient à un événement du club
+  const photoCheck = await getQuery(`
+    SELECT ep.id 
+    FROM event_photos ep
+    JOIN events e ON ep.event_id = e.id
+    WHERE ep.id = ? AND e.club_id = ?
+  `, [id, clubId]);
+  
+  if (!photoCheck) {
+    throw new Error('La photo n\'appartient pas à un événement du club spécifié');
+  }
+  
   return await runQuery('DELETE FROM event_photos WHERE id = ?', [id]);
 };
 
@@ -390,75 +420,102 @@ export const deleteTeam = async (id, clubId = 1) => {
 };
 
 // === FONCTIONS CRUD POUR LES MEMBRES D'ÉQUIPES ===
-export const getTeamMembers = async (teamId) => {
+export const getTeamMembers = async (teamId, clubId = 1) => {
   return await getAllQuery(`
     SELECT tm.*, m.nom, m.prenom, m.photo_url as member_photo
     FROM team_members tm
     JOIN members m ON tm.member_id = m.id
-    WHERE tm.team_id = ?
+    JOIN teams t ON tm.team_id = t.id
+    WHERE tm.team_id = ? AND t.club_id = ? AND m.club_id = ?
     ORDER BY tm.role DESC, m.nom, m.prenom
-  `, [teamId]);
+  `, [teamId, clubId, clubId]);
 };
 
-export const addTeamMember = async (teamId, memberId, role = 'Joueur') => {
+export const addTeamMember = async (teamId, memberId, role = 'Joueur', clubId = 1) => {
+  // Vérifier que l'équipe et le membre appartiennent au même club
+  const teamCheck = await getQuery('SELECT id FROM teams WHERE id = ? AND club_id = ?', [teamId, clubId]);
+  const memberCheck = await getQuery('SELECT id FROM members WHERE id = ? AND club_id = ?', [memberId, clubId]);
+  
+  if (!teamCheck || !memberCheck) {
+    throw new Error('L\'équipe ou le membre n\'appartient pas au club spécifié');
+  }
+  
   return await runQuery(
     'INSERT INTO team_members (team_id, member_id, role) VALUES (?, ?, ?)',
     [teamId, memberId, role]
   );
 };
 
-export const removeTeamMember = async (teamId, memberId) => {
+export const removeTeamMember = async (teamId, memberId, clubId = 1) => {
+  // Vérifier que l'équipe appartient au club
+  const teamCheck = await getQuery('SELECT id FROM teams WHERE id = ? AND club_id = ?', [teamId, clubId]);
+  if (!teamCheck) {
+    throw new Error('L\'équipe n\'appartient pas au club spécifié');
+  }
+  
   return await runQuery(
     'DELETE FROM team_members WHERE team_id = ? AND member_id = ?',
     [teamId, memberId]
   );
 };
 
-export const updateTeamMemberRole = async (teamId, memberId, role) => {
+export const updateTeamMemberRole = async (teamId, memberId, role, clubId = 1) => {
+  // Vérifier que l'équipe appartient au club
+  const teamCheck = await getQuery('SELECT id FROM teams WHERE id = ? AND club_id = ?', [teamId, clubId]);
+  if (!teamCheck) {
+    throw new Error('L\'équipe n\'appartient pas au club spécifié');
+  }
+  
   return await runQuery(
     'UPDATE team_members SET role = ? WHERE team_id = ? AND member_id = ?',
     [role, teamId, memberId]
   );
 };
 
-export const getTeamWithMembers = async (teamId) => {
-  const team = await getTeamById(teamId);
+export const getTeamWithMembers = async (teamId, clubId = 1) => {
+  const team = await getTeamById(teamId, clubId);
   if (team) {
-    team.members = await getTeamMembers(teamId);
+    team.members = await getTeamMembers(teamId, clubId);
   }
   return team;
 };
 
 // === FONCTIONS CRUD POUR LES IMAGES DU CARROUSEL ===
-export const getCarouselImages = async () => {
-  return await getAllQuery('SELECT * FROM carousel_images WHERE is_active = TRUE ORDER BY display_order ASC, created_at DESC');
+export const getCarouselImages = async (clubId = 1) => {
+  return await getAllQuery('SELECT * FROM carousel_images WHERE is_active = TRUE AND club_id = ? ORDER BY display_order ASC, created_at DESC', [clubId]);
 };
 
-export const getAllCarouselImages = async () => {
-  return await getAllQuery('SELECT * FROM carousel_images ORDER BY display_order ASC, created_at DESC');
+export const getAllCarouselImages = async (clubId = 1) => {
+  return await getAllQuery('SELECT * FROM carousel_images WHERE club_id = ? ORDER BY display_order ASC, created_at DESC', [clubId]);
 };
 
-export const getCarouselImageById = async (id) => {
-  return await getQuery('SELECT * FROM carousel_images WHERE id = ?', [id]);
+export const getCarouselImageById = async (id, clubId = 1) => {
+  return await getQuery('SELECT * FROM carousel_images WHERE id = ? AND club_id = ?', [id, clubId]);
 };
 
-export const addCarouselImage = async (imageData) => {
+export const addCarouselImage = async (imageData, clubId = 1) => {
   const { title, image_url, display_order, is_active } = imageData;
   
-  // Si display_order n'est pas fourni, calculer la prochaine position disponible
+  // Si display_order n'est pas fourni, calculer la prochaine position disponible pour ce club
   let finalDisplayOrder = display_order;
   if (finalDisplayOrder === undefined || finalDisplayOrder === null) {
-    const maxOrderResult = await getQuery('SELECT MAX(display_order) as max_order FROM carousel_images');
+    const maxOrderResult = await getQuery('SELECT MAX(display_order) as max_order FROM carousel_images WHERE club_id = ?', [clubId]);
     finalDisplayOrder = (maxOrderResult?.max_order || 0) + 1;
   }
   
   return await runQuery(
-    'INSERT INTO carousel_images (title, image_url, display_order, is_active, updated_at) VALUES (?, ?, ?, ?, NOW())',
-    [title || '', image_url, finalDisplayOrder, is_active !== undefined ? is_active : true]
+    'INSERT INTO carousel_images (title, image_url, display_order, is_active, club_id, updated_at) VALUES (?, ?, ?, ?, ?, NOW())',
+    [title || '', image_url, finalDisplayOrder, is_active !== undefined ? is_active : true, clubId]
   );
 };
 
-export const updateCarouselImage = async (id, imageData) => {
+export const updateCarouselImage = async (id, imageData, clubId = 1) => {
+  // Vérifier que l'image appartient au club
+  const imageCheck = await getQuery('SELECT id FROM carousel_images WHERE id = ? AND club_id = ?', [id, clubId]);
+  if (!imageCheck) {
+    throw new Error('L\'image du carousel n\'appartient pas au club spécifié');
+  }
+
   // Build dynamic query based on provided fields
   const fields = [];
   const values = [];
@@ -487,35 +544,48 @@ export const updateCarouselImage = async (id, imageData) => {
   fields.push('updated_at = NOW()');
   values.push(id);
   
-  const query = `UPDATE carousel_images SET ${fields.join(', ')} WHERE id = ?`;
+  const query = `UPDATE carousel_images SET ${fields.join(', ')} WHERE id = ? AND club_id = ?`;
+  values.push(clubId);
   return await runQuery(query, values);
 };
 
-export const deleteCarouselImage = async (id) => {
-  return await runQuery('DELETE FROM carousel_images WHERE id = ?', [id]);
+export const deleteCarouselImage = async (id, clubId = 1) => {
+  // Vérifier que l'image appartient au club
+  const imageCheck = await getQuery('SELECT id FROM carousel_images WHERE id = ? AND club_id = ?', [id, clubId]);
+  if (!imageCheck) {
+    throw new Error('L\'image du carousel n\'appartient pas au club spécifié');
+  }
+  
+  return await runQuery('DELETE FROM carousel_images WHERE id = ? AND club_id = ?', [id, clubId]);
 };
 
-export const updateCarouselImageOrder = async (imageId, newOrder) => {
+export const updateCarouselImageOrder = async (imageId, newOrder, clubId = 1) => {
+  // Vérifier que l'image appartient au club
+  const imageCheck = await getQuery('SELECT id FROM carousel_images WHERE id = ? AND club_id = ?', [imageId, clubId]);
+  if (!imageCheck) {
+    throw new Error('L\'image du carousel n\'appartient pas au club spécifié');
+  }
+  
   return await runQuery(
-    'UPDATE carousel_images SET display_order = ?, updated_at = NOW() WHERE id = ?',
-    [newOrder, imageId]
+    'UPDATE carousel_images SET display_order = ?, updated_at = NOW() WHERE id = ? AND club_id = ?',
+    [newOrder, imageId, clubId]
   );
 };
 
 // === FONCTIONS CRUD POUR LE CONTENU DE LA PAGE D'ACCUEIL ===
-export const getHomeContent = async () => {
-  const content = await getQuery('SELECT * FROM home_content WHERE id = 1');
+export const getHomeContent = async (clubId = 1) => {
+  const content = await getQuery('SELECT * FROM home_content WHERE club_id = ?', [clubId]);
   if (!content) {
     // Retourner un contenu par défaut si aucun n'existe
     return {
-      id: 1,
-      title: 'Bienvenue au Club de Pétanque de Noveant',
+      club_id: clubId,
+      title: 'Bienvenue au Club de Pétanque',
       description: 'Découvrez notre club convivial et nos activités.',
       schedules: 'Ouvert tous les jours de 14h à 18h',
-      contact: 'Téléphone: 03 87 XX XX XX\nEmail: contact@petanque-noveant.fr',
+      contact: 'Téléphone: XX XX XX XX XX\nEmail: contact@club-petanque.fr',
       practical_info: 'Parking gratuit disponible\nAccès handicapés',
-      location: 'Notre club est situé au cœur de Noveant-sur-Moselle, dans un cadre verdoyant et convivial.',
-      members: 'Notre club compte une cinquantaine de membres passionnés de pétanque, de tous âges et de tous niveaux.',
+      location: 'Notre club est situé dans un cadre verdoyant et convivial.',
+      members: 'Notre club compte des membres passionnés de pétanque, de tous âges et de tous niveaux.',
       club_title: 'Découvrez notre club',
       club_description: 'Un club dynamique qui propose de nombreuses activités tout au long de l\'année',
       teams_content: 'Nos équipes évoluent dans différents championnats départementaux et régionaux. Que vous soyez débutant ou confirmé, vous trouverez votre place dans nos équipes compétitives.',
@@ -537,9 +607,9 @@ export const getHomeContent = async () => {
   };
 };
 
-export const updateHomeContent = async (contentData) => {
+export const updateHomeContent = async (contentData, clubId = 1) => {
   // Vérifier si un enregistrement existe
-  const existing = await getQuery('SELECT * FROM home_content WHERE id = 1');
+  const existing = await getQuery('SELECT * FROM home_content WHERE club_id = ?', [clubId]);
   
   if (existing) {
     // Construire la requête de mise à jour dynamiquement
@@ -601,19 +671,20 @@ export const updateHomeContent = async (contentData) => {
     }
     
     fields.push('updated_at = NOW()');
-    const query = `UPDATE home_content SET ${fields.join(', ')} WHERE id = 1`;
+    values.push(clubId);
+    const query = `UPDATE home_content SET ${fields.join(', ')} WHERE club_id = ?`;
     
     await runQuery(query, values);
-    return await getQuery('SELECT * FROM home_content WHERE id = 1');
+    return await getQuery('SELECT * FROM home_content WHERE club_id = ?', [clubId]);
   } else {
     // Créer un nouvel enregistrement avec des valeurs par défaut
-    const title = contentData.title || 'Bienvenue au Club de Pétanque de Noveant';
+    const title = contentData.title || 'Bienvenue au Club de Pétanque';
     const description = contentData.description || 'Découvrez notre club convivial et nos activités.';
     const schedules = contentData.schedules || 'Ouvert tous les jours de 14h à 18h';
-    const contact = contentData.contact || 'Téléphone: 03 87 XX XX XX\nEmail: contact@petanque-noveant.fr';
+    const contact = contentData.contact || 'Téléphone: XX XX XX XX XX\nEmail: contact@club-petanque.fr';
     const practical_info = contentData.practical_info || 'Parking gratuit disponible\nAccès handicapés';
-    const location = contentData.location || 'Notre club est situé au cœur de Noveant-sur-Moselle, dans un cadre verdoyant et convivial.';
-    const members = contentData.members || 'Notre club compte une cinquantaine de membres passionnés de pétanque, de tous âges et de tous niveaux.';
+    const location = contentData.location || 'Notre club est situé dans un cadre verdoyant et convivial.';
+    const members = contentData.members || 'Notre club compte des membres passionnés de pétanque, de tous âges et de tous niveaux.';
     const club_title = contentData.club_title || 'Découvrez notre club';
     const club_description = contentData.club_description || 'Un club dynamique qui propose de nombreuses activités tout au long de l\'année';
     const teams_content = contentData.teams_content || 'Nos équipes évoluent dans différents championnats départementaux et régionaux. Que vous soyez débutant ou confirmé, vous trouverez votre place dans nos équipes compétitives.';
@@ -621,52 +692,52 @@ export const updateHomeContent = async (contentData) => {
     const tournaments_content = contentData.tournaments_content || 'Participez à nos tournois réguliers ! Nous organisons des compétitions internes mensuelles et participons aux grands tournois de la région pour tous les niveaux.';
     
     await runQuery(
-      'INSERT INTO home_content (id, title, description, schedules, contact, practical_info, location, members, club_title, club_description, teams_content, animations_content, tournaments_content, updated_at) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
-      [title || null, description || null, schedules || null, contact || null, practical_info || null, location || null, members || null, club_title || null, club_description || null, teams_content || null, animations_content || null, tournaments_content || null]
+      'INSERT INTO home_content (club_id, title, description, schedules, contact, practical_info, location, members, club_title, club_description, teams_content, animations_content, tournaments_content, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+      [clubId, title || null, description || null, schedules || null, contact || null, practical_info || null, location || null, members || null, club_title || null, club_description || null, teams_content || null, animations_content || null, tournaments_content || null]
     );
-    return await getQuery('SELECT * FROM home_content WHERE id = 1');
+    return await getQuery('SELECT * FROM home_content WHERE club_id = ?', [clubId]);
   }
 };
 
 // === FONCTIONS CRUD POUR LES IMAGES DU CARROUSEL DE LA PAGE D'ACCUEIL ===
-export const getHomeCarouselImages = async () => {
+export const getHomeCarouselImages = async (clubId = 1) => {
   return await getAllQuery(
-    'SELECT * FROM home_carousel_images WHERE home_content_id = 1 ORDER BY display_order ASC',
-    []
+    'SELECT * FROM home_carousel_images WHERE club_id = ? ORDER BY display_order ASC',
+    [clubId]
   );
 };
 
-export const addHomeCarouselImage = async (imageData) => {
+export const addHomeCarouselImage = async (imageData, clubId = 1) => {
   const { image_url, display_order } = imageData;
   
   // Si display_order n'est pas fourni, calculer la prochaine position disponible
   let finalDisplayOrder = display_order;
   if (finalDisplayOrder === undefined || finalDisplayOrder === null) {
-    const maxOrderResult = await getQuery('SELECT MAX(display_order) as max_order FROM home_carousel_images WHERE home_content_id = 1');
+    const maxOrderResult = await getQuery('SELECT MAX(display_order) as max_order FROM home_carousel_images WHERE club_id = ?', [clubId]);
     finalDisplayOrder = (maxOrderResult?.max_order || 0) + 1;
   }
   
   return await runQuery(
-    'INSERT INTO home_carousel_images (home_content_id, image_url, display_order, created_at) VALUES (1, ?, ?, NOW())',
-    [image_url, finalDisplayOrder]
+    'INSERT INTO home_carousel_images (club_id, image_url, display_order, created_at) VALUES (?, ?, ?, NOW())',
+    [clubId, image_url, finalDisplayOrder]
   );
 };
 
-export const deleteHomeCarouselImage = async (id) => {
-  return await runQuery('DELETE FROM home_carousel_images WHERE id = ?', [id]);
+export const deleteHomeCarouselImage = async (id, clubId = 1) => {
+  return await runQuery('DELETE FROM home_carousel_images WHERE id = ? AND club_id = ?', [id, clubId]);
 };
 
-export const updateHomeCarouselImageOrder = async (imageId, newOrder) => {
+export const updateHomeCarouselImageOrder = async (imageId, newOrder, clubId = 1) => {
   return await runQuery(
-    'UPDATE home_carousel_images SET display_order = ? WHERE id = ?',
-    [newOrder, imageId]
+    'UPDATE home_carousel_images SET display_order = ? WHERE id = ? AND club_id = ?',
+    [newOrder, imageId, clubId]
   );
 };
 
-export const updateHomeCarouselImageTitle = async (imageId, title) => {
+export const updateHomeCarouselImageTitle = async (imageId, title, clubId = 1) => {
   return await runQuery(
-    'UPDATE home_carousel_images SET title = ? WHERE id = ?',
-    [title, imageId]
+    'UPDATE home_carousel_images SET title = ? WHERE id = ? AND club_id = ?',
+    [title, imageId, clubId]
   );
 };
 

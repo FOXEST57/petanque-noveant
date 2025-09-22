@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { eventsAPI } from '../lib/api'
 import { Calendar, MapPin, Clock, Users } from 'lucide-react'
 
 const Evenements = () => {
@@ -15,7 +16,7 @@ const Evenements = () => {
 
   useEffect(() => {
     fetchEvents()
-  }, [user, userProfile])
+  }, [])
 
   useEffect(() => {
     // Scroll vers l'événement spécifique si un ID est fourni
@@ -34,32 +35,8 @@ const Evenements = () => {
 
   const fetchEvents = async () => {
     try {
-      // Determine user role and connection status
-      const isConnected = !!user
-      let userRole = 'public'
-      
-      if (userProfile?.role === 'admin') {
-        userRole = 'admin'
-      } else if (userProfile?.role === 'responsable' || userProfile?.role === 'comite') {
-        userRole = 'comite'
-      } else if (userProfile?.role === 'membre') {
-        userRole = 'licencie'
-      }
-
-      // Build API URL with filtering parameters
-      const apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3002'}/api/events`
-      const params = new URLSearchParams({
-        isConnected: isConnected.toString(),
-        userRole: userRole
-      })
-
-      const response = await fetch(`${apiUrl}?${params}`)
-      if (!response.ok) throw new Error('Failed to fetch events')
-      
-      const result = await response.json()
-      const eventsData = result.success ? result.data : result
-      
-      setEvents(eventsData || [])
+      const data = await eventsAPI.getAll()
+      setEvents(data || [])
     } catch (error) {
       console.error('Erreur lors du chargement des événements:', error)
       setEvents([])
@@ -116,4 +93,66 @@ const Evenements = () => {
               <div
                 key={event.id}
                 id={`event-${event.id}`}
-                className={`bg-white rounded-xl
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+              >
+                <div className="p-8">
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4">{event.title}</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div className="flex items-center text-gray-600">
+                          <Calendar className="h-5 w-5 mr-3 text-green-600" />
+                          <span>{formatDate(event.date)}</span>
+                        </div>
+                        
+                        {event.time && (
+                          <div className="flex items-center text-gray-600">
+                            <Clock className="h-5 w-5 mr-3 text-green-600" />
+                            <span>{formatTime(event.time)}</span>
+                          </div>
+                        )}
+                        
+                        {event.location && (
+                          <div className="flex items-center text-gray-600">
+                            <MapPin className="h-5 w-5 mr-3 text-green-600" />
+                            <span>{event.location}</span>
+                          </div>
+                        )}
+                        
+                        {event.max_participants && (
+                          <div className="flex items-center text-gray-600">
+                            <Users className="h-5 w-5 mr-3 text-green-600" />
+                            <span>Max {event.max_participants} participants</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {event.description && (
+                        <div className="prose prose-gray max-w-none">
+                          <p className="text-gray-700 leading-relaxed">{event.description}</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {event.image_url && (
+                      <div className="lg:w-80 lg:flex-shrink-0">
+                        <img
+                          src={event.image_url}
+                          alt={event.title}
+                          className="w-full h-48 lg:h-64 object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default Evenements

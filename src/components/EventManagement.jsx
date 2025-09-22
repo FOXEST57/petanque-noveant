@@ -66,7 +66,7 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                         const response = await fetch(
                             `${
                                 import.meta.env.VITE_API_URL ||
-                                "http://localhost:3001"
+                                "http://localhost:3002"
                             }/api/events/${event.id}/photos`
                         );
                         const photos = response.ok ? await response.json() : [];
@@ -138,7 +138,7 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
         
         // Charger les photos existantes
         try {
-            const response = await fetch(`/api/events/${event.id}/photos`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/${event.id}/photos`);
             if (response.ok) {
                 const photos = await response.json();
                 setExistingEventPhotos(photos);
@@ -216,8 +216,15 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
     
     const removeExistingEventPhoto = async (photoId) => {
         try {
-            await fetch(`/api/events/photos/${photoId}`, {
-                method: 'DELETE'
+            const token = localStorage.getItem('auth_token');
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/photos/${photoId}`, {
+                method: 'DELETE',
+                headers
             });
             setExistingEventPhotos(prev => prev.filter(photo => photo.id !== photoId));
             toast.success("Photo supprimée avec succès");
@@ -255,8 +262,15 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                 });
                 
                 try {
-                    await fetch(`/api/events/${eventId}/photos`, {
+                    const token = localStorage.getItem('auth_token');
+                    const headers = {};
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+                    
+                    await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/${eventId}/photos`, {
                         method: "POST",
+                        headers,
                         body: formData
                     });
                     toast.success("Photos uploadées avec succès");

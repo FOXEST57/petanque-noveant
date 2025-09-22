@@ -38,6 +38,14 @@ const MembershipRequestManagement = ({ onClose }) => {
                 }
             });
 
+            if (response.status === 403) {
+                // L'utilisateur n'a pas les permissions pour voir les demandes d'adhésion
+                console.log('Utilisateur sans permissions pour voir les demandes d\'adhésion');
+                setRequests([]);
+                toast.error('Vous n\'avez pas les permissions pour voir les demandes d\'adhésion');
+                return;
+            }
+
             if (!response.ok) {
                 throw new Error('Erreur lors du chargement des demandes');
             }

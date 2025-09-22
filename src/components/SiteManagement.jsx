@@ -235,8 +235,17 @@ const SiteManagement = ({ isOpen, onClose }) => {
                 formData.append('favicon', faviconFile);
             }
 
+            // Récupérer le token d'authentification
+            const token = localStorage.getItem('auth_token');
+            const headers = {};
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch("/api/site-settings", {
                 method: "PUT",
+                headers,
                 body: formData, // Utiliser FormData au lieu de JSON
             });
 

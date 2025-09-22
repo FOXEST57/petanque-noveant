@@ -2,6 +2,7 @@ import express, { type Request, type Response } from "express";
 import fs from "fs";
 import multer from "multer";
 import path from "path";
+import { authenticateToken, canManageTeams, ensureClubAccess } from '../middleware/auth.js';
 import {
     addTeamMember,
     createTeam,
@@ -13,6 +14,15 @@ import {
     updateTeam,
     updateTeamMemberRole,
 } from "../../src/lib/database.js";
+
+// Extend Request interface to include clubId
+declare global {
+    namespace Express {
+        interface Request {
+            clubId?: number;
+        }
+    }
+}
 
 const router = express.Router();
 
@@ -47,10 +57,30 @@ const generateUniqueFilename = (originalName: string): string => {
     return `${timestamp}_${random}${extension}`;
 };
 
-// GET /api/teams - Récupérer toutes les équipes
-router.get("/", async (req: Request, res: Response) => {
+// GET /api/teams/public - Get all teams (public access, no authentication required)
+router.get("/public", async (req: Request, res: Response) => {
     try {
-        const teams = await getTeams();
+        // For public access, we'll use clubId from subdomain middleware
+  const clubId = req.clubId || 1;
+        const teams = await getTeams(clubId);
+        res.json({
+            success: true,
+            data: teams,
+        });
+    } catch (error) {
+        console.error("Error fetching teams (public):", error);
+        res.status(500).json({
+            success: false,
+            error: "Erreur lors de la récupération des équipes",
+        });
+    }
+});
+
+// GET /api/teams - Get all teams (requires authentication and club access)
+router.get("/", authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
+    try {
+        const clubId = req.user!.clubId;
+        const teams = await getTeams(clubId);
         res.json({
             success: true,
             data: teams,
@@ -64,11 +94,12 @@ router.get("/", async (req: Request, res: Response) => {
     }
 });
 
-// GET /api/teams/:id - Récupérer une équipe par ID
-router.get("/:id", async (req: Request, res: Response) => {
+// GET /api/teams/:id - Get team by ID (requires authentication and club access)
+router.get("/:id", authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
-        const team = await getTeamById(parseInt(id));
+        const teamId = parseInt(req.params.id);
+        const clubId = req.user!.clubId;
+        const team = await getTeamById(teamId, clubId);
 
         if (!team) {
             return res.status(404).json({
@@ -90,13 +121,16 @@ router.get("/:id", async (req: Request, res: Response) => {
     }
 });
 
-// POST /api/teams - Créer une nouvelle équipe
+// POST /api/teams - Create new team (requires authentication and management permissions)
 router.post(
     "/",
+    authenticateToken,
+    canManageTeams,
     upload.single("photo"),
     async (req: Request, res: Response) => {
         try {
             const teamData = req.body;
+            const clubId = req.user!.clubId;
 
             // Validation des données requises
             if (!teamData.name) {
@@ -118,7 +152,7 @@ router.post(
                 teamData.photo_url = `uploads/teams/${filename}`;
             }
 
-            const result = await createTeam(teamData);
+            const result = await createTeam(teamData, clubId);
 
             res.status(201).json({
                 success: true,
@@ -137,13 +171,16 @@ router.post(
     }
 );
 
-// PUT /api/teams/:id - Mettre à jour une équipe
+// PUT /api/teams/:id - Update team (requires authentication and management permissions)
 router.put(
     "/:id",
+    authenticateToken,
+    canManageTeams,
     upload.single("photo"),
     async (req: Request, res: Response) => {
         try {
-            const { id } = req.params;
+            const teamId = parseInt(req.params.id);
+            const clubId = req.user!.clubId;
 
             // Debug logging
             console.log("PUT /api/teams/:id - req.body:", req.body);
@@ -196,7 +233,7 @@ router.put(
                 });
             }
 
-            const result = await updateTeam(parseInt(id), teamData);
+            const result = await updateTeam(teamId, teamData, clubId);
 
             // Handle team members update if provided
             if (req.body.members) {
@@ -205,14 +242,14 @@ router.put(
                     console.log("PUT /api/teams/:id - updating members:", members);
                     
                     // First, remove all existing members
-                    const existingMembers = await getTeamMembers(parseInt(id));
+                    const existingMembers = await getTeamMembers(parseInt(req.params.id));
                     for (const member of existingMembers) {
-                        await removeTeamMember(parseInt(id), member.id);
+                        await removeTeamMember(parseInt(req.params.id), member.id);
                     }
                     
                     // Then add the new members
                     for (const member of members) {
-                        await addTeamMember(parseInt(id), member.id, member.role || 'membre');
+                        await addTeamMember(parseInt(req.params.id), member.id, member.role || 'membre');
                     }
                 } catch (memberError) {
                     console.error("Error updating team members:", memberError);
@@ -230,7 +267,7 @@ router.put(
             res.json({
                 success: true,
                 data: {
-                    id: parseInt(id),
+                    id: parseInt(req.params.id),
                     ...teamData,
                 },
             });
@@ -244,12 +281,13 @@ router.put(
     }
 );
 
-// DELETE /api/teams/:id - Supprimer une équipe
-router.delete("/:id", async (req: Request, res: Response) => {
+// DELETE /api/teams/:id - Delete team (requires authentication and management permissions)
+router.delete("/:id", authenticateToken, canManageTeams, async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const teamId = parseInt(req.params.id);
+        const clubId = req.user!.clubId;
 
-        const result = await deleteTeam(parseInt(id));
+        const result = await deleteTeam(teamId, clubId);
 
         if (result.changes === 0) {
             return res.status(404).json({
@@ -271,11 +309,12 @@ router.delete("/:id", async (req: Request, res: Response) => {
     }
 });
 
-// GET /api/teams/:id/members - Récupérer les membres d'une équipe
-router.get("/:id/members", async (req: Request, res: Response) => {
+// GET /api/teams/:id/members - Get team members (requires authentication and club access)
+router.get("/:id/members", authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
-        const members = await getTeamMembers(parseInt(id));
+        const teamId = parseInt(req.params.id);
+        const clubId = req.user!.clubId;
+        const members = await getTeamMembers(teamId, clubId);
 
         res.json({
             success: true,
@@ -290,11 +329,12 @@ router.get("/:id/members", async (req: Request, res: Response) => {
     }
 });
 
-// POST /api/teams/:id/members - Ajouter un membre à une équipe
-router.post("/:id/members", async (req: Request, res: Response) => {
+// POST /api/teams/:id/members - Add team member (requires authentication and management permissions)
+router.post("/:id/members", authenticateToken, canManageTeams, async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const teamId = parseInt(req.params.id);
         const { memberId, role } = req.body;
+        const clubId = req.user!.clubId;
 
         if (!memberId) {
             return res.status(400).json({
@@ -304,15 +344,16 @@ router.post("/:id/members", async (req: Request, res: Response) => {
         }
 
         const result = await addTeamMember(
-            parseInt(id),
+            teamId,
             memberId,
-            role || "membre"
+            role || "membre",
+            clubId
         );
 
         res.status(201).json({
             success: true,
             data: {
-                teamId: parseInt(id),
+                teamId: parseInt(req.params.id),
                 memberId,
                 role: role || "membre",
             },
@@ -326,16 +367,21 @@ router.post("/:id/members", async (req: Request, res: Response) => {
     }
 });
 
-// DELETE /api/teams/:teamId/members/:memberId - Retirer un membre d'une équipe
+// DELETE /api/teams/:teamId/members/:memberId - Remove team member (requires authentication and management permissions)
 router.delete(
     "/:teamId/members/:memberId",
+    authenticateToken,
+    canManageTeams,
     async (req: Request, res: Response) => {
         try {
-            const { teamId, memberId } = req.params;
+            const teamId = parseInt(req.params.teamId);
+            const memberId = parseInt(req.params.memberId);
+            const clubId = req.user!.clubId;
 
             const result = await removeTeamMember(
-                parseInt(teamId),
-                parseInt(memberId)
+                teamId,
+                memberId,
+                clubId
             );
 
             if (result.changes === 0) {
@@ -359,13 +405,17 @@ router.delete(
     }
 );
 
-// PUT /api/teams/:teamId/members/:memberId - Mettre à jour le rôle d'un membre
+// PUT /api/teams/:teamId/members/:memberId - Update team member role (requires authentication and management permissions)
 router.put(
     "/:teamId/members/:memberId",
+    authenticateToken,
+    canManageTeams,
     async (req: Request, res: Response) => {
         try {
-            const { teamId, memberId } = req.params;
+            const teamId = parseInt(req.params.teamId);
+            const memberId = parseInt(req.params.memberId);
             const { role } = req.body;
+            const clubId = req.user!.clubId;
 
             if (!role) {
                 return res.status(400).json({
@@ -375,9 +425,10 @@ router.put(
             }
 
             const result = await updateTeamMemberRole(
-                parseInt(teamId),
-                parseInt(memberId),
-                role
+                teamId,
+                memberId,
+                role,
+                clubId
             );
 
             if (result.changes === 0) {
@@ -390,8 +441,8 @@ router.put(
             res.json({
                 success: true,
                 data: {
-                    teamId: parseInt(teamId),
-                    memberId: parseInt(memberId),
+                    teamId,
+                    memberId,
                     role,
                 },
             });
