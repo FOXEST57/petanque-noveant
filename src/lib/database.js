@@ -217,7 +217,25 @@ export const deleteMemberType = async (id, clubId = 1) => {
 
 // === FONCTIONS CRUD POUR LES ÉVÉNEMENTS ===
 export const getEvents = async (clubId = 1) => {
-  return await getAllQuery('SELECT * FROM events WHERE club_id = ? ORDER BY date DESC', [clubId]);
+  const events = await getAllQuery('SELECT * FROM events WHERE club_id = ? ORDER BY date DESC', [clubId]);
+  
+  // Parser le champ photos JSON pour chaque événement
+  return events.map(event => {
+    let photos = [];
+    if (event.photos) {
+      try {
+        photos = typeof event.photos === 'string' ? JSON.parse(event.photos) : event.photos;
+      } catch (e) {
+        console.error(`Erreur lors du parsing des photos pour l'événement ${event.id}:`, e);
+        photos = [];
+      }
+    }
+    
+    return {
+      ...event,
+      photos: photos
+    };
+  });
 };
 
 export const createEvent = async (eventData, clubId = 1) => {
@@ -270,31 +288,78 @@ export const createEventPhoto = async (photoData, clubId = 1) => {
   const { event_id, filename, original_name, file_path, file_size, mime_type } = photoData;
   
   // Vérifier que l'événement appartient au club
-  const eventCheck = await getQuery('SELECT id FROM events WHERE id = ? AND club_id = ?', [event_id, clubId]);
+  const eventCheck = await getQuery('SELECT id, photos FROM events WHERE id = ? AND club_id = ?', [event_id, clubId]);
   if (!eventCheck) {
     throw new Error('L\'événement n\'appartient pas au club spécifié');
   }
-  
-  return await runQuery(
+
+  // Insérer la photo dans la table event_photos
+  const result = await runQuery(
     'INSERT INTO event_photos (event_id, filename, original_name, file_path, file_size, mime_type) VALUES (?, ?, ?, ?, ?, ?)',
     [event_id, filename, original_name, file_path, file_size, mime_type]
   );
+
+  // Mettre à jour le champ photos JSON dans la table events
+  let currentPhotos = [];
+  try {
+    currentPhotos = eventCheck.photos ? JSON.parse(eventCheck.photos) : [];
+  } catch (e) {
+    currentPhotos = [];
+  }
+
+  // Ajouter la nouvelle photo au tableau
+  currentPhotos.push({
+    id: result.insertId,
+    filename,
+    original_name,
+    file_path,
+    file_size,
+    mime_type
+  });
+
+  // Mettre à jour l'événement avec le nouveau tableau de photos
+  await runQuery(
+    'UPDATE events SET photos = ?, updated_at = NOW() WHERE id = ? AND club_id = ?',
+    [JSON.stringify(currentPhotos), event_id, clubId]
+  );
+
+  return result;
 };
 
 export const deleteEventPhoto = async (id, clubId = 1) => {
-  // Vérifier que la photo appartient à un événement du club
-  const photoCheck = await getQuery(`
-    SELECT ep.id 
+  // Récupérer les informations de la photo avant suppression
+  const photoInfo = await getQuery(`
+    SELECT ep.*, e.photos 
     FROM event_photos ep
     JOIN events e ON ep.event_id = e.id
     WHERE ep.id = ? AND e.club_id = ?
   `, [id, clubId]);
-  
-  if (!photoCheck) {
+
+  if (!photoInfo) {
     throw new Error('La photo n\'appartient pas à un événement du club spécifié');
   }
-  
-  return await runQuery('DELETE FROM event_photos WHERE id = ?', [id]);
+
+  // Supprimer la photo de la table event_photos
+  const result = await runQuery('DELETE FROM event_photos WHERE id = ?', [id]);
+
+  // Mettre à jour le champ photos JSON dans la table events
+  let currentPhotos = [];
+  try {
+    currentPhotos = photoInfo.photos ? JSON.parse(photoInfo.photos) : [];
+  } catch (e) {
+    currentPhotos = [];
+  }
+
+  // Retirer la photo supprimée du tableau
+  currentPhotos = currentPhotos.filter(photo => photo.id !== id);
+
+  // Mettre à jour l'événement avec le nouveau tableau de photos
+  await runQuery(
+    'UPDATE events SET photos = ?, updated_at = NOW() WHERE id = ? AND club_id = ?',
+    [JSON.stringify(currentPhotos), photoInfo.event_id, clubId]
+  );
+
+  return result;
 };
 
 // === FONCTIONS CRUD POUR LES BOISSONS ===
@@ -408,11 +473,40 @@ export const createTeam = async (teamData, clubId = 1) => {
 };
 
 export const updateTeam = async (id, teamData, clubId = 1) => {
-  const { name, category, description, photo_url, competition } = teamData;
-  return await runQuery(
-    'UPDATE teams SET name = ?, category = ?, description = ?, photo_url = ?, competition = ?, updated_at = NOW() WHERE id = ? AND club_id = ?',
-    [name, category || '', description || '', photo_url || '', competition || '', id, clubId]
-  );
+  // Build dynamic query based on provided fields
+  const fields = [];
+  const values = [];
+  
+  if (teamData.name !== undefined && teamData.name !== null) {
+    fields.push('name = ?');
+    values.push(teamData.name);
+  }
+  if (teamData.category !== undefined && teamData.category !== null) {
+    fields.push('category = ?');
+    values.push(teamData.category || '');
+  }
+  if (teamData.description !== undefined && teamData.description !== null) {
+    fields.push('description = ?');
+    values.push(teamData.description || '');
+  }
+  if (teamData.photo_url !== undefined && teamData.photo_url !== null) {
+    fields.push('photo_url = ?');
+    values.push(teamData.photo_url || '');
+  }
+  if (teamData.competition !== undefined && teamData.competition !== null) {
+    fields.push('competition = ?');
+    values.push(teamData.competition || '');
+  }
+  
+  if (fields.length === 0) {
+    throw new Error('No fields to update');
+  }
+  
+  fields.push('updated_at = NOW()');
+  values.push(id, clubId);
+  
+  const query = `UPDATE teams SET ${fields.join(', ')} WHERE id = ? AND club_id = ?`;
+  return await runQuery(query, values);
 };
 
 export const deleteTeam = async (id, clubId = 1) => {

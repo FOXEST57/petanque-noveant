@@ -166,16 +166,16 @@ router.post("/", authenticateToken, canManageEvents, upload.single("image"), asy
         }
 
         const eventData = {
-            name,
+            title: name,
             description: description || null,
             date: new Date(date),
-            location: location || null,
-            maxParticipants: maxParticipants ? parseInt(maxParticipants) : null,
-            imagePath,
-            clubId,
+            heure: '',
+            lieu: location || null,
+            publicCible: maxParticipants ? parseInt(maxParticipants) : null,
+            photos: imagePath ? [imagePath] : [],
         };
 
-        const eventId = await createEvent(eventData);
+        const eventId = await createEvent(eventData, clubId);
 
         res.status(201).json({
             success: true,

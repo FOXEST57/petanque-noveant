@@ -245,8 +245,38 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
         try {
             let eventId;
             if (eventModalMode === "add") {
-                const newEvent = await eventsAPI.create(eventFormData);
-                eventId = newEvent.id;
+                const response = await eventsAPI.create(eventFormData);
+                console.log("=== DEBUG API RESPONSE ===");
+                console.log("Full API response:", response); // Debug log complet
+                console.log("Type of response:", typeof response);
+                console.log("response.id:", response?.id);
+                console.log("Type of response.id:", typeof response?.id);
+                console.log("response.data:", response?.data);
+                console.log("response.data?.id:", response?.data?.id);
+                console.log("=== END DEBUG API RESPONSE ===");
+                
+                // Essayer différentes façons d'extraire l'ID
+                let extractedId = null;
+                if (response?.id?.id) {
+                    extractedId = response.id.id;
+                    console.log("Using response.id.id:", extractedId);
+                } else if (response?.id && typeof response.id === 'number') {
+                    extractedId = response.id;
+                    console.log("Using response.id:", extractedId);
+                } else if (response?.data?.id) {
+                    extractedId = response.data.id;
+                    console.log("Using response.data.id:", extractedId);
+                } else if (typeof response === 'number') {
+                    extractedId = response;
+                    console.log("Response is directly the ID:", extractedId);
+                } else {
+                    console.error("Cannot extract ID from response:", response);
+                    toast.error("Erreur: impossible d'extraire l'ID de l'événement");
+                    return;
+                }
+                
+                eventId = extractedId;
+                console.log("Final eventId:", eventId, "Type:", typeof eventId); // Debug log
                 toast.success("Événement ajouté avec succès");
             } else {
                 await eventsAPI.update(eventFormData.id, eventFormData);
@@ -268,11 +298,35 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                         headers['Authorization'] = `Bearer ${token}`;
                     }
                     
-                    await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/${eventId}/photos`, {
+                    console.log("=== DEBUG UPLOAD PHOTOS ===");
+                    console.log("Type of eventId:", typeof eventId);
+                    console.log("Value of eventId:", eventId);
+                    console.log("JSON.stringify(eventId):", JSON.stringify(eventId));
+                    console.log("String(eventId):", String(eventId));
+                    console.log("=== END DEBUG ===");
+                    
+                    // Forcer la conversion en string et vérifier que c'est un nombre
+                    const eventIdString = String(eventId);
+                    if (isNaN(Number(eventIdString)) || eventIdString === 'undefined' || eventIdString === 'null') {
+                        console.error("EventId invalide:", eventIdString);
+                        toast.error("Erreur: ID d'événement invalide");
+                        return;
+                    }
+                    
+                    console.log("Uploading photos for event ID:", eventIdString); // Debug log
+                    const uploadUrl = `${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/${eventIdString}/photos`;
+                    console.log("Upload URL:", uploadUrl); // Debug log
+                    
+                    const uploadResponse = await fetch(uploadUrl, {
                         method: "POST",
                         headers,
                         body: formData
                     });
+                    
+                    if (!uploadResponse.ok) {
+                        throw new Error(`Upload failed with status: ${uploadResponse.status}`);
+                    }
+                    
                     toast.success("Photos uploadées avec succès");
                 } catch (photoError) {
                     console.error("Erreur lors de l'upload des photos:", photoError);
