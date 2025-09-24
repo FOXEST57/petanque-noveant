@@ -180,7 +180,7 @@ router.post('/register', registerLimiter, async (req: Request, res: Response): P
  * Connexion utilisateur
  * POST /api/auth/login
  */
-router.post('/login', loginLimiter, async (req: Request, res: Response): Promise<void> => {
+router.post('/login', /* loginLimiter, */ async (req: Request, res: Response): Promise<void> => {
   const connection = await mysql.createConnection(dbConfig);
   
   try {
@@ -253,6 +253,13 @@ router.post('/login', loginLimiter, async (req: Request, res: Response): Promise
       return;
     }
 
+    // Récupérer les informations du club
+    const [clubRows] = await connection.execute(
+      'SELECT nom, subdomain FROM clubs WHERE id = ?',
+      [user.club_id]
+    );
+    const club = (clubRows as any[])[0];
+
     // Générer le token JWT
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
@@ -283,7 +290,8 @@ router.post('/login', loginLimiter, async (req: Request, res: Response): Promise
         numeroLicence: user.numero_licence,
         role: user.role,
         photoUrl: user.photo_url,
-        is_super_admin: user.is_super_admin
+        is_super_admin: user.is_super_admin,
+        club_subdomain: club.subdomain
       },
       token
     });

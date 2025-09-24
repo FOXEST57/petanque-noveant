@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem("auth_token");
             if (!token) return;
 
-            const userData = await apiCall("/api/auth/profile");
+            const userData = await apiCall("/auth/profile");
             setUser(userData.user);
             setUserProfile(userData.user);
         } catch (error) {
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     const signUp = async (email, password, userData) => {
         try {
             setLoading(true);
-            const data = await apiCall("/api/auth/register", {
+            const data = await apiCall("/auth/register", {
                 method: "POST",
                 body: JSON.stringify({
                     email,
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
     const signIn = async (email, password) => {
         try {
             setLoading(true);
-            const data = await apiCall("/api/auth/login", {
+            const data = await apiCall("/auth/login", {
                 method: "POST",
                 body: JSON.stringify({
                     email,
@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem("auth_token");
             if (token) {
                 // Appeler l'API de déconnexion si disponible
-                await apiCall("/api/auth/logout", {
+                await apiCall("/auth/logout", {
                     method: "POST",
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -166,7 +166,7 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem("auth_token");
             if (!token) throw new Error("Non authentifié");
 
-            await apiCall("/api/auth/profile", {
+            await apiCall("/auth/profile", {
                 method: "PUT",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -235,7 +235,7 @@ export const AuthProvider = ({ children }) => {
                 throw new Error("Token d'authentification manquant");
             }
 
-            const data = await apiCall("/api/auth/super-admin-login", {
+            const data = await apiCall("/auth/super-admin-login", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,

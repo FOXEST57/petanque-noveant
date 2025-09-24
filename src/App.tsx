@@ -77,7 +77,8 @@ function AppContent({ clubSubdomain, isMainDomain }) {
         
         if (isLocalhost) {
           const port = window.location.port || '5175';
-          window.location.href = `http://${userClubSubdomain}.localhost:${port}`;
+          // En mode développement, utiliser le paramètre club
+          window.location.href = `http://localhost:${port}?club=${userClubSubdomain}`;
         } else {
           window.location.href = `https://${userClubSubdomain}.petanque-club.fr`;
         }

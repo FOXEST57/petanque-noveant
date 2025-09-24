@@ -41,8 +41,29 @@ const Login = () => {
     try {
       if (isLogin) {
         // Connexion
-        await signIn(formData.email, formData.password)
-        navigate(from, { replace: true })
+        const result = await signIn(formData.email, formData.password)
+        
+        // Si c'est un super admin qui doit choisir un club, ne pas rediriger
+        if (result.requiresClubSelection) {
+          return
+        }
+        
+        // Pour les utilisateurs normaux, rediriger vers leur club
+        if (result.user && result.user.club_subdomain) {
+          const clubSubdomain = result.user.club_subdomain
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          
+          if (isLocalhost) {
+            // En développement, utiliser le paramètre ?club=
+            navigate(`/?club=${clubSubdomain}`, { replace: true })
+          } else {
+            // En production, rediriger vers le sous-domaine
+            window.location.href = `https://${clubSubdomain}.petanque-club.fr/`
+          }
+        } else {
+          // Fallback vers la page d'accueil
+          navigate('/', { replace: true })
+        }
       } else {
         // Inscription
         if (formData.password !== formData.confirmPassword) {
