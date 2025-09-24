@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Wine, Plus, Search, Edit, Trash2, X, Save } from 'lucide-react';
 import { useDrinks } from '../contexts/DrinksContext';
 import { toast } from 'sonner';
+import { apiCall } from '../lib/api';
 
 const BarManagement = ({ onClose }) => {
     const { drinks, addDrink, updateDrink, deleteDrink } = useDrinks();
@@ -102,15 +103,12 @@ const BarManagement = ({ onClose }) => {
                     const formDataImage = new FormData();
                     formDataImage.append('image', selectedImageFile);
                     
-                    const uploadResponse = await fetch('/api/upload-image', {
+                    const uploadResult = await apiCall('/api/upload-image', {
                         method: 'POST',
                         body: formDataImage
                     });
                     
-                    if (uploadResponse.ok) {
-                        const uploadResult = await uploadResponse.json();
-                        imageUrl = uploadResult.imageUrl;
-                    }
+                    imageUrl = uploadResult.imageUrl;
                 }
                 
                 await addDrink({
@@ -128,29 +126,19 @@ const BarManagement = ({ onClose }) => {
                     const formDataImage = new FormData();
                     formDataImage.append('image', selectedImageFile);
                     
-                    const uploadResponse = await fetch('/api/upload-image', {
+                    const uploadResult = await apiCall('/api/upload-image', {
                         method: 'POST',
                         body: formDataImage
                     });
                     
-                    if (uploadResponse.ok) {
-                        const uploadResult = await uploadResponse.json();
-                        imageUrl = uploadResult.imageUrl;
-                    }
+                    imageUrl = uploadResult.imageUrl;
                 }
                 
                 if (imageUrl !== formData.image) {
-                    const response = await fetch(`/api/drinks/${selectedDrink.id}/image`, {
+                    await apiCall(`/api/drinks/${selectedDrink.id}/image`, {
                         method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
                         body: JSON.stringify({ image_url: imageUrl })
                     });
-                    
-                    if (!response.ok) {
-                        throw new Error('Erreur lors de la modification de la boisson');
-                    }
                 }
                 
                 await updateDrink(selectedDrink.id, {

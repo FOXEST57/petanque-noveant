@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { UserPlus, Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Users, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { apiCall } from '../lib/api';
 
 const MembershipRequest = () => {
   const [searchParams] = useSearchParams();
@@ -30,10 +31,11 @@ const MembershipRequest = () => {
         if (urlClubId) {
           setClubId(urlClubId);
           // Récupérer les infos du club depuis l'API
-          const response = await fetch(`/api/clubs/${urlClubId}`);
-          if (response.ok) {
-            const club = await response.json();
+          try {
+            const club = await apiCall(`/api/clubs/${urlClubId}`);
             setClubInfo(club);
+          } catch (error) {
+            console.error('Erreur lors du chargement du club:', error);
           }
         } else {
           // Club par défaut (pour l'instant, on utilise l'ID 1)
@@ -106,34 +108,25 @@ const MembershipRequest = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('/api/membership/submit-request', {
+      const result = await apiCall('/api/membership/submit-request', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           ...formData,
           clubId
-        }),
+        }
       });
       
-      const result = await response.json();
-      
-      if (response.ok) {
-        setSubmitted(true);
-        toast.success('Demande d\'adhésion envoyée avec succès!');
-      } else {
-        if (result.code === 'REQUEST_EXISTS') {
-          toast.error(result.error);
-        } else if (result.code === 'USER_EXISTS') {
-          toast.error('Un compte existe déjà avec cet email. Essayez de vous connecter.');
-        } else {
-          toast.error(result.error || 'Erreur lors de l\'envoi de la demande');
-        }
-      }
+      setSubmitted(true);
+      toast.success('Demande d\'adhésion envoyée avec succès!');
     } catch (error) {
       console.error('Erreur lors de l\'envoi:', error);
-      toast.error('Erreur lors de l\'envoi de la demande. Veuillez réessayer.');
+      if (error.code === 'REQUEST_EXISTS') {
+        toast.error(error.message);
+      } else if (error.code === 'USER_EXISTS') {
+        toast.error('Un compte existe déjà avec cet email. Essayez de vous connecter.');
+      } else {
+        toast.error(error.message || 'Erreur lors de l\'envoi de la demande');
+      }
     } finally {
       setIsLoading(false);
     }

@@ -60,9 +60,15 @@ const generateUniqueFilename = (originalName: string): string => {
 // GET /api/teams/public - Get all teams (public access, no authentication required)
 router.get("/public", async (req: Request, res: Response) => {
     try {
-        // For public access, we'll use clubId from subdomain middleware
-  const clubId = req.clubId || 1;
-        const teams = await getTeams(clubId);
+        // Vérifier que req.clubId est défini par le middleware de sous-domaine
+        if (!req.clubId) {
+            return res.status(400).json({
+                success: false,
+                error: "Club non identifié. Veuillez accéder via un sous-domaine valide.",
+            });
+        }
+        
+        const teams = await getTeams(req.clubId);
         res.json({
             success: true,
             data: teams,

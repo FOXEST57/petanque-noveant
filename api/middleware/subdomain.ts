@@ -26,26 +26,29 @@ declare global {
 export const detectSubdomain = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const hostname = req.get('host') || req.hostname;
-    console.log('🔍 Hostname détecté:', hostname);
 
     // Extraire le sous-domaine
     let subdomain = null;
     
-    if (hostname.includes('localhost')) {
+    // Vérifier d'abord s'il y a un paramètre club dans l'URL (pour le développement)
+    const clubParam = req.query.club as string;
+    
+    if (clubParam) {
+      // Mode développement avec paramètre club
+      subdomain = clubParam;
+    } else if (hostname && hostname.includes('localhost')) {
       // Mode développement: demo.localhost:5174
       const parts = hostname.split('.');
       if (parts.length > 1 && parts[0] !== 'localhost') {
         subdomain = parts[0];
       }
-    } else if (hostname.includes('petanque-club.fr')) {
+    } else if (hostname && hostname.includes('petanque-club.fr')) {
       // Mode production: demo.petanque-club.fr
       const parts = hostname.split('.');
       if (parts.length > 2) {
         subdomain = parts[0];
       }
     }
-
-    console.log('🔍 Sous-domaine détecté:', subdomain);
 
     if (subdomain) {
       // Rechercher le club correspondant au sous-domaine
@@ -59,27 +62,69 @@ export const detectSubdomain = async (req: Request, res: Response, next: NextFun
 
         if (rows.length > 0) {
           req.clubId = rows[0].id;
-          console.log('✅ Club ID défini:', req.clubId, 'pour le sous-domaine:', subdomain);
         } else {
-          console.log('⚠️ Aucun club trouvé pour le sous-domaine:', subdomain);
-          // Par défaut, utiliser le club 1 si aucun club n'est trouvé
-          req.clubId = 1;
+          // Pour les requêtes API, retourner une erreur JSON au lieu de rediriger
+          if (req.path.startsWith('/api/')) {
+            return res.status(404).json({
+              success: false,
+              error: 'Club non trouvé pour ce sous-domaine'
+            });
+          }
+          // Rediriger vers la page de recherche de clubs pour les autres requêtes
+          return res.redirect('/club-finder');
         }
       } finally {
         await connection.end();
       }
     } else {
-      // Pas de sous-domaine détecté, utiliser le club par défaut
-      req.clubId = 1;
-      console.log('🔍 Pas de sous-domaine, utilisation du club par défaut:', req.clubId);
+      // Pas de sous-domaine détecté - Mode développement local
+      // Pour les routes API publiques, on continue sans clubId
+      if (req.path.startsWith('/auth') || req.path.startsWith('/health') || req.path.startsWith('/clubs')) {
+        return next();
+      }
+      
+      // En développement local, utiliser le premier club disponible
+      if (hostname && hostname.includes('localhost')) {
+        const connection = await mysql.createConnection(dbConfig);
+        
+        try {
+          const [rows] = await connection.execute(
+            'SELECT id FROM clubs ORDER BY id LIMIT 1'
+          ) as [any[], any];
+
+          if (rows.length > 0) {
+            req.clubId = rows[0].id;
+            console.log('🏠 Mode développement: utilisation du club par défaut ID:', req.clubId);
+            return next();
+          }
+        } finally {
+          await connection.end();
+        }
+      }
+      
+      // Pour les autres routes API, on retourne une erreur
+      if (req.originalUrl.startsWith('/api/')) {
+        return res.status(400).json({
+          success: false,
+          error: 'Club non identifié. Veuillez accéder via un sous-domaine valide.'
+        });
+      }
+      // Pour les routes non-API, rediriger vers le club finder
+      return res.redirect('/club-finder');
     }
 
     next();
   } catch (error) {
     console.error('❌ Erreur dans le middleware de détection de sous-domaine:', error);
-    // En cas d'erreur, utiliser le club par défaut
-    req.clubId = 1;
-    next();
+    // Pour les requêtes API, retourner une erreur JSON
+    if (req.path.startsWith('/api/')) {
+      return res.status(500).json({
+        success: false,
+        error: 'Erreur interne du serveur'
+      });
+    }
+    // En cas d'erreur, rediriger vers la page de recherche avec un message d'erreur
+    return res.redirect('/club-finder?error=database_error');
   }
 };
 

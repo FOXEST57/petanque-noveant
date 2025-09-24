@@ -232,19 +232,15 @@ export const ensureClubAccess = (clubIdParam?: string) => {
  */
 export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log('🔍 optionalAuth middleware called');
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    console.log('🔍 Token found:', !!token);
 
     if (!token) {
-      console.log('🔍 No token, continuing without auth');
       return next(); // Pas de token, continuer sans authentification
     }
 
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      console.log('🔍 No JWT secret, continuing without auth');
       return next(); // Pas de configuration JWT, continuer sans authentification
     }
 
@@ -271,7 +267,6 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
           nom: user.nom,
           prenom: user.prenom
         };
-        console.log('🔍 User authenticated:', req.user.email);
       }
     } finally {
       await connection.end();
@@ -279,7 +274,6 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
 
     next();
   } catch (error) {
-    console.log('🔍 Error in optionalAuth, continuing without auth:', error);
     // En cas d'erreur, continuer sans authentification
     next();
   }

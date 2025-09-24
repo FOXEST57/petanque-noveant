@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { HexAlphaColorPicker } from "react-colorful";
 import { toast } from "sonner";
 import { useSiteSettings } from "../contexts/SiteSettingsContext.jsx";
+import { apiCall } from "../lib/api.js";
 
 const SiteManagement = ({ isOpen, onClose }) => {
     const { siteSettings: globalSiteSettings, updateSiteSettings, loadSiteSettings } =
@@ -243,7 +244,7 @@ const SiteManagement = ({ isOpen, onClose }) => {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            const response = await fetch("/api/site-settings", {
+            const response = await apiCall("/site-settings", {
                 method: "PUT",
                 headers,
                 body: formData, // Utiliser FormData au lieu de JSON

@@ -41,8 +41,16 @@ const generateUniqueFilename = (originalName: string): string => {
 // GET /api/drinks - Get all drinks (public access for visitors)
 router.get('/', async (req: Request, res: Response) => {
   try {
-    // Pour les visiteurs, utiliser le club ID par défaut (1)
-    const clubId = 1;
+    // Utiliser le clubId détecté par le middleware de sous-domaine
+    const clubId = req.clubId;
+    
+    if (!clubId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Club non identifié' 
+      });
+    }
+    
     const drinks = await getDrinks(clubId);
     res.json({ success: true, data: drinks });
   } catch (error) {

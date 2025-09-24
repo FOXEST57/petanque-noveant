@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { apiCall, apiCallJson } from '../utils/api';
 
 const SiteSettingsContext = createContext();
 
@@ -57,7 +58,7 @@ export const SiteSettingsProvider = ({ children }) => {
             
             // Utiliser la route publique pour les paramètres de base si pas de token
             // ou la route authentifiée pour tous les paramètres si token présent
-            const endpoint = token ? "/api/site-settings" : "/api/site-settings/public";
+            const endpoint = token ? "/site-settings" : "/site-settings/public";
             const headers = {
                 'Content-Type': 'application/json'
             };
@@ -66,10 +67,10 @@ export const SiteSettingsProvider = ({ children }) => {
                 headers['Authorization'] = `Bearer ${token}`;
             }
             
-            const response = await fetch(endpoint, {
+            const result = await apiCallJson(endpoint, {
+                method: 'GET',
                 headers
             });
-            const result = await response.json();
 
             if (result.success) {
                 const mappedSettings = {

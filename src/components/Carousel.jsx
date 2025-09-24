@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { apiCall } from '../lib/api'
 
 const Carousel = ({ transitionType = 'slide', transitionDuration = 600 }) => {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -41,13 +42,7 @@ const Carousel = ({ transitionType = 'slide', transitionDuration = 600 }) => {
     const fetchCarouselImages = async () => {
       try {
         console.log('Fetching carousel images from API...')
-        const response = await fetch('/api/home-content')
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        
-        const data = await response.json()
+        const data = await apiCall('/home-content')
         console.log('API Response:', data)
         
         if (data.data && data.data.carouselImages && data.data.carouselImages.length > 0) {

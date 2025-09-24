@@ -29,7 +29,7 @@ import {
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { useDrinks } from "../contexts/DrinksContext";
-import { eventsAPI, teamsAPI } from "../lib/api";
+import { eventsAPI, teamsAPI, apiCall } from "../lib/api";
 import { membersAPI } from "../lib/membersAPI";
 import BarManagement from "../components/BarManagement";
 import MemberManagement from "../components/MemberManagement";
@@ -208,27 +208,14 @@ const Admin = () => {
     // Fonction pour charger le compteur des demandes d'adhésion
     const loadMembershipRequestsCount = async () => {
         try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch('/api/membership/requests?status=en_attente', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.status === 403) {
+            const data = await apiCall('/api/membership/requests?status=en_attente');
+            return data.requests ? data.requests.length : 0;
+        } catch (error) {
+            if (error.status === 403) {
                 // L'utilisateur n'a pas les permissions pour voir les demandes d'adhésion
                 console.log('Utilisateur sans permissions pour voir les demandes d\'adhésion');
                 return 0;
             }
-
-            if (!response.ok) {
-                throw new Error('Erreur lors du chargement des demandes');
-            }
-
-            const data = await response.json();
-            return data.requests ? data.requests.length : 0;
-        } catch (error) {
             console.error('Erreur lors du chargement du compteur des demandes:', error);
             return 0;
         }
@@ -277,13 +264,12 @@ const Admin = () => {
                 eventsData.map(async (event) => {
                     try {
                         // Récupérer les photos de l'événement
-                        const response = await fetch(
+                        const photos = await apiCall(
                             `${
                                 import.meta.env.VITE_API_URL ||
                                 "http://localhost:3002"
                             }/api/events/${event.id}/photos`
                         );
-                        const photos = response.ok ? await response.json() : [];
 
                         return {
                             ...event,

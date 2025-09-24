@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { membersAPI } from '../lib/membersAPI';
 import { formatDateToFrench, formatDateToISO } from '../utils/dateUtils';
 import { generateAvatar } from '../utils/avatarUtils';
+import { apiCall } from '../lib/api';
 
 const MemberManagement = ({ onClose }) => {
     // États pour la gestion des membres
@@ -57,13 +58,7 @@ const MemberManagement = ({ onClose }) => {
     const loadMembers = async () => {
         try {
             setLoading(true);
-            const response = await fetch(
-                `${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/members`
-            );
-            if (!response.ok) {
-                throw new Error("Erreur lors de la récupération des membres");
-            }
-            const result = await response.json();
+            const result = await apiCall('/api/members');
             setMembers(result.data || []);
         } catch (error) {
             console.error("Erreur lors de la récupération des membres:", error);
@@ -76,13 +71,7 @@ const MemberManagement = ({ onClose }) => {
 
     const loadMemberTypes = async () => {
         try {
-            const response = await fetch(
-                `${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/members/types`
-            );
-            if (!response.ok) {
-                throw new Error("Erreur lors de la récupération des types de membres");
-            }
-            const result = await response.json();
+            const result = await apiCall('/api/members/types');
             setMemberTypes(result.data || []);
         } catch (error) {
             console.error("Erreur lors de la récupération des types de membres:", error);
@@ -213,17 +202,11 @@ const MemberManagement = ({ onClose }) => {
             const token = localStorage.getItem('auth_token');
             
             // Chercher la demande d'adhésion correspondante
-            const requestResponse = await fetch('/api/membership/requests', {
+            const data = await apiCall('/api/membership/requests', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-
-            if (!requestResponse.ok) {
-                throw new Error('Erreur lors de la récupération des demandes');
-            }
-
-            const data = await requestResponse.json();
             const requests = data.requests || [];
             const memberRequest = requests.find(req => 
                 req.email === member.email && req.statut === 'approuvee'
@@ -235,17 +218,12 @@ const MemberManagement = ({ onClose }) => {
             }
 
             // Renvoyer l'invitation
-            const response = await fetch(`/api/membership/resend-invitation/${memberRequest.id}`, {
+            await apiCall(`/api/membership/resend-invitation/${memberRequest.id}`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${token}`
                 }
             });
-
-            if (!response.ok) {
-                throw new Error('Erreur lors du renvoi de l\'invitation');
-            }
 
             toast.success('Email d\'invitation renvoyé avec succès');
         } catch (error) {

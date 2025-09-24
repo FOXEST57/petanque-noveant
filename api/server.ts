@@ -1,20 +1,21 @@
 /**
  * local server entry file, for local development
- * Updated to trigger restart - port 9000
+ * Updated to trigger restart - port 3003
  */
 import dotenv from "dotenv";
 import path from "path";
 
-// Charger les variables d'environnement depuis le répertoire parent
-dotenv.config({ path: path.join(process.cwd(), '..', '.env') });
+// Charger les variables d'environnement depuis le répertoire racine du projet
+dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 import app from "./app.ts";
 
 /**
  * start server with port
  */
-const PORT = process.env.API_PORT || process.env.PORT || 3002;
+const PORT = process.env.API_PORT || process.env.PORT || 3004;
 
+// Démarrer le serveur
 const server = app.listen(PORT, () => {
     console.log(`Server ready on port ${PORT}`);
 });
@@ -39,4 +40,3 @@ process.on("SIGINT", () => {
 });
 
 export default app;
-

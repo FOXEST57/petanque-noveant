@@ -1,9 +1,35 @@
 // Service API pour communiquer avec le backend Express
-const API_BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'http://localhost:3002/api';
+const API_BASE_URL = 'http://localhost:3007/api';
 
 // Fonction utilitaire pour récupérer le token d'authentification
 const getAuthToken = () => {
   return localStorage.getItem('auth_token');
+};
+
+// Fonction utilitaire pour récupérer le club depuis l'URL
+const getClubFromUrl = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const clubParam = urlParams.get('club');
+  
+  if (clubParam) {
+    return clubParam;
+  }
+  
+  // Vérifier le sous-domaine
+  const hostname = window.location.hostname;
+  if (hostname.includes('.localhost')) {
+    const parts = hostname.split('.');
+    if (parts.length > 1 && parts[0] !== 'www') {
+      return parts[0];
+    }
+  } else if (hostname.includes('.petanque-club.fr')) {
+    const parts = hostname.split('.');
+    if (parts.length > 2 && parts[0] !== 'www') {
+      return parts[0];
+    }
+  }
+  
+  return null;
 };
 
 // Fonction utilitaire pour les appels API
@@ -21,13 +47,25 @@ const apiCall = async (endpoint, options = {}) => {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    // Ajouter automatiquement le paramètre club si disponible
+    let finalEndpoint = endpoint;
+    const club = getClubFromUrl();
+    if (club && !endpoint.includes('club=')) {
+      const separator = endpoint.includes('?') ? '&' : '?';
+      finalEndpoint = `${endpoint}${separator}club=${club}`;
+    }
+    
+    console.log('🔄 API Call:', `${API_BASE_URL}${finalEndpoint}`);
+    
+    const response = await fetch(`${API_BASE_URL}${finalEndpoint}`, {
       headers: {
         ...headers,
         ...options.headers,
       },
       ...options,
     });
+
+    console.log('📥 API Response:', response.status, response.statusText);
 
     if (!response.ok) {
       // Si erreur 401, le token est probablement expiré
@@ -42,9 +80,10 @@ const apiCall = async (endpoint, options = {}) => {
     }
 
     const data = await response.json();
+    console.log('✅ API Data:', data);
     return data;
   } catch (error) {
-    console.error('API call failed:', error);
+    console.error('❌ API call failed:', error);
     throw error;
   }
 };
@@ -136,31 +175,11 @@ export const drinksAPI = {
     return response.data;
   },
   update: async (id, drinkData) => {
-    console.log('=== DEBUG API UPDATE ===');
-    console.log('URL:', `${API_BASE_URL}/drinks/${id}`);
-    console.log('Data to send:', drinkData);
-    console.log('JSON stringified:', JSON.stringify(drinkData));
-    
-    const response = await fetch(`${API_BASE_URL}/drinks/${id}`, {
+    const response = await apiCall(`/drinks/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(drinkData),
+      body: JSON.stringify(drinkData)
     });
-    
-    console.log('Response status:', response.status);
-    console.log('Response ok:', response.ok);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Response error:', errorText);
-      throw new Error('Erreur lors de la mise à jour de la boisson');
-    }
-    
-    const result = await response.json();
-    console.log('Response result:', result);
-    return result;
+    return response.data;
   },
   delete: async (id) => {
     const response = await apiCall(`/drinks/${id}`, {
@@ -255,41 +274,4 @@ export const teamsAPI = {
   },
 };
 
-// API générale pour les statistiques
-export const statsAPI = {
-  getAll: async () => {
-    try {
-      const [eventsCount, teamsCount] = await Promise.all([
-        eventsAPI.getCount(),
-        teamsAPI.getCount(),
-        // membersAPI.getCount(),
-      ]);
-
-      return {
-        events: eventsCount,
-        users: 0, // TODO: Implémenter
-        teams: teamsCount,
-        albums: 0, // TODO: Implémenter
-        drinks: 0, // TODO: Implémenter
-        results: 0, // TODO: Implémenter
-      };
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-      return {
-        events: 0,
-        users: 0,
-        teams: 0,
-        albums: 0,
-        drinks: 0,
-        results: 0,
-      };
-    }
-  },
-};
-
-export default {
-  events: eventsAPI,
-  members: membersAPI,
-  teams: teamsAPI,
-  stats: statsAPI,
-};
+export { apiCall };

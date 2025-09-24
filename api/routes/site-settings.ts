@@ -52,43 +52,20 @@ const dbConfig = {
 // GET /api/site-settings/public - Récupérer les paramètres publics du site (sans authentification)
 router.get("/public", async (req, res) => {
     try {
-        const connection = await mysql.createConnection(dbConfig);
-
-        // Déterminer le club_id basé sur le sous-domaine
-        let clubId = 1; // Par défaut
-        
-        // Extraire le sous-domaine depuis le header Host
-        const host = req.get('host') || '';
-        const hostname = host.split(':')[0]; // Enlever le port si présent
-        
-        console.log('🔍 Host détecté:', host);
-        console.log('🔍 Hostname:', hostname);
-        
-        // Vérifier si c'est un sous-domaine
-        if (hostname.includes('.localhost') || hostname.includes('.petanque-club.fr')) {
-            const subdomain = hostname.split('.')[0];
-            console.log('🔍 Sous-domaine détecté:', subdomain);
-            
-            // Récupérer le club_id basé sur le sous-domaine
-            const [clubRows] = await connection.execute(
-                "SELECT id FROM clubs WHERE subdomain = ?",
-                [subdomain]
-            );
-            
-            if ((clubRows as any[]).length > 0) {
-                clubId = (clubRows as any[])[0].id;
-                console.log('✅ Club trouvé:', clubId, 'pour le sous-domaine:', subdomain);
-            } else {
-                console.log('⚠️ Aucun club trouvé pour le sous-domaine:', subdomain);
-            }
-        } else {
-            console.log('🏠 Domaine principal détecté, utilisation du club par défaut');
+        // Vérifier que req.clubId est défini par le middleware de sous-domaine
+        if (!req.clubId) {
+            return res.status(400).json({
+                success: false,
+                error: "Club non identifié. Veuillez accéder via un sous-domaine valide.",
+            });
         }
+
+        const connection = await mysql.createConnection(dbConfig);
 
         // Récupérer les paramètres publics pour le club déterminé
         const [rows] = await connection.execute(
             "SELECT setting_key, setting_value, setting_type FROM site_settings WHERE club_id = ? AND setting_key IN ('site_name', 'site_subtitle', 'club_name', 'primary_color', 'logo_url', 'favicon_url') ORDER BY setting_key",
-            [clubId]
+            [req.clubId]
         );
 
         await connection.end();

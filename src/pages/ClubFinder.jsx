@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { apiCall } from '../lib/api';
 
 const ClubFinder = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -36,13 +37,7 @@ const ClubFinder = () => {
     const loadAllClubs = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/clubs');
-            
-            if (!response.ok) {
-                throw new Error('Erreur lors du chargement des clubs');
-            }
-
-            const data = await response.json();
+            const data = await apiCall('/clubs');
             setClubs(data.clubs || []);
         } catch (error) {
             console.error('Erreur:', error);
@@ -64,11 +59,12 @@ const ClubFinder = () => {
             return;
         }
         
-        // En développement, rediriger vers localhost avec le subdomain
+        // En développement, simuler la redirection avec un paramètre
         if (process.env.NODE_ENV === 'development') {
-            const targetUrl = `http://${club.subdomain}.localhost:5174`;
+            // Pour le développement, on utilise un paramètre URL au lieu d'un sous-domaine
+            const frontendUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+            const targetUrl = `${frontendUrl}/?club=${club.subdomain}`;
             console.log('🚀 Redirection vers:', targetUrl);
-            // Redirection vers le sous-domaine en développement
             window.location.href = targetUrl;
         } else {
             const targetUrl = `https://${club.subdomain}.petanque-club.fr`;

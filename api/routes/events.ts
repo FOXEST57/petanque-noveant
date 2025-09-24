@@ -50,9 +50,15 @@ const generateUniqueFilename = (originalName: string): string => {
 // GET /api/events/public - Get all events (public access, no authentication required)
 router.get("/public", async (req: Request, res: Response) => {
     try {
-        // For public access, we'll use clubId from subdomain middleware
-  const clubId = req.clubId || 1;
-        const events = await getEvents(clubId);
+        // Vérifier que req.clubId est défini par le middleware de sous-domaine
+        if (!req.clubId) {
+            return res.status(400).json({
+                success: false,
+                error: "Club non identifié. Veuillez accéder via un sous-domaine valide.",
+            });
+        }
+        
+        const events = await getEvents(req.clubId);
         res.json({
             success: true,
             data: events,
@@ -295,31 +301,17 @@ router.get("/:id/photos", async (req: Request, res: Response) => {
 
 // POST /api/events/:id/photos - Upload photos for an event
 router.post("/:id/photos", authenticateToken, canManageEvents, upload.array("photos", 10), async (req: Request, res: Response) => {
-    console.log("🔍 POST /:id/photos - Starting photo upload");
-    console.log("🔍 Event ID:", req.params.id);
-    console.log("🔍 User:", req.user);
-    console.log("🔍 Files received:", req.files ? (req.files as Express.Multer.File[]).length : 0);
-    
     try {
         const eventId = parseInt(req.params.id);
         const files = req.files as Express.Multer.File[];
         
-        console.log("🔍 Parsed event ID:", eventId);
-        console.log("🔍 Files array:", files);
-        
         if (!files || files.length === 0) {
-            console.log("❌ No files provided");
             return res.status(400).json({ error: "No photos provided" });
         }
-
-        console.log("🔍 Uploads directory:", uploadsDir);
-        console.log("🔍 Directory exists:", fs.existsSync(uploadsDir));
 
         const uploadedPhotos = [];
 
         for (const file of files) {
-            console.log("🔍 Processing file:", file.originalname);
-            
             // Generate unique filename
             const timestamp = Date.now();
             const randomString = Math.random().toString(36).substring(2, 15);
@@ -327,15 +319,10 @@ router.post("/:id/photos", authenticateToken, canManageEvents, upload.array("pho
             const filename = `event_${eventId}_${timestamp}_${randomString}${extension}`;
             const filePath = path.join(uploadsDir, filename);
 
-            console.log("🔍 Generated filename:", filename);
-            console.log("🔍 Full file path:", filePath);
-
             // Save file to disk
             try {
                 fs.writeFileSync(filePath, file.buffer);
-                console.log("✅ File saved to disk successfully");
             } catch (fileError) {
-                console.error("❌ Error saving file to disk:", fileError);
                 throw fileError;
             }
 
@@ -349,12 +336,8 @@ router.post("/:id/photos", authenticateToken, canManageEvents, upload.array("pho
                 mime_type: file.mimetype
             };
 
-            console.log("🔍 Photo data to save:", photoData);
-            console.log("🔍 Club ID:", req.user!.clubId);
-
             try {
                 await createEventPhoto(photoData, req.user!.clubId);
-                console.log("✅ Photo data saved to database successfully");
                 uploadedPhotos.push(photoData);
             } catch (dbError) {
                 console.error("❌ Error saving to database:", dbError);

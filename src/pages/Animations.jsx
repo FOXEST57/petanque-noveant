@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Users, X, Image } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { eventsAPI } from '../lib/api';
+import { eventsAPI, apiCall } from '../lib/api';
 import { useAuth } from '../hooks/useAuth.jsx';
 
 const Animations = () => {
@@ -36,12 +36,8 @@ const Animations = () => {
 
   const fetchEventPhotos = async (eventId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/${eventId}/photos`)
-      if (response.ok) {
-        const photos = await response.json()
-        return photos
-      }
-      return []
+      const photos = await apiCall(`/events/${eventId}/photos`)
+      return photos || []
     } catch (error) {
       console.error(`Erreur lors du chargement des photos pour l'événement ${eventId}:`, error)
       return []

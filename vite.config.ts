@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
     port: parseInt(env.VITE_PORT) || 5174,
     proxy: {
       '/api': {
-        target: `http://localhost:${env.API_PORT || 3002}`,
+        target: `http://localhost:${env.API_PORT || 3007}`,
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {

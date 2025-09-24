@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiCall } from '../lib/api';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSiteSettings } from '../contexts/SiteSettingsContext.jsx';
@@ -65,25 +66,18 @@ const Contact = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('/api/contact/send', {
+      await apiCall('/api/contact/send', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(formData),
       });
       
-      if (response.ok) {
-        toast.success('Message envoyé avec succès!');
-        setFormData({
-          name: '',
-          email: '',
-          subject: '',
-          message: ''
-        });
-      } else {
-        throw new Error('Erreur lors de l\'envoi');
-      }
+      toast.success('Message envoyé avec succès!');
+      setFormData({
+         name: '',
+         email: '',
+         subject: '',
+         message: ''
+       });
     } catch (error) {
       toast.error('Erreur lors de l\'envoi du message. Veuillez réessayer.');
     } finally {

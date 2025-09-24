@@ -7,6 +7,15 @@ const EventCarousel = ({ images, eventTitle }) => {
   const intervalRef = useRef(null);
   const pauseTimeoutRef = useRef(null);
 
+  // DEBUG: Log des images reçues
+  console.log('🖼️ EventCarousel - Images reçues:', {
+    eventTitle,
+    images,
+    imagesLength: images?.length,
+    firstImage: images?.[0],
+    apiUrl: import.meta.env.VITE_API_URL
+  });
+
   // Auto-play functionality
   useEffect(() => {
     if (!images || images.length <= 1) return;
@@ -34,13 +43,28 @@ const EventCarousel = ({ images, eventTitle }) => {
   }, [isAutoPlaying, images]);
 
   if (!images || images.length === 0) {
-    // Fallback image if no images available
+    // Fallback image if no images available - use a static petanque image
     return (
       <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
         <img 
-          src={`https://trae-api-us.mchost.guru/api/ide/v1/text_to_image?prompt=petanque%20event%20outdoor%20sport%20boules%20game%20competition&image_size=landscape_4_3`}
+          src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop&crop=center"
           alt={eventTitle || 'Événement de pétanque'}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            // Ultimate fallback - a simple colored background with text
+            const parent = e.target.parentElement;
+            if (parent) {
+              e.target.style.display = 'none';
+              parent.innerHTML = `
+                <div class="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                  <div class="text-center">
+                    <div class="text-2xl mb-2">🎯</div>
+                    <div>${eventTitle || 'Événement de pétanque'}</div>
+                  </div>
+                </div>
+              `;
+            }
+          }}
         />
       </div>
     );
@@ -81,11 +105,49 @@ const EventCarousel = ({ images, eventTitle }) => {
       {/* Main image */}
       <div className="relative w-full h-full">
         <img
-          src={images[currentIndex]?.file_path ? `${import.meta.env.VITE_API_URL}/${images[currentIndex].file_path}` : (images[currentIndex]?.url || images[currentIndex])}
+          src={(() => {
+            const currentImage = images[currentIndex];
+            let imageSrc = '';
+            
+            if (currentImage?.filename) {
+              imageSrc = `${import.meta.env.VITE_API_URL}/uploads/events/${currentImage.filename}`;
+            } else if (currentImage?.file_path) {
+              imageSrc = `${import.meta.env.VITE_API_URL}${currentImage.file_path}`;
+            } else {
+              imageSrc = currentImage?.url || currentImage;
+            }
+            
+            // DEBUG: Log de l'URL de l'image construite
+            console.log('🖼️ EventCarousel - URL image construite:', {
+              eventTitle,
+              currentIndex,
+              currentImage,
+              imageSrc,
+              apiUrl: import.meta.env.VITE_API_URL
+            });
+            
+            return imageSrc;
+          })()}
           alt={`${eventTitle} - Image ${currentIndex + 1}`}
           className="w-full h-full object-cover transition-opacity duration-300"
           onError={(e) => {
-            e.target.src = `https://trae-api-us.mchost.guru/api/ide/v1/text_to_image?prompt=petanque%20event%20outdoor%20sport%20boules%20game%20competition&image_size=landscape_4_3`;
+            // Use a static petanque image as fallback
+            e.target.src = "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop&crop=center";
+            e.target.onerror = () => {
+              // Ultimate fallback - a simple colored background with text
+              const parent = e.target.parentElement;
+              if (parent) {
+                e.target.style.display = 'none';
+                parent.innerHTML = `
+                  <div class="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                    <div class="text-center">
+                      <div class="text-2xl mb-2">🎯</div>
+                      <div>${eventTitle || 'Événement de pétanque'}</div>
+                    </div>
+                  </div>
+                `;
+              }
+            };
           }}
         />
       </div>

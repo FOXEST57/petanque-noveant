@@ -17,6 +17,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { apiCall } from '../lib/api';
 
 const MembershipRequestManagement = ({ onClose }) => {
     const [requests, setRequests] = useState([]);
@@ -32,25 +33,13 @@ const MembershipRequestManagement = ({ onClose }) => {
         try {
             setLoading(true);
             const token = localStorage.getItem('auth_token');
-            const response = await fetch('/api/membership/requests', {
+            
+            const data = await apiCall('/api/membership/requests', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-
-            if (response.status === 403) {
-                // L'utilisateur n'a pas les permissions pour voir les demandes d'adhésion
-                console.log('Utilisateur sans permissions pour voir les demandes d\'adhésion');
-                setRequests([]);
-                toast.error('Vous n\'avez pas les permissions pour voir les demandes d\'adhésion');
-                return;
-            }
-
-            if (!response.ok) {
-                throw new Error('Erreur lors du chargement des demandes');
-            }
-
-            const data = await response.json();
+            
             const requests = data.requests || [];
             // Filtrer pour ne montrer que les demandes en attente et rejetées
             const filteredRequests = requests.filter(request => 
@@ -59,7 +48,14 @@ const MembershipRequestManagement = ({ onClose }) => {
             setRequests(filteredRequests);
         } catch (error) {
             console.error('Erreur:', error);
-            toast.error('Erreur lors du chargement des demandes');
+            if (error.message && error.message.includes('403')) {
+                // L'utilisateur n'a pas les permissions pour voir les demandes d'adhésion
+                console.log('Utilisateur sans permissions pour voir les demandes d\'adhésion');
+                setRequests([]);
+                toast.error('Vous n\'avez pas les permissions pour voir les demandes d\'adhésion');
+            } else {
+                toast.error('Erreur lors du chargement des demandes');
+            }
         } finally {
             setLoading(false);
         }
@@ -86,17 +82,13 @@ const MembershipRequestManagement = ({ onClose }) => {
         try {
             setActionLoading(true);
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`/api/membership/approve/${requestId}`, {
+            
+            await apiCall(`/api/membership/approve/${requestId}`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${token}`
                 }
             });
-
-            if (!response.ok) {
-                throw new Error('Erreur lors de l\'approbation');
-            }
 
             toast.success('Demande approuvée avec succès');
             loadRequests(); // Recharger la liste
@@ -112,22 +104,17 @@ const MembershipRequestManagement = ({ onClose }) => {
         try {
             setActionLoading(true);
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`/api/membership/reject/${requestId}`, {
+            
+            await apiCall(`/api/membership/reject/${requestId}`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ 
                     reason: reason,
                     sendNotification: true 
                 })
             });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Erreur lors du rejet');
-            }
 
             toast.success('Demande rejetée');
             loadRequests();

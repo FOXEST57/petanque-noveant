@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { apiCall } from '../lib/api';
 import ClubSelectionModal from "../components/ClubSelectionModal.jsx";
 
 const AuthContext = createContext({});
@@ -32,23 +33,9 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem("auth_token");
             if (!token) return;
 
-            const response = await fetch("/api/auth/profile", {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (response.ok) {
-                const userData = await response.json();
-                setUser(userData.user);
-                setUserProfile(userData.user);
-            } else {
-                // Token invalide, le supprimer
-                localStorage.removeItem("auth_token");
-                setUser(null);
-                setUserProfile(null);
-            }
+            const userData = await apiCall("/api/auth/profile");
+            setUser(userData.user);
+            setUserProfile(userData.user);
         } catch (error) {
             console.error("Erreur lors de la récupération du profil:", error);
             localStorage.removeItem("auth_token");
@@ -60,11 +47,8 @@ export const AuthProvider = ({ children }) => {
     const signUp = async (email, password, userData) => {
         try {
             setLoading(true);
-            const response = await fetch("/api/auth/register", {
+            const data = await apiCall("/api/auth/register", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({
                     email,
                     password,
@@ -72,16 +56,10 @@ export const AuthProvider = ({ children }) => {
                 }),
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                localStorage.setItem("auth_token", data.token);
-                setUser(data.user);
-                setUserProfile(data.user);
-                return { success: true, user: data.user };
-            } else {
-                throw new Error(data.error || "Erreur lors de l'inscription");
-            }
+            localStorage.setItem("auth_token", data.token);
+            setUser(data.user);
+            setUserProfile(data.user);
+            return { success: true, user: data.user };
         } catch (error) {
             console.error("Erreur d'inscription:", error);
             throw error;
@@ -93,59 +71,48 @@ export const AuthProvider = ({ children }) => {
     const signIn = async (email, password) => {
         try {
             setLoading(true);
-            const API_BASE_URL = import.meta.env.VITE_API_URL
-                ? `${import.meta.env.VITE_API_URL}/api`
-                : "http://localhost:3002/api";
-            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            const data = await apiCall("/api/auth/login", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({
                     email,
                     password,
                 }),
             });
 
-            const data = await response.json();
             console.log("🔍 Réponse de l'API login:", data);
             console.log("🔍 Token reçu:", data.token);
+            
+            // Vérifier si l'utilisateur est un super admin
+            if (data.user.is_super_admin) {
+                // Pour les super admins, ne pas stocker le token immédiatement
+                // Afficher la modale de sélection de club
+                const pendingData = {
+                    token: data.token,
+                    user: data.user,
+                    email: email,
+                };
+                console.log("🔍 Données pendingSuperAdmin:", pendingData);
 
-            if (response.ok) {
-                // Vérifier si l'utilisateur est un super admin
-                if (data.user.is_super_admin) {
-                    // Pour les super admins, ne pas stocker le token immédiatement
-                    // Afficher la modale de sélection de club
-                    const pendingData = {
-                        token: data.token,
-                        user: data.user,
-                        email: email,
-                    };
-                    console.log("🔍 Données pendingSuperAdmin:", pendingData);
+                // Sauvegarder le token dans localStorage comme backup
+                localStorage.setItem(
+                    "pending_super_admin_token",
+                    data.token
+                );
+                console.log("🔍 Token sauvegardé dans localStorage");
 
-                    // Sauvegarder le token dans localStorage comme backup
-                    localStorage.setItem(
-                        "pending_super_admin_token",
-                        data.token
-                    );
-                    console.log("🔍 Token sauvegardé dans localStorage");
-
-                    setPendingSuperAdmin(pendingData);
-                    setShowClubSelection(true);
-                    return {
-                        success: true,
-                        user: data.user,
-                        requiresClubSelection: true,
-                    };
-                } else {
-                    // Utilisateur normal, connexion directe
-                    localStorage.setItem("auth_token", data.token);
-                    setUser(data.user);
-                    setUserProfile(data.user);
-                    return { success: true, user: data.user };
-                }
+                setPendingSuperAdmin(pendingData);
+                setShowClubSelection(true);
+                return {
+                    success: true,
+                    user: data.user,
+                    requiresClubSelection: true,
+                };
             } else {
-                throw new Error(data.error || "Erreur lors de la connexion");
+                // Utilisateur normal, connexion directe
+                localStorage.setItem("auth_token", data.token);
+                setUser(data.user);
+                setUserProfile(data.user);
+                return { success: true, user: data.user };
             }
         } catch (error) {
             console.error("Erreur de connexion:", error);
@@ -160,11 +127,10 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem("auth_token");
             if (token) {
                 // Appeler l'API de déconnexion si disponible
-                await fetch("/api/auth/logout", {
+                await apiCall("/api/auth/logout", {
                     method: "POST",
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
                     },
                 });
             }
@@ -200,23 +166,17 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem("auth_token");
             if (!token) throw new Error("Non authentifié");
 
-            const response = await fetch("/api/auth/profile", {
+            await apiCall("/api/auth/profile", {
                 method: "PUT",
                 headers: {
                     Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify(updates),
             });
 
-            if (response.ok) {
-                // Recharger le profil utilisateur
-                await fetchUserProfile();
-                return { success: true };
-            } else {
-                const data = await response.json();
-                throw new Error(data.error || "Erreur lors de la mise à jour");
-            }
+            // Recharger le profil utilisateur
+            await fetchUserProfile();
+            return { success: true };
         } catch (error) {
             console.error("Erreur de mise à jour du profil:", error);
             throw error;
@@ -275,28 +235,13 @@ export const AuthProvider = ({ children }) => {
                 throw new Error("Token d'authentification manquant");
             }
 
-            const API_BASE_URL = import.meta.env.VITE_API_URL
-                ? `${import.meta.env.VITE_API_URL}/api`
-                : "http://localhost:3002/api";
-            const response = await fetch(
-                `${API_BASE_URL}/auth/super-admin-login`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({ clubId }),
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    data.error || "Erreur lors de la sélection du club"
-                );
-            }
+            const data = await apiCall("/api/auth/super-admin-login", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ clubId }),
+            });
 
             // Mettre à jour le token et les informations utilisateur
             localStorage.setItem("auth_token", data.token);

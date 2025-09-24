@@ -11,6 +11,16 @@ const Header = () => {
   const { user, userProfile, signOut, isAdmin, isMembre } = useAuth()
   const { siteSettings } = useSiteSettings()
 
+  // Fonction pour préserver les paramètres d'URL (notamment le paramètre club)
+  const preserveUrlParams = (path) => {
+    const searchParams = new URLSearchParams(location.search)
+    const clubParam = searchParams.get('club')
+    if (clubParam) {
+      return `${path}?club=${clubParam}`
+    }
+    return path
+  }
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
@@ -61,7 +71,7 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2" onClick={closeMenus}>
+          <Link to={preserveUrlParams('/')} className="flex items-center space-x-2" onClick={closeMenus}>
             {siteSettings.logoUrl ? (
               <img
                 src={`/${siteSettings.logoUrl}`}
@@ -84,7 +94,7 @@ const Header = () => {
             {getVisibleNavigationItems().map((item) => (
               <Link
                 key={item.path}
-                to={item.path}
+                to={preserveUrlParams(item.path)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   isActive(item.path)
                     ? 'text-[var(--primary-color)] bg-blue-50'
@@ -96,7 +106,7 @@ const Header = () => {
             ))}
             {(isAdmin() || isMembre()) && (
               <Link 
-                to="/admin" 
+                to={preserveUrlParams('/admin')} 
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   isActive('/admin')
                     ? 'text-[var(--primary-color)] bg-gradient-to-br from-blue-50 to-blue-100'
@@ -137,7 +147,7 @@ const Header = () => {
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                     {isMembre() && (
                       <Link
-                        to="/dashboard"
+                        to={preserveUrlParams('/dashboard')}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={closeMenus}
                       >
@@ -146,7 +156,7 @@ const Header = () => {
                     )}
                     {isAdmin() && (
                       <Link
-                        to="/admin"
+                        to={preserveUrlParams('/admin')}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={closeMenus}
                       >
@@ -165,7 +175,7 @@ const Header = () => {
               </div>
             ) : (
               <Link
-                to="/login"
+                to={preserveUrlParams('/login')}
                 className="bg-[var(--primary-color)] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[var(--primary-dark)] transition-colors duration-200"
               >
                 Connexion
@@ -194,7 +204,7 @@ const Header = () => {
               {getVisibleNavigationItems().map((item) => (
                 <Link
                   key={item.path}
-                  to={item.path}
+                  to={preserveUrlParams(item.path)}
                   className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                     isActive(item.path)
                       ? 'text-[var(--primary-color)] bg-gradient-to-br from-blue-50 to-blue-100'
@@ -207,7 +217,7 @@ const Header = () => {
               ))}
               {(isAdmin() || isMembre()) && (
                 <Link 
-                  to="/admin" 
+                  to={preserveUrlParams('/admin')} 
                   className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                     isActive('/admin')
                       ? 'text-[var(--primary-color)] bg-blue-50'
