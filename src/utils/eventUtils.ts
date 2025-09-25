@@ -15,24 +15,41 @@ export class EventUtils {
    * @returns Les 3 événements les plus pertinents
    */
   static getRelevantEvents(events: Event[]): Event[] {
-    if (!events || !Array.isArray(events) || events.length === 0) return [];
+    console.log('🔍 getRelevantEvents - input events:', events);
+    
+    if (!events || !Array.isArray(events) || events.length === 0) {
+      console.log('🔍 getRelevantEvents - no events, returning empty array');
+      return [];
+    }
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    console.log('🔍 getRelevantEvents - today:', today);
     
     // Séparer les événements avec et sans photos
     const eventsWithPhotos = events.filter(event => event.photos && event.photos.length > 0);
     const eventsWithoutPhotos = events.filter(event => !event.photos || event.photos.length === 0);
     
+    console.log('🔍 getRelevantEvents - eventsWithPhotos:', eventsWithPhotos);
+    console.log('🔍 getRelevantEvents - eventsWithoutPhotos:', eventsWithoutPhotos);
+    
     // Trier les événements par pertinence de date
     const sortedEventsWithPhotos = this.sortEventsByRelevance(eventsWithPhotos);
     const sortedEventsWithoutPhotos = this.sortEventsByRelevance(eventsWithoutPhotos);
     
+    console.log('🔍 getRelevantEvents - sortedEventsWithPhotos:', sortedEventsWithPhotos);
+    console.log('🔍 getRelevantEvents - sortedEventsWithoutPhotos:', sortedEventsWithoutPhotos);
+    
     // Combiner : événements avec photos en premier, puis événements sans photos
     const sortedEvents = [...sortedEventsWithPhotos, ...sortedEventsWithoutPhotos];
     
+    console.log('🔍 getRelevantEvents - sortedEvents:', sortedEvents);
+    
     // Retourner les 3 premiers événements
-    return sortedEvents.slice(0, 3);
+    const result = sortedEvents.slice(0, 3);
+    console.log('🔍 getRelevantEvents - final result:', result);
+    
+    return result;
   }
 
   /**

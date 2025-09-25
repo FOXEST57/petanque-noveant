@@ -268,10 +268,11 @@ export const getEventPhotos = async (eventId, clubId = 1) => {
     ORDER BY ep.upload_date DESC
   `, [eventId, clubId]);
   
-  // Construire les URLs complètes pour chaque photo avec le serveur backend
+  // Construire les URLs complètes pour chaque photo avec la route API correcte
+  const apiBaseUrl = import.meta?.env?.VITE_API_URL || 'http://localhost:3007';
   return photos.map(photo => ({
     ...photo,
-    url: `http://localhost:3002/api/events/photos/${photo.filename}`
+    url: `${apiBaseUrl}/uploads/events/${photo.filename}`
   }));
 };
 

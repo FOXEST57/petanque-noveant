@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import mysql from 'mysql2/promise';
 import { authenticateToken } from '../middleware/auth.js';
 import { 
   getHomeContent, 
@@ -46,11 +47,56 @@ const generateUniqueFilename = (originalName: string): string => {
   return `${timestamp}_${random}${extension}`;
 };
 
-// GET /api/home-content - Récupérer le contenu de la page d'accueil
-router.get('/', async (req: Request, res: Response) => {
+// GET /api/home-content/public - Récupérer le contenu de la page d'accueil (accès public)
+router.get('/public', async (req: Request, res: Response) => {
   try {
-    // Récupérer le club_id depuis l'utilisateur authentifié ou utiliser 1 par défaut pour l'endpoint public
-    const clubId = (req as any).user?.clubId || 1;
+    // Vérifier que req.clubId est défini par le middleware de sous-domaine
+    if (!req.clubId) {
+      return res.status(400).json({
+        success: false,
+        error: "Club non identifié. Veuillez accéder via un sous-domaine valide.",
+      });
+    }
+    
+    const content = await getHomeContent(req.clubId);
+    const carouselImages = await getHomeCarouselImages(req.clubId);
+    
+    // Mapper les champs pour le frontend
+    const responseData = {
+      title: content.title,
+      description: content.description,
+      openingHours: content.schedules,
+      contact: content.contact,
+      practicalInfo: content.practical_info,
+      location: content.location,
+      members: content.members,
+      clubTitle: content.club_title,
+      clubDescription: content.club_description,
+      teamsContent: content.teams_content,
+      animationsContent: content.animations_content,
+      tournamentsContent: content.tournaments_content,
+      carouselImages: carouselImages
+    };
+    
+    res.json({ success: true, data: responseData });
+  } catch (error) {
+    console.error('Erreur lors de la récupération du contenu de la page d\'accueil (public):', error);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// GET /api/home-content - Récupérer le contenu de la page d'accueil (authentifié)
+router.get('/', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    // Pour les utilisateurs authentifiés, utiliser UNIQUEMENT leur clubId
+    const clubId = (req as any).user?.clubId;
+    
+    if (!clubId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Club ID manquant dans le token d\'authentification' 
+      });
+    }
     
     const content = await getHomeContent(clubId);
     const carouselImages = await getHomeCarouselImages(clubId);
@@ -80,7 +126,7 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/home-content - Mettre à jour le contenu de la page d'accueil
-router.put('/', authenticateToken, async (req: Request, res: Response) => {
+router.put('/', authenticateToken, upload.array('carouselImages', 10), async (req: Request, res: Response) => {
   try {
     // Récupérer le club_id depuis l'utilisateur authentifié
     const clubId = (req as any).user?.clubId;
@@ -102,7 +148,7 @@ router.put('/', authenticateToken, async (req: Request, res: Response) => {
       teamsContent,
       animationsContent,
       tournamentsContent,
-      carouselImages
+      existingCarouselImages
     } = req.body;
 
     // Mapper les champs frontend vers les champs de la base de données
@@ -124,42 +170,63 @@ router.put('/', authenticateToken, async (req: Request, res: Response) => {
     // Mettre à jour le contenu principal
     await updateHomeContent(contentData, clubId);
 
-    // Gérer les images du carrousel
-    if (carouselImages && Array.isArray(carouselImages)) {
-      // Récupérer les images existantes
-      const existingImages = await getHomeCarouselImages(clubId);
-      const existingIds = existingImages.map(img => img.id);
-      
-      // Supprimer les images qui ne sont plus dans la liste
-      const newImageIds = carouselImages
-        .filter(img => img.id)
-        .map(img => img.id);
-      
-      for (const existingId of existingIds) {
-        if (!newImageIds.includes(existingId)) {
-          await deleteHomeCarouselImage(existingId, clubId);
-        }
-      }
-      
-      // Mettre à jour l'ordre et les titres des images existantes, ajouter les nouvelles
-      for (let i = 0; i < carouselImages.length; i++) {
-        const image = carouselImages[i];
+    // Traiter les nouvelles images uploadées
+    const newImages = [];
+    if (req.files && Array.isArray(req.files)) {
+      for (let i = 0; i < req.files.length; i++) {
+        const file = req.files[i];
+        const filename = generateUniqueFilename(file.originalname);
+        const uploadPath = path.join(uploadsDir, filename);
         
-        if (image.id) {
-          // Image existante - mettre à jour l'ordre et le titre
-          await updateHomeCarouselImageOrder(image.id, i + 1, clubId);
-          if (image.title !== undefined) {
-            await updateHomeCarouselImageTitle(image.id, image.title, clubId);
-          }
-        } else if (image.image_url) {
-          // Nouvelle image - l'ajouter
-          await addHomeCarouselImage({
-            image_url: image.image_url,
-            display_order: i + 1,
-            title: image.title || ''
-          }, clubId);
+        // Sauvegarder le fichier sur le disque
+        await fs.promises.writeFile(uploadPath, file.buffer);
+        
+        // Récupérer le titre depuis les données du formulaire
+        const titleKey = `imageTitle_${i}`;
+        const title = req.body[titleKey] || '';
+        
+        newImages.push({
+          image_url: `uploads/home-carousel/${filename}`,
+          title: title,
+          display_order: i + 1
+        });
+      }
+    }
+
+    // Gérer les images existantes
+    let existingImages = [];
+    try {
+      existingImages = existingCarouselImages ? JSON.parse(existingCarouselImages) : [];
+    } catch (e) {
+      console.log('Pas d\'images existantes à traiter');
+    }
+
+    // Récupérer les images actuelles de la base de données
+    const currentImages = await getHomeCarouselImages(clubId);
+    const currentIds = currentImages.map(img => img.id);
+    
+    // Supprimer les images qui ne sont plus dans la liste existante
+    const existingIds = existingImages.map(img => img.id).filter(id => id);
+    for (const currentId of currentIds) {
+      if (!existingIds.includes(currentId)) {
+        await deleteHomeCarouselImage(currentId, clubId);
+      }
+    }
+    
+    // Mettre à jour l'ordre et les titres des images existantes
+    for (let i = 0; i < existingImages.length; i++) {
+      const image = existingImages[i];
+      if (image.id) {
+        await updateHomeCarouselImageOrder(image.id, i + 1, clubId);
+        if (image.title !== undefined) {
+          await updateHomeCarouselImageTitle(image.id, image.title, clubId);
         }
       }
+    }
+    
+    // Ajouter les nouvelles images
+    for (const newImage of newImages) {
+      await addHomeCarouselImage(newImage, clubId);
     }
 
     // Récupérer les données mises à jour
@@ -189,10 +256,31 @@ router.put('/', authenticateToken, async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/home-content/carousel/public - Récupérer les images du carrousel (public)
+router.get('/carousel/public', async (req: Request, res: Response) => {
+  try {
+    const clubId = (req as any).clubId;
+    if (!clubId) {
+      return res.status(400).json({ success: false, error: 'Club non identifié' });
+    }
+    
+    const images = await getHomeCarouselImages(clubId);
+    res.json({ success: true, data: images });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des images du carrousel:', error);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
 // GET /api/home-content/carousel - Récupérer les images du carrousel
 router.get('/carousel', async (req: Request, res: Response) => {
   try {
-    const images = await getHomeCarouselImages();
+    const clubId = (req as any).clubId;
+    if (!clubId) {
+      return res.status(400).json({ success: false, error: 'Club non identifié' });
+    }
+    
+    const images = await getHomeCarouselImages(clubId);
     res.json({ success: true, data: images });
   } catch (error) {
     console.error('Erreur lors de la récupération des images du carrousel:', error);

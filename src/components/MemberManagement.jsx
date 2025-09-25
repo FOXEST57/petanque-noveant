@@ -15,10 +15,10 @@ import {
     Send
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { membersAPI } from '../lib/membersAPI';
+import { membersAPI } from '../lib/membersAPI.js';
 import { formatDateToFrench, formatDateToISO } from '../utils/dateUtils';
 import { generateAvatar } from '../utils/avatarUtils';
-import { apiCall } from '../lib/api';
+import { apiCall } from '../utils/apiCall.js';
 
 const MemberManagement = ({ onClose }) => {
     // États pour la gestion des membres
@@ -58,7 +58,7 @@ const MemberManagement = ({ onClose }) => {
     const loadMembers = async () => {
         try {
             setLoading(true);
-            const result = await apiCall('/api/members');
+            const result = await apiCall('/members');
             setMembers(result.data || []);
         } catch (error) {
             console.error("Erreur lors de la récupération des membres:", error);
@@ -71,7 +71,7 @@ const MemberManagement = ({ onClose }) => {
 
     const loadMemberTypes = async () => {
         try {
-            const result = await apiCall('/api/members/types');
+            const result = await apiCall('/members/types');
             setMemberTypes(result.data || []);
         } catch (error) {
             console.error("Erreur lors de la récupération des types de membres:", error);
@@ -202,7 +202,7 @@ const MemberManagement = ({ onClose }) => {
             const token = localStorage.getItem('auth_token');
             
             // Chercher la demande d'adhésion correspondante
-            const data = await apiCall('/api/membership/requests', {
+            const data = await apiCall('/membership/requests', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -218,7 +218,7 @@ const MemberManagement = ({ onClose }) => {
             }
 
             // Renvoyer l'invitation
-            await apiCall(`/api/membership/resend-invitation/${memberRequest.id}`, {
+            await apiCall(`/membership/resend-invitation/${memberRequest.id}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -389,7 +389,7 @@ const MemberManagement = ({ onClose }) => {
                                                     {member.photo_url && member.photo_url.trim() !== '' ? (
                                                         <img
                                                             className="w-10 h-10 rounded-full object-cover"
-                                                            src={`http://localhost:3002/${member.photo_url}`}
+                                                            src={`${import.meta.env.VITE_API_URL || 'http://localhost:3007'}/${member.photo_url}`}
                                                             alt={`${member.prenom} ${member.nom}`}
                                                             onError={(e) => {
                                                                 e.target.style.display = 'none';

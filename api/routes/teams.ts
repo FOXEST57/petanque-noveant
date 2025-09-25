@@ -100,6 +100,20 @@ router.get("/", authenticateToken, ensureClubAccess(), async (req: Request, res:
     }
 });
 
+// Get teams count - MUST be before /:id route to avoid conflicts
+router.get("/count", authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
+    try {
+        const teams = await getTeams(req.clubId!);
+        res.json({
+            success: true,
+            count: teams.length
+        });
+    } catch (error) {
+        console.error("Error fetching teams count:", error);
+        res.status(500).json({ success: false, error: "Failed to fetch teams count" });
+    }
+});
+
 // GET /api/teams/:id - Get team by ID (requires authentication and club access)
 router.get("/:id", authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
     try {
@@ -459,8 +473,7 @@ router.put(
                 error: "Erreur lors de la mise à jour du rôle du membre",
             });
         }
-    }
-);
+    });
 
 // GET /api/teams/photos/:filename - Servir les photos d'équipes
 router.get("/photos/:filename", (req: Request, res: Response) => {

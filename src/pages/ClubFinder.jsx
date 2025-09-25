@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { apiCall } from '../lib/api';
+import { ExternalLink, MapPin, Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "react-hot-toast";
+import { apiCall } from "../utils/apiCall.js";
 
 const ClubFinder = () => {
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState("");
     const [clubs, setClubs] = useState([]);
     const [filteredClubs, setFilteredClubs] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -20,10 +20,13 @@ const ClubFinder = () => {
     // Filtrer les clubs selon le terme de recherche
     useEffect(() => {
         if (searchTerm.trim().length >= 2) {
-            const filtered = clubs.filter(club => 
-                club.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                club.ville.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                club.numero_ffpjp.includes(searchTerm)
+            const filtered = clubs.filter(
+                (club) =>
+                    club.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    club.ville
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                    club.numero_ffpjp.includes(searchTerm)
             );
             setFilteredClubs(filtered);
             setShowResults(true);
@@ -37,11 +40,11 @@ const ClubFinder = () => {
     const loadAllClubs = async () => {
         try {
             setLoading(true);
-            const data = await apiCall('/clubs');
+            const data = await apiCall("/clubs");
             setClubs(data.clubs || []);
         } catch (error) {
-            console.error('Erreur:', error);
-            toast.error('Erreur lors du chargement des clubs');
+            console.error("Erreur:", error);
+            toast.error("Erreur lors du chargement des clubs");
         } finally {
             setLoading(false);
         }
@@ -49,26 +52,27 @@ const ClubFinder = () => {
 
     // Gérer la sélection d'un club
     const handleClubSelect = (club) => {
-        console.log('🔍 Club sélectionné:', club);
-        console.log('🔍 Subdomain disponible:', club.subdomain);
-        console.log('🔍 Environment:', process.env.NODE_ENV);
-        
+        console.log("🔍 Club sélectionné:", club);
+        console.log("🔍 Subdomain disponible:", club.subdomain);
+        console.log("🔍 Environment:", process.env.NODE_ENV);
+
         if (!club.subdomain) {
-            console.error('❌ Erreur: Aucun subdomain trouvé pour ce club');
-            toast.error('Erreur: Ce club n\'a pas de sous-domaine configuré');
+            console.error("❌ Erreur: Aucun subdomain trouvé pour ce club");
+            toast.error("Erreur: Ce club n'a pas de sous-domaine configuré");
             return;
         }
-        
+
         // En développement, simuler la redirection avec un paramètre
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === "development") {
             // Pour le développement, on utilise un paramètre URL au lieu d'un sous-domaine
-            const frontendUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+            const frontendUrl =
+                import.meta.env.VITE_FRONTEND_URL || window.location.origin;
             const targetUrl = `${frontendUrl}/?club=${club.subdomain}`;
-            console.log('🚀 Redirection vers:', targetUrl);
+            console.log("🚀 Redirection vers:", targetUrl);
             window.location.href = targetUrl;
         } else {
             const targetUrl = `https://${club.subdomain}.petanque-club.fr`;
-            console.log('🚀 Redirection vers:', targetUrl);
+            console.log("🚀 Redirection vers:", targetUrl);
             // En production, redirection vers le vrai sous-domaine
             window.location.href = targetUrl;
         }
@@ -77,14 +81,19 @@ const ClubFinder = () => {
     // Gérer les clics en dehors des résultats
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (resultsRef.current && !resultsRef.current.contains(event.target) &&
-                searchInputRef.current && !searchInputRef.current.contains(event.target)) {
+            if (
+                resultsRef.current &&
+                !resultsRef.current.contains(event.target) &&
+                searchInputRef.current &&
+                !searchInputRef.current.contains(event.target)
+            ) {
                 setShowResults(false);
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     return (
@@ -93,7 +102,9 @@ const ClubFinder = () => {
             <header className="bg-white shadow-sm border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-center">
-                        <h1 className="text-3xl font-bold text-green-800">BoulApp</h1>
+                        <h1 className="text-3xl font-bold text-green-800">
+                            BoulApp
+                        </h1>
                     </div>
                 </div>
             </header>
@@ -123,7 +134,9 @@ const ClubFinder = () => {
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            onFocus={() => searchTerm.length >= 2 && setShowResults(true)}
+                            onFocus={() =>
+                                searchTerm.length >= 2 && setShowResults(true)
+                            }
                             placeholder="Recherchez votre club par nom, ville ou numéro FFPJP..."
                             className="block w-full pl-10 pr-3 py-4 text-lg border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-lg"
                         />
@@ -131,7 +144,7 @@ const ClubFinder = () => {
 
                     {/* Résultats de recherche */}
                     {showResults && (
-                        <div 
+                        <div
                             ref={resultsRef}
                             className="absolute z-10 mt-2 w-full bg-white rounded-xl shadow-xl border border-gray-200 max-h-96 overflow-y-auto"
                         >
@@ -144,7 +157,9 @@ const ClubFinder = () => {
                                     {filteredClubs.map((club) => (
                                         <button
                                             key={club.id}
-                                            onClick={() => handleClubSelect(club)}
+                                            onClick={() =>
+                                                handleClubSelect(club)
+                                            }
                                             className="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors duration-150"
                                         >
                                             <div className="flex items-center justify-between">
@@ -160,12 +175,17 @@ const ClubFinder = () => {
                                                                     {club.ville}
                                                                 </div>
                                                                 <div className="text-sm text-gray-500">
-                                                                    FFPJP: {club.numero_ffpjp}
+                                                                    FFPJP:{" "}
+                                                                    {
+                                                                        club.numero_ffpjp
+                                                                    }
                                                                 </div>
                                                             </div>
                                                             {club.adresse && (
                                                                 <p className="text-sm text-gray-500 mt-1">
-                                                                    {club.adresse}
+                                                                    {
+                                                                        club.adresse
+                                                                    }
                                                                 </p>
                                                             )}
                                                         </div>
@@ -194,26 +214,35 @@ const ClubFinder = () => {
                         <div className="space-y-3 text-left">
                             <div className="flex items-start space-x-3">
                                 <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                                    <span className="text-sm font-semibold text-green-600">1</span>
+                                    <span className="text-sm font-semibold text-green-600">
+                                        1
+                                    </span>
                                 </div>
                                 <p className="text-gray-600">
-                                    Tapez le nom de votre club, votre ville ou votre numéro FFPJP
+                                    Tapez le nom de votre club, votre ville ou
+                                    votre numéro FFPJP
                                 </p>
                             </div>
                             <div className="flex items-start space-x-3">
                                 <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                                    <span className="text-sm font-semibold text-green-600">2</span>
+                                    <span className="text-sm font-semibold text-green-600">
+                                        2
+                                    </span>
                                 </div>
                                 <p className="text-gray-600">
-                                    Sélectionnez votre club dans la liste des résultats
+                                    Sélectionnez votre club dans la liste des
+                                    résultats
                                 </p>
                             </div>
                             <div className="flex items-start space-x-3">
                                 <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                                    <span className="text-sm font-semibold text-green-600">3</span>
+                                    <span className="text-sm font-semibold text-green-600">
+                                        3
+                                    </span>
                                 </div>
                                 <p className="text-gray-600">
-                                    Vous serez redirigé vers l'espace de votre club
+                                    Vous serez redirigé vers l'espace de votre
+                                    club
                                 </p>
                             </div>
                         </div>
@@ -225,7 +254,10 @@ const ClubFinder = () => {
             <footer className="bg-white border-t mt-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="text-center text-gray-500">
-                        <p>&copy; 2025 BoulApp - Application de gestion pour clubs de pétanque</p>
+                        <p>
+                            &copy; 2025 BoulApp - Application de gestion pour
+                            clubs de pétanque
+                        </p>
                     </div>
                 </div>
             </footer>

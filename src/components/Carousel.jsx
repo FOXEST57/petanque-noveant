@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { apiCall } from '../lib/api'
+import { apiCall } from '../utils/apiCall.js';
+import { useAuth } from '../hooks/useAuth';
 
 const Carousel = ({ transitionType = 'slide', transitionDuration = 600 }) => {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -7,6 +8,7 @@ const Carousel = ({ transitionType = 'slide', transitionDuration = 600 }) => {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const { user } = useAuth();
 
   // Fallback images if API fails
   const fallbackImages = [
@@ -42,7 +44,25 @@ const Carousel = ({ transitionType = 'slide', transitionDuration = 600 }) => {
     const fetchCarouselImages = async () => {
       try {
         console.log('Fetching carousel images from API...')
-        const data = await apiCall('/home-content')
+        
+        // Utiliser l'endpoint public si l'utilisateur n'est pas connecté
+        let data;
+        if (user) {
+          data = await apiCall('/home-content')
+        } else {
+          // Pour les utilisateurs non connectés, essayer d'abord l'endpoint public du carrousel
+          try {
+            data = await apiCall('/home-content/carousel/public')
+            // Restructurer la réponse pour correspondre au format attendu
+            if (data.data) {
+              data = { data: { carouselImages: data.data } }
+            }
+          } catch (carouselError) {
+            console.log('Carousel endpoint failed, trying public home-content:', carouselError)
+            data = await apiCall('/home-content/public')
+          }
+        }
+        
         console.log('API Response:', data)
         
         if (data.data && data.data.carouselImages && data.data.carouselImages.length > 0) {
@@ -66,7 +86,7 @@ const Carousel = ({ transitionType = 'slide', transitionDuration = 600 }) => {
     }
 
     fetchCarouselImages()
-  }, [])
+  }, [user])
 
   const nextSlide = () => {
     if (isTransitioning) return

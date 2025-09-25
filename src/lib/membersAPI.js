@@ -1,5 +1,5 @@
 // API client pour les membres
-const API_BASE_URL = '/api';
+import { apiCall } from '../utils/apiCall.js';
 
 // Fonction utilitaire pour récupérer le token d'authentification
 const getAuthToken = () => {
@@ -36,89 +36,70 @@ const handleResponse = async (response) => {
 export const membersAPI = {
   // Récupérer tous les membres
   getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/members`, {
-      headers: getAuthHeaders()
-    });
-    return handleResponse(response);
+    return await apiCall('/members');
   },
 
   // Créer un nouveau membre
   create: async (memberData) => {
     const isFormData = memberData instanceof FormData;
     
-    const response = await fetch(`${API_BASE_URL}/members`, {
+    return await apiCall('/members', {
       method: 'POST',
-      headers: getAuthHeaders(isFormData),
+      headers: isFormData ? { 'Authorization': `Bearer ${getAuthToken()}` } : getAuthHeaders(),
       body: isFormData ? memberData : JSON.stringify(memberData),
     });
-    return handleResponse(response);
   },
 
   // Mettre à jour un membre
   update: async (id, memberData) => {
     const isFormData = memberData instanceof FormData;
     
-    const response = await fetch(`${API_BASE_URL}/members/${id}`, {
+    return await apiCall(`/members/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(isFormData),
+      headers: isFormData ? { 'Authorization': `Bearer ${getAuthToken()}` } : getAuthHeaders(),
       body: isFormData ? memberData : JSON.stringify(memberData),
     });
-    return handleResponse(response);
   },
 
   // Supprimer un membre
   delete: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/members/${id}`, {
+    return await apiCall(`/members/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
   },
 
   // Récupérer le nombre total de membres
   getCount: async () => {
-    const response = await fetch(`${API_BASE_URL}/members/count`, {
-      headers: getAuthHeaders()
-    });
-    const data = await handleResponse(response);
+    const data = await apiCall('/members/count');
     return data.count;
   },
 
   // Récupérer les types de membres
   getTypes: async () => {
-    const response = await fetch(`${API_BASE_URL}/members/types`, {
-      headers: getAuthHeaders()
-    });
-    return handleResponse(response);
+    return await apiCall('/members/types');
   },
 
   // Créer un nouveau type de membre
   createType: async (typeData) => {
-    const response = await fetch(`${API_BASE_URL}/members/types`, {
+    return await apiCall('/members/types', {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(typeData),
     });
-    return handleResponse(response);
   },
 
   // Mettre à jour un type de membre
   updateType: async (id, typeData) => {
-    const response = await fetch(`${API_BASE_URL}/members/types/${id}`, {
+    return await apiCall(`/members/types/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(typeData),
     });
-    return handleResponse(response);
   },
 
   // Supprimer un type de membre
   deleteType: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/members/types/${id}`, {
+    return await apiCall(`/members/types/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
   }
 };
 

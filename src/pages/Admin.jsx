@@ -29,7 +29,8 @@ import {
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { useDrinks } from "../contexts/DrinksContext";
-import { eventsAPI, teamsAPI, apiCall } from "../lib/api";
+import { eventsAPI } from "../api/events.js";
+import { teamsAPI } from "../api/teams.js";
 import { membersAPI } from "../lib/membersAPI";
 import BarManagement from "../components/BarManagement";
 import MemberManagement from "../components/MemberManagement";
@@ -42,6 +43,7 @@ import MembershipRequestManagement from "../components/MembershipRequestManageme
 
 import { formatDateToFrench, formatDateToISO, validateFrenchDate } from "../utils/dateUtils";
 import { generateAvatar } from "../utils/avatarUtils";
+import { apiCall } from "../utils/apiCall.js";
 import "../styles/animations.css";
 import "../styles/AdminCards.css";
 
@@ -106,7 +108,7 @@ const Admin = () => {
 
 
     // Variables calculées pour le filtrage des types de membres
-    const filteredTypeMember = memberTypes.filter(
+    const filteredTypeMember = Array.isArray(memberTypes) ? memberTypes.filter(
         (type) =>
             type &&
             type.nom &&
@@ -117,7 +119,7 @@ const Admin = () => {
                     type.description
                         .toLowerCase()
                         .includes(typeMemberSearchTerm.toLowerCase())))
-    );
+    ) : [];
 
 
 
@@ -151,21 +153,41 @@ const Admin = () => {
     const loadMembers = async () => {
         try {
             const membersData = await membersAPI.getAll();
-            setMembers(membersData);
+            console.log('Données membres reçues:', membersData);
+            
+            // S'assurer que membersData est un tableau
+            const membersArray = Array.isArray(membersData) ? membersData : 
+                                 (membersData?.data && Array.isArray(membersData.data)) ? membersData.data : 
+                                 [];
+            
+            setMembers(membersArray);
             // Mettre à jour les stats après avoir chargé les membres
-            updateMemberStats(membersData);
+            updateMemberStats(membersArray);
         } catch (error) {
             console.error("Erreur lors du chargement des membres:", error);
             toast.error("Erreur lors du chargement des membres");
+            // En cas d'erreur, s'assurer que members reste un tableau vide
+            setMembers([]);
         }
     };
 
     // Fonction pour mettre à jour les statistiques des membres
     const updateMemberStats = async (membersData) => {
         try {
+            // Vérifier si on a un token d'authentification avant de faire les appels API
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                console.warn("Pas de token d'authentification, skip des statistiques");
+                return;
+            }
+
             setLoading(true);
-            const eventsCount = await eventsAPI.getCount();
-            const teamsCount = await teamsAPI.getCount();
+            const eventsResponse = await eventsAPI.getCount();
+            const teamsResponse = await teamsAPI.getCount();
+            
+            // Extraire les compteurs des réponses API
+            const eventsCount = eventsResponse.data?.count || eventsResponse.count || 0;
+            const teamsCount = teamsResponse.count || 0;
             
             // Charger le compteur des demandes d'adhésion
             const membershipRequestsCount = await loadMembershipRequestsCount();
@@ -195,20 +217,29 @@ const Admin = () => {
     const loadMemberTypes = async () => {
         try {
             const typesData = await membersAPI.getTypes();
-            setMemberTypes(typesData);
+            console.log('Données types membres reçues:', typesData);
+            
+            // S'assurer que typesData est un tableau
+            const typesArray = Array.isArray(typesData) ? typesData : 
+                              (typesData?.data && Array.isArray(typesData.data)) ? typesData.data : 
+                              [];
+            
+            setMemberTypes(typesArray);
         } catch (error) {
             console.error(
                 "Erreur lors du chargement des types de membres:",
                 error
             );
             toast.error("Erreur lors du chargement des types de membres");
+            // En cas d'erreur, s'assurer que memberTypes reste un tableau vide
+            setMemberTypes([]);
         }
     };
 
     // Fonction pour charger le compteur des demandes d'adhésion
     const loadMembershipRequestsCount = async () => {
         try {
-            const data = await apiCall('/api/membership/requests?status=en_attente');
+            const data = await apiCall('/membership/requests?status=en_attente');
             return data.requests ? data.requests.length : 0;
         } catch (error) {
             if (error.status === 403) {
@@ -267,8 +298,8 @@ const Admin = () => {
                         const photos = await apiCall(
                             `${
                                 import.meta.env.VITE_API_URL ||
-                                "http://localhost:3002"
-                            }/api/events/${event.id}/photos`
+                                import.meta.env.VITE_API_URL || "http://localhost:3007"
+                            }/uploads/events/${photo.filename}`
                         );
 
                         return {
@@ -570,7 +601,7 @@ const Admin = () => {
         }
     };
 
-    const filteredMembers = members.filter((member) => {
+    const filteredMembers = Array.isArray(members) ? members.filter((member) => {
         const matchesSearch =
             member.nom.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
             member.prenom
@@ -584,7 +615,7 @@ const Admin = () => {
                 member.type_membre_id.toString() === selectedMemberType);
 
         return matchesSearch && matchesType;
-    });
+    }) : [];
 
 
 

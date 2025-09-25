@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { HexAlphaColorPicker } from "react-colorful";
 import { toast } from "sonner";
 import { useSiteSettings } from "../contexts/SiteSettingsContext.jsx";
-import { apiCall } from "../lib/api.js";
+import { apiCall } from "../utils/apiCall.js";
 
 const SiteManagement = ({ isOpen, onClose }) => {
     const { siteSettings: globalSiteSettings, updateSiteSettings, loadSiteSettings } =

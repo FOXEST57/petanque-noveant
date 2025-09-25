@@ -17,7 +17,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { apiCall } from '../lib/api';
+import { apiCall } from '../utils/apiCall.js';
 
 const MembershipRequestManagement = ({ onClose }) => {
     const [requests, setRequests] = useState([]);
@@ -34,7 +34,7 @@ const MembershipRequestManagement = ({ onClose }) => {
             setLoading(true);
             const token = localStorage.getItem('auth_token');
             
-            const data = await apiCall('/api/membership/requests', {
+            const data = await apiCall('/membership/requests', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -83,7 +83,7 @@ const MembershipRequestManagement = ({ onClose }) => {
             setActionLoading(true);
             const token = localStorage.getItem('auth_token');
             
-            await apiCall(`/api/membership/approve/${requestId}`, {
+            await apiCall(`/membership/approve/${requestId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -105,7 +105,7 @@ const MembershipRequestManagement = ({ onClose }) => {
             setActionLoading(true);
             const token = localStorage.getItem('auth_token');
             
-            await apiCall(`/api/membership/reject/${requestId}`, {
+            await apiCall(`/membership/reject/${requestId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

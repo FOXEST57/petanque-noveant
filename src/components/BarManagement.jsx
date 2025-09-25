@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Wine, Plus, Search, Edit, Trash2, X, Save } from 'lucide-react';
 import { useDrinks } from '../contexts/DrinksContext';
 import { toast } from 'sonner';
-import { apiCall } from '../lib/api';
+import { apiCall } from '../utils/apiCall.js';
 
 const BarManagement = ({ onClose }) => {
     const { drinks, addDrink, updateDrink, deleteDrink } = useDrinks();
@@ -103,7 +103,7 @@ const BarManagement = ({ onClose }) => {
                     const formDataImage = new FormData();
                     formDataImage.append('image', selectedImageFile);
                     
-                    const uploadResult = await apiCall('/api/upload-image', {
+                    const uploadResult = await apiCall('/upload-image', {
                         method: 'POST',
                         body: formDataImage
                     });
@@ -126,7 +126,7 @@ const BarManagement = ({ onClose }) => {
                     const formDataImage = new FormData();
                     formDataImage.append('image', selectedImageFile);
                     
-                    const uploadResult = await apiCall('/api/upload-image', {
+                    const uploadResult = await apiCall('/upload-image', {
                         method: 'POST',
                         body: formDataImage
                     });

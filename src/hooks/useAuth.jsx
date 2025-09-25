@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { apiCall } from '../lib/api';
+import { apiCall } from '../utils/apiCall.js';
 import ClubSelectionModal from "../components/ClubSelectionModal.jsx";
 
 const AuthContext = createContext({});

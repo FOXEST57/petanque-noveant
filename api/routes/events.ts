@@ -21,7 +21,7 @@ const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit
+        fileSize: 10 * 1024 * 1024, // 10MB limit
     },
     fileFilter: (req, file, cb) => {
         // Accept only image files
@@ -281,21 +281,21 @@ router.delete("/:id", authenticateToken, canManageEvents, async (req: Request, r
     }
 });
 
-// GET /api/events/:id/photos - Get photos for a specific event (public access)
+// GET /api/events/:id/photos - Get photos for an event
 router.get("/:id/photos", async (req: Request, res: Response) => {
     try {
         const eventId = parseInt(req.params.id);
         
+        if (isNaN(eventId)) {
+            return res.status(400).json({ error: "Invalid event ID" });
+        }
+
         const photos = await getEventPhotos(eventId);
         
-        res.json(photos || []);
+        res.json(photos);
     } catch (error) {
         console.error("Error fetching event photos:", error);
-        res.status(500).json({
-            success: false,
-            error: "Erreur lors de la récupération des photos",
-            data: []
-        });
+        res.status(500).json({ error: "Failed to fetch event photos" });
     }
 });
 
@@ -309,6 +309,15 @@ router.post("/:id/photos", authenticateToken, canManageEvents, upload.array("pho
             return res.status(400).json({ error: "No photos provided" });
         }
 
+        // First, get the event to find its club_id
+        const events = await getEvents();
+        const event = events.find(e => e.id === eventId);
+        
+        if (!event) {
+            return res.status(404).json({ error: "Event not found" });
+        }
+
+        const eventClubId = event.club_id;
         const uploadedPhotos = [];
 
         for (const file of files) {
@@ -320,11 +329,7 @@ router.post("/:id/photos", authenticateToken, canManageEvents, upload.array("pho
             const filePath = path.join(uploadsDir, filename);
 
             // Save file to disk
-            try {
-                fs.writeFileSync(filePath, file.buffer);
-            } catch (fileError) {
-                throw fileError;
-            }
+            fs.writeFileSync(filePath, file.buffer);
 
             // Save to database
             const photoData = {
@@ -333,26 +338,24 @@ router.post("/:id/photos", authenticateToken, canManageEvents, upload.array("pho
                 original_name: file.originalname,
                 file_path: `/uploads/events/${filename}`,
                 file_size: file.size,
-                mime_type: file.mimetype
+                mime_type: file.mimetype,
+                club_id: eventClubId
             };
 
-            try {
-                await createEventPhoto(photoData, req.user!.clubId);
-                uploadedPhotos.push(photoData);
-            } catch (dbError) {
-                console.error("❌ Error saving to database:", dbError);
-                throw dbError;
-            }
+            const photoId = await createEventPhoto(photoData);
+            uploadedPhotos.push({
+                id: photoId,
+                ...photoData
+            });
         }
 
-        console.log("✅ All photos uploaded successfully");
-        res.json({ 
-            message: "Photos uploaded successfully", 
-            photos: uploadedPhotos 
+        res.json({
+            success: true,
+            message: `${uploadedPhotos.length} photo(s) uploaded successfully`,
+            photos: uploadedPhotos
         });
     } catch (error) {
-        console.error("❌ Error uploading event photos:", error);
-        console.error("❌ Error stack:", error.stack);
+        console.error("Error uploading photos:", error);
         res.status(500).json({ error: "Failed to upload photos" });
     }
 });
@@ -362,24 +365,24 @@ router.delete("/photos/:id", authenticateToken, canManageEvents, async (req: Req
     try {
         const photoId = parseInt(req.params.id);
         
-        // Get photo info before deletion to remove file from disk
-        const photo = await getEventPhotoById(photoId, req.user.clubId);
+        // Get photo info before deleting
+        const photo = await getEventPhotoById(photoId);
         if (!photo) {
             return res.status(404).json({ error: "Photo not found" });
         }
 
-        // Delete from database
-        await deleteEventPhoto(photoId, req.user.clubId);
-
         // Delete file from disk
-        const filePath = path.join(uploadsDir, photo.filename);
+        const filePath = path.join(process.cwd(), "uploads", "events", photo.filename);
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
         }
 
-        res.json({ message: "Photo deleted successfully" });
+        // Delete from database
+        await deleteEventPhoto(photoId);
+
+        res.json({ success: true, message: "Photo deleted successfully" });
     } catch (error) {
-        console.error("Error deleting event photo:", error);
+        console.error("Error deleting photo:", error);
         res.status(500).json({ error: "Failed to delete photo" });
     }
 });

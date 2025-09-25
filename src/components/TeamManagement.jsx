@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { teamsAPI } from "../lib/api";
+import { teamsAPI } from "../api/teams.js";
 import { membersAPI } from "../lib/membersAPI";
 
 const TeamManagement = ({ onStatsUpdate, onClose }) => {

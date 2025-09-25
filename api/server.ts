@@ -13,7 +13,7 @@ import app from "./app.ts";
 /**
  * start server with port
  */
-const PORT = process.env.API_PORT || process.env.PORT || 3004;
+const PORT = process.env.API_PORT || process.env.PORT || 3007;
 
 // Démarrer le serveur
 const server = app.listen(PORT, () => {

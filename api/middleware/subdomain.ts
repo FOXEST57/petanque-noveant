@@ -62,6 +62,7 @@ export const detectSubdomain = async (req: Request, res: Response, next: NextFun
 
         if (rows.length > 0) {
           req.clubId = rows[0].id;
+          console.log('🎯 Club détecté via paramètre/sous-domaine:', subdomain, 'ID:', req.clubId);
         } else {
           // Pour les requêtes API, retourner une erreur JSON au lieu de rediriger
           if (req.path.startsWith('/api/')) {
@@ -76,30 +77,14 @@ export const detectSubdomain = async (req: Request, res: Response, next: NextFun
       } finally {
         await connection.end();
       }
+      
+      // Si un club a été trouvé, continuer avec ce club
+      return next();
     } else {
-      // Pas de sous-domaine détecté - Mode développement local
+      // Pas de sous-domaine détecté - Redirection vers la page d'entrée
       // Pour les routes API publiques, on continue sans clubId
       if (req.path.startsWith('/auth') || req.path.startsWith('/health') || req.path.startsWith('/clubs')) {
         return next();
-      }
-      
-      // En développement local, utiliser le premier club disponible
-      if (hostname && hostname.includes('localhost')) {
-        const connection = await mysql.createConnection(dbConfig);
-        
-        try {
-          const [rows] = await connection.execute(
-            'SELECT id FROM clubs ORDER BY id LIMIT 1'
-          ) as [any[], any];
-
-          if (rows.length > 0) {
-            req.clubId = rows[0].id;
-            console.log('🏠 Mode développement: utilisation du club par défaut ID:', req.clubId);
-            return next();
-          }
-        } finally {
-          await connection.end();
-        }
       }
       
       // Pour les autres routes API, on retourne une erreur
@@ -109,7 +94,9 @@ export const detectSubdomain = async (req: Request, res: Response, next: NextFun
           error: 'Club non identifié. Veuillez accéder via un sous-domaine valide.'
         });
       }
-      // Pour les routes non-API, rediriger vers le club finder
+      
+      // Pour toutes les autres routes, rediriger vers le club finder
+      console.log('🚪 Aucun sous-domaine détecté - Redirection vers la page d\'entrée');
       return res.redirect('/club-finder');
     }
 

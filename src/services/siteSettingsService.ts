@@ -1,4 +1,4 @@
-import { apiCall } from '../lib/api';
+import { apiCall } from '../utils/apiCall.js';
 
 export interface SiteSettings {
   primary_color?: string;

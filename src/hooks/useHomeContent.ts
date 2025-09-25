@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { apiCall } from '../lib/api';
+import { apiCall } from '../utils/apiCall.js';
+import { useAuth } from './useAuth';
 
 interface HomeContent {
   title?: string;
@@ -15,6 +16,7 @@ export const useHomeContent = () => {
   const [homeContent, setHomeContent] = useState<HomeContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchHomeContent = async () => {
@@ -22,7 +24,9 @@ export const useHomeContent = () => {
         setLoading(true);
         setError(null);
         
-        const homeData = await apiCall('/home-content');
+        // Utiliser l'endpoint public si l'utilisateur n'est pas connecté
+        const endpoint = user ? '/home-content' : '/home-content/public';
+        const homeData = await apiCall(endpoint);
         
         // Extract data from API response structure
         if (homeData && homeData.success && homeData.data) {
@@ -42,7 +46,7 @@ export const useHomeContent = () => {
     };
 
     fetchHomeContent();
-  }, []);
+  }, [user]);
 
   return {
     homeContent,

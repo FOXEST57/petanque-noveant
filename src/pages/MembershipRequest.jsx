@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { UserPlus, Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Users, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { apiCall } from '../lib/api';
+import { apiCall } from '../utils/apiCall.js';
 
 const MembershipRequest = () => {
   const [searchParams] = useSearchParams();
@@ -108,7 +108,7 @@ const MembershipRequest = () => {
     setIsLoading(true);
     
     try {
-      const result = await apiCall('/api/membership/submit-request', {
+      const result = await apiCall('/membership/submit-request', {
         method: 'POST',
         body: {
           ...formData,

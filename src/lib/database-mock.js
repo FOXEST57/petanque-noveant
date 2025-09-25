@@ -163,4 +163,9 @@ export const deleteMemberType = async (id) => {
   const filteredTypes = memberTypes.filter(t => t.id !== id);
   
   if (filteredTypes.length === memberTypes.length) {
-    throw new Error('Type de membre non tro
+    throw new Error('Type de membre non trouvé');
+  }
+  
+  saveToStorage(STORAGE_KEYS.memberTypes, filteredTypes);
+  return true;
+};

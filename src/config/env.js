@@ -1,7 +1,7 @@
 // Configuration des environnements
 const config = {
   development: {
-    API_URL: 'http://localhost:3002'
+    API_URL: import.meta.env.VITE_API_URL || 'http://localhost:3007'
   },
   production: {
     // En production, utilise la variable d'environnement ou une URL par défaut

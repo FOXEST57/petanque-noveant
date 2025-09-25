@@ -13,8 +13,11 @@ export const apiCall = async (endpoint, options = {}) => {
     const urlParams = new URLSearchParams(window.location.search);
     const club = urlParams.get('club');
     
-    // Construire l'URL complète
-    let url = `/api${endpoint}`;
+    // Définir l'URL de base de l'API
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3007";
+    
+    // Construire l'URL complète avec l'URL de base
+    let url = `${API_BASE_URL}/api${endpoint}`;
     
     // Ajouter le paramètre club si présent et si l'endpoint ne l'a pas déjà
     if (club && !endpoint.includes('club=')) {

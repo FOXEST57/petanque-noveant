@@ -1,21 +1,25 @@
 import { useState, useEffect } from 'react'
 import { Users, Trophy, Calendar, Image } from 'lucide-react'
-import { teamsAPI } from '../lib/api'
+import { teamsAPI } from '../api/teams.js';
+import { useAuth } from '../hooks/useAuth';
 
 const Equipes = () => {
   const [teams, setTeams] = useState([])
   const [loading, setLoading] = useState(true)
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchTeams()
-  }, [])
+  }, [user])
 
   const fetchTeams = async () => {
     try {
-      const data = await teamsAPI.getAll()
-      setTeams(data || [])
+      // Utiliser l'endpoint public si l'utilisateur n'est pas connecté
+      const response = user ? await teamsAPI.getAll() : await teamsAPI.getAllPublic();
+      setTeams(response?.data || [])
     } catch (error) {
       console.error('Erreur lors du chargement des équipes:', error)
+      setTeams([])
     } finally {
       setLoading(false)
     }

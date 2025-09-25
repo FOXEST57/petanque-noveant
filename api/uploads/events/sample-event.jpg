@@ -1,0 +1,31 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E7D32;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bg)"/>
+  
+  <!-- Pétanque balls -->
+  <circle cx="120" cy="120" r="25" fill="#C0C0C0" stroke="#808080" stroke-width="2"/>
+  <circle cx="280" cy="180" r="25" fill="#FFD700" stroke="#DAA520" stroke-width="2"/>
+  <circle cx="200" cy="200" r="25" fill="#C0C0C0" stroke="#808080" stroke-width="2"/>
+  
+  <!-- Cochonnet (small ball) -->
+  <circle cx="180" cy="150" r="8" fill="#8B4513" stroke="#654321" stroke-width="1"/>
+  
+  <!-- Text -->
+  <text x="200" y="50" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="bold">
+    Tournoi de Pétanque
+  </text>
+  
+  <text x="200" y="80" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16">
+    Club de Noveant-sur-Moselle
+  </text>
+  
+  <!-- Ground line -->
+  <line x1="0" y1="250" x2="400" y2="250" stroke="white" stroke-width="2" opacity="0.5"/>
+</svg>

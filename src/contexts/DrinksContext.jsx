@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { drinksAPI } from '../lib/api';
+import { drinksAPI } from '../api/drinks.js';
 
 const DrinksContext = createContext();
 
@@ -19,8 +19,19 @@ export const DrinksProvider = ({ children }) => {
   useEffect(() => {
     const loadDrinks = async () => {
       try {
-        const drinksData = await drinksAPI.getAll();
-        setDrinks(drinksData || []);
+        const response = await drinksAPI.getAll();
+        console.log('🔍 Drinks API Response:', response);
+        
+        // Vérifier si la réponse a une structure avec data
+        const drinksData = response?.data || response;
+        
+        // S'assurer que c'est un tableau
+        if (Array.isArray(drinksData)) {
+          setDrinks(drinksData);
+        } else {
+          console.warn('⚠️ Drinks data is not an array:', drinksData);
+          setDrinks([]);
+        }
       } catch (error) {
         console.error('Erreur lors du chargement des boissons:', error);
         // En cas d'erreur, laisser la liste vide

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { apiCall } from "../utils/apiCall.js";
 import {
     Home,
     Save,
@@ -54,14 +55,10 @@ const HomeContentManagement = ({ onClose }) => {
         try {
             setHomeContentLoading(true);
             console.log("Chargement du contenu de la page d'accueil...");
-            const response = await fetch(
-                `${
-                    import.meta.env.VITE_API_URL || "http://localhost:3002"
-                }/api/home-content`
-            );
+            
+            const result = await apiCall("/home-content");
 
-            if (response.ok) {
-                const result = await response.json();
+            if (result && result.success) {
                 console.log("Réponse API complète:", result);
                 const data = result.data;
                 console.log("Données reçues:", data);
@@ -87,11 +84,7 @@ const HomeContentManagement = ({ onClose }) => {
 
                 console.log("✅ Contenu de la page d'accueil chargé avec succès");
             } else {
-                console.error(
-                    "❌ Erreur HTTP lors du chargement:",
-                    response.status,
-                    response.statusText
-                );
+                console.error("❌ Erreur dans la réponse API:", result);
                 toast.error("Erreur lors du chargement du contenu");
             }
         } catch (error) {
@@ -247,7 +240,7 @@ const HomeContentManagement = ({ onClose }) => {
 
             // Ajouter les images existantes mises à jour
             console.log("📊 Images existantes:", existingCarouselImages);
-            formData.append("existingImages", JSON.stringify(existingCarouselImages));
+            formData.append("existingCarouselImages", JSON.stringify(existingCarouselImages));
 
             // Ajouter les nouvelles images
             if (selectedCarouselFiles.length > 0) {
@@ -262,21 +255,43 @@ const HomeContentManagement = ({ onClose }) => {
             }
 
             console.log("📤 Envoi de la requête de sauvegarde...");
-            const response = await fetch(
-                `${
-                    import.meta.env.VITE_API_URL || "http://localhost:3002"
-                }/api/home-content`,
-                {
-                    method: "PUT",
-                    body: formData,
-                }
-            );
+            
+            // Récupérer le token d'authentification
+            const token = localStorage.getItem('auth_token');
+            const headers = {};
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            // Récupérer le paramètre club depuis l'URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const club = urlParams.get('club');
+            
+            let url = `${import.meta.env.VITE_API_URL || "http://localhost:3007"}/api/home-content`;
+            if (club) {
+                url += `?club=${encodeURIComponent(club)}`;
+            }
+
+            const response = await fetch(url, {
+                method: "PUT",
+                headers,
+                body: formData,
+            });
 
             if (response.ok) {
                 const result = await response.json();
                 console.log("✅ Réponse de sauvegarde:", result);
                 toast.success("Contenu sauvegardé avec succès !");
                 console.log("✅ Sauvegarde terminée avec succès");
+                
+                // Recharger le contenu pour refléter les changements
+                await loadHomeContent();
+                
+                // Réinitialiser les fichiers sélectionnés
+                setSelectedCarouselFiles([]);
+                setCarouselPreviews([]);
+                
                 onClose();
             } else {
                 const errorText = await response.text();
@@ -532,7 +547,7 @@ const HomeContentManagement = ({ onClose }) => {
                                                     <img
                                                         src={`${
                                                             import.meta.env.VITE_API_URL ||
-                                                            "http://localhost:3002"
+                                                            "http://localhost:3007"
                                                         }/${image.image_url}`}
                                                         alt={`Carrousel ${index + 1}`}
                                                         className="object-cover w-20 h-20 rounded-lg border-2 border-blue-200"

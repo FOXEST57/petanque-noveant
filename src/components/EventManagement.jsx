@@ -9,7 +9,8 @@ import {
     X,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { eventsAPI } from "../lib/api";
+import { eventsAPI } from "../api/events.js";
+import { apiCall } from "../utils/apiCall.js";
 
 const EventManagement = ({ onStatsUpdate, onClose }) => {
     // États pour la gestion des événements
@@ -56,25 +57,28 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
 
     const loadEvents = async () => {
         try {
-            const eventsData = await eventsAPI.getAll();
+            const response = await eventsAPI.getAllAuth();
+            
+            // Vérifier si la réponse a le format attendu avec data
+            const eventsData = response.data || response;
+            
+            if (!Array.isArray(eventsData)) {
+                console.error("Les données d'événements ne sont pas un tableau:", eventsData);
+                setEvents([]);
+                return;
+            }
 
             // Mapper les champs et récupérer le nombre de photos pour chaque événement
             const eventsWithPhotos = await Promise.all(
                 eventsData.map(async (event) => {
                     try {
                         // Récupérer les photos de l'événement
-                        const response = await fetch(
-                            `${
-                                import.meta.env.VITE_API_URL ||
-                                "http://localhost:3002"
-                            }/api/events/${event.id}/photos`
-                        );
-                        const photos = response.ok ? await response.json() : [];
+                        const photos = await apiCall(`/events/${event.id}/photos`);
 
                         return {
                             ...event,
                             titre: event.title, // Mapper title vers titre
-                            photos: photos, // Ajouter les photos
+                            photos: photos || [], // Ajouter les photos
                         };
                     } catch (photoError) {
                         console.error(
@@ -138,11 +142,8 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
         
         // Charger les photos existantes
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/${event.id}/photos`);
-            if (response.ok) {
-                const photos = await response.json();
-                setExistingEventPhotos(photos);
-            }
+            const photos = await apiCall(`/events/${event.id}/photos`);
+            setExistingEventPhotos(photos || []);
         } catch (error) {
             console.error("Erreur lors du chargement des photos:", error);
         }
@@ -216,16 +217,10 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
     
     const removeExistingEventPhoto = async (photoId) => {
         try {
-            const token = localStorage.getItem('auth_token');
-            const headers = {};
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-            
-            await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/photos/${photoId}`, {
-                method: 'DELETE',
-                headers
+            await apiCall(`/events/photos/${photoId}`, {
+                method: 'DELETE'
             });
+            
             setExistingEventPhotos(prev => prev.filter(photo => photo.id !== photoId));
             toast.success("Photo supprimée avec succès");
         } catch (error) {
@@ -245,7 +240,17 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
         try {
             let eventId;
             if (eventModalMode === "add") {
-                const response = await eventsAPI.create(eventFormData);
+                // Mapper les champs pour correspondre à l'API
+                const createData = {
+                    title: eventFormData.titre,
+                    description: eventFormData.description,
+                    date: eventFormData.date,
+                    heure: eventFormData.heure,
+                    lieu: eventFormData.lieu,
+                    publicCible: eventFormData.publicCible,
+                    photos: eventFormData.photos || []
+                };
+                const response = await eventsAPI.create(createData);
                 console.log("=== DEBUG API RESPONSE ===");
                 console.log("Full API response:", response); // Debug log complet
                 console.log("Type of response:", typeof response);
@@ -279,7 +284,17 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                 console.log("Final eventId:", eventId, "Type:", typeof eventId); // Debug log
                 toast.success("Événement ajouté avec succès");
             } else {
-                await eventsAPI.update(eventFormData.id, eventFormData);
+                // Mapper les champs pour correspondre à l'API
+                const updateData = {
+                    title: eventFormData.titre,
+                    description: eventFormData.description,
+                    date: eventFormData.date,
+                    heure: eventFormData.heure,
+                    lieu: eventFormData.lieu,
+                    publicCible: eventFormData.publicCible,
+                    photos: eventFormData.photos || []
+                };
+                await eventsAPI.update(eventFormData.id, updateData);
                 eventId = eventFormData.id;
                 toast.success("Événement modifié avec succès");
             }
@@ -314,12 +329,22 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                     }
                     
                     console.log("Uploading photos for event ID:", eventIdString); // Debug log
-                    const uploadUrl = `${import.meta.env.VITE_API_URL || "http://localhost:3002"}/api/events/${eventIdString}/photos`;
+                    
+                    // Récupérer le club pour l'upload (token déjà récupéré plus haut)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const club = urlParams.get('club');
+                    
+                    const uploadUrl = `${import.meta.env.VITE_API_URL || "http://localhost:3007"}/api/events/${eventIdString}/photos${club ? `?club=${club}` : ''}`;
                     console.log("Upload URL:", uploadUrl); // Debug log
+                    
+                    const uploadHeaders = {};
+                    if (token) {
+                        uploadHeaders['Authorization'] = `Bearer ${token}`;
+                    }
                     
                     const uploadResponse = await fetch(uploadUrl, {
                         method: "POST",
-                        headers,
+                        headers: uploadHeaders,
                         body: formData
                     });
                     
@@ -522,10 +547,10 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                                             {existingEventPhotos.map((photo, index) => (
                                                 <div key={index} className="relative group">
                                                     <img
-                                                        src={photo.url}
-                                                        alt={`Photo ${index + 1}`}
-                                                        className="w-full h-20 object-cover rounded-lg"
-                                                    />
+                                        src={`${import.meta.env.VITE_API_URL || "http://localhost:3007"}/uploads/events/${photo.filename}`}
+                                        alt={`Photo ${index + 1}`}
+                                        className="w-full h-20 object-cover rounded-lg"
+                                    />
                                                     <button
                                                         type="button"
                                                         onClick={() => removeExistingEventPhoto(photo.id)}
@@ -687,6 +712,26 @@ const EventManagement = ({ onStatsUpdate, onClose }) => {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-900">
                                                     {event.photos?.length || 0} photo(s)
+                                                    {event.photos && event.photos.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1 mt-1">
+                                                            {event.photos.slice(0, 3).map((photo, index) => (
+                                                                <img
+                                                                    key={photo.id || index}
+                                                                    src={photo.url || `${import.meta.env.VITE_API_URL}/uploads/events/${photo.filename}`}
+                                                                    alt={`Photo ${index + 1}`}
+                                                                    className="w-8 h-8 object-cover rounded border"
+                                                                    onError={(e) => {
+                                                                        e.target.style.display = 'none';
+                                                                    }}
+                                                                />
+                                                            ))}
+                                                            {event.photos.length > 3 && (
+                                                                <div className="w-8 h-8 bg-gray-200 rounded border flex items-center justify-center text-xs text-gray-600">
+                                                                    +{event.photos.length - 3}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">

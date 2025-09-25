@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { apiCall } from '../lib/api';
+import { apiCall } from '../utils/apiCall.js';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSiteSettings } from '../contexts/SiteSettingsContext.jsx';
@@ -66,7 +66,7 @@ const Contact = () => {
     setIsLoading(true);
     
     try {
-      await apiCall('/api/contact/send', {
+      await apiCall('/contact/send', {
         method: 'POST',
         body: JSON.stringify(formData),
       });

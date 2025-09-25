@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Users, X, Image } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, X, Image, AlertCircle } from 'lucide-react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { eventsAPI, apiCall } from '../lib/api';
+import { eventsAPI } from '../api/events.js';
+import { apiCall } from '../utils/apiCall.js';
 import { useAuth } from '../hooks/useAuth.jsx';
 
 const Animations = () => {
@@ -49,15 +50,15 @@ const Animations = () => {
       setLoading(true)
       setError(null)
       
-      const data = await eventsAPI.getAll()
+      const response = await eventsAPI.getAll()
       
-      if (!data || !Array.isArray(data)) {
+      if (!response || !response.data || !Array.isArray(response.data)) {
         setError('Format de données invalide')
         return
       }
       
       // Trier par date décroissante (le plus récent en haut)
-      const sortedEvents = data.sort((a, b) => new Date(b.date) - new Date(a.date))
+      const sortedEvents = response.data.sort((a, b) => new Date(b.date) - new Date(a.date))
       setEvents(sortedEvents)
       
       // Charger les photos pour chaque événement
@@ -124,11 +125,11 @@ const Animations = () => {
             <div key={photo.id} className="relative group">
               <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img
-                  src={`${import.meta.env.VITE_API_URL}/api/events/photos/${photo.filename}`}
+                  src={`${import.meta.env.VITE_API_URL}/uploads/events/${photo.filename}`}
                   alt={`${eventTitle} - Photo ${index + 1}`}
                   className="w-full h-full object-cover cursor-pointer transition-transform group-hover:scale-105"
                   onClick={() => setSelectedPhoto({
-                    src: `${import.meta.env.VITE_API_URL}/api/events/photos/${photo.filename}`,
+                    src: `${import.meta.env.VITE_API_URL}/uploads/events/${photo.filename}`,
                     alt: `${eventTitle} - Photo ${index + 1}`,
                     title: eventTitle
                   })}

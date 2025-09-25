@@ -6,6 +6,8 @@ import EventCarousel from '../EventCarousel';
  * Section des activités du club avec les événements
  */
 const EventsSection = ({ events, eventPhotos, getRelevantEvents }) => {
+  const relevantEvents = getRelevantEvents(events);
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
