@@ -21,11 +21,15 @@ export const apiCall = async (endpoint, options = {}) => {
   
   const defaultOptions = {
     headers: {
-      'Content-Type': 'application/json',
       ...options.headers,
     },
     ...options,
   };
+
+  // Ne pas définir Content-Type pour FormData (le navigateur le fait automatiquement)
+  if (!(options.body instanceof FormData)) {
+    defaultOptions.headers['Content-Type'] = 'application/json';
+  }
 
   // Ajouter le token d'authentification si disponible
   if (token) {

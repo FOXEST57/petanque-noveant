@@ -104,7 +104,7 @@ router.post('/', authenticateToken, canManageDrinks, upload.single('photo'), asy
 router.put('/:id', authenticateToken, canManageDrinks, async (req: Request, res: Response) => {
   try {
     const drinkId = parseInt(req.params.id);
-    const { name, price, description, stock } = req.body;
+    const { name, price, description, stock, image_url } = req.body;
     const clubId = req.user!.clubId;
     
     // Logs de débogage
@@ -121,6 +121,7 @@ router.put('/:id', authenticateToken, canManageDrinks, async (req: Request, res:
     if (price !== undefined && price !== null) cleanData.price = price;
     if (description !== undefined && description !== null) cleanData.description = description;
     if (stock !== undefined && stock !== null) cleanData.stock = stock;
+    if (image_url !== undefined && image_url !== null) cleanData.image_url = image_url;
     
     // Handle photo upload if present
     if (req.file) {
@@ -217,6 +218,35 @@ router.delete('/:id', authenticateToken, canManageDrinks, async (req: Request, r
     res.json({ success: true, data: result });
   } catch (error) {
     console.error('Erreur lors de la suppression de la boisson:', error);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
+// POST /api/drinks/upload-image - Upload image separately
+router.post('/upload-image', authenticateToken, canManageDrinks, upload.single('image'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Aucune image fournie' 
+      });
+    }
+
+    const filename = generateUniqueFilename(req.file.originalname);
+    const uploadPath = path.join(uploadsDir, filename);
+    
+    // Save file to disk
+    await fs.promises.writeFile(uploadPath, req.file.buffer);
+    
+    // Return the image URL
+    const imageUrl = `uploads/drinks/${filename}`;
+    
+    res.status(201).json({ 
+      success: true, 
+      imageUrl: imageUrl 
+    });
+  } catch (error) {
+    console.error('Erreur lors de l\'upload de l\'image:', error);
     res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 });

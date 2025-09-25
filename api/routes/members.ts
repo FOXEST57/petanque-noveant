@@ -83,7 +83,7 @@ router.post('/', authenticateToken, canManageMembers, upload.single('photo'), as
       
       // Save the file
       fs.writeFileSync(photoPath, req.file.buffer);
-      memberData.photo_url = filename; // Utiliser photo_url au lieu de photo
+      memberData.photo_url = `uploads/members/${filename}`; // Utiliser le chemin complet comme dans PUT
     }
 
     const result = await createMember(memberData, clubId);

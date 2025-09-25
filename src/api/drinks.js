@@ -1,5 +1,10 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3007";
 
+// Fonction utilitaire pour récupérer le token d'authentification
+const getAuthToken = () => {
+  return localStorage.getItem('auth_token');
+};
+
 // Fonction utilitaire pour faire des appels API
 const apiCall = async (endpoint, options = {}) => {
   // Récupérer le paramètre club depuis l'URL
@@ -16,11 +21,18 @@ const apiCall = async (endpoint, options = {}) => {
   
   console.log('🔍 Drinks API Call URL:', url);
   
+  const token = getAuthToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
   const defaultOptions = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
     ...options,
   };
 

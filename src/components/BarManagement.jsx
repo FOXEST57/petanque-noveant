@@ -103,7 +103,7 @@ const BarManagement = ({ onClose }) => {
                     const formDataImage = new FormData();
                     formDataImage.append('image', selectedImageFile);
                     
-                    const uploadResult = await apiCall('/upload-image', {
+                    const uploadResult = await apiCall('/api/drinks/upload-image', {
                         method: 'POST',
                         body: formDataImage
                     });
@@ -126,7 +126,7 @@ const BarManagement = ({ onClose }) => {
                     const formDataImage = new FormData();
                     formDataImage.append('image', selectedImageFile);
                     
-                    const uploadResult = await apiCall('/upload-image', {
+                    const uploadResult = await apiCall('/api/drinks/upload-image', {
                         method: 'POST',
                         body: formDataImage
                     });
@@ -134,17 +134,11 @@ const BarManagement = ({ onClose }) => {
                     imageUrl = uploadResult.imageUrl;
                 }
                 
-                if (imageUrl !== formData.image) {
-                    await apiCall(`/api/drinks/${selectedDrink.id}/image`, {
-                        method: 'PUT',
-                        body: JSON.stringify({ image_url: imageUrl })
-                    });
-                }
-                
                 await updateDrink(selectedDrink.id, {
                     name: formData.name,
                     price: parseFloat(formData.price),
                     description: formData.description || '',
+                    image_url: imageUrl,
                     stock: parseInt(formData.stock) || 50
                 });
                 toast.success('Boisson modifiée avec succès');
@@ -238,13 +232,13 @@ const BarManagement = ({ onClose }) => {
                                                 <div className="flex items-center">
                                                     <div className="flex-shrink-0 h-10 w-10">
                                                         <img
-                                                            className="h-10 w-10 rounded-full object-cover"
-                                                            src={drink.image_url || '/api/placeholder/40/40'}
-                                                            alt={drink.name}
-                                                            onError={(e) => {
-                                                                e.target.src = '/api/placeholder/40/40';
-                                                            }}
-                                                        />
+                                            className="h-10 w-10 rounded-full object-cover"
+                                            src={drink.image_url ? `${drink.image_url.startsWith('/') ? '' : '/'}${drink.image_url}` : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyNkM5IDI2IDkgMjAgMjAgMjBTMzEgMjYgMjAgMjZaIiBmaWxsPSIjOUNBM0FGIi8+CjxjaXJjbGUgY3g9IjIwIiBjeT0iMTYiIHI9IjQiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+'}
+                                            alt={drink.name}
+                                            onError={(e) => {
+                                                e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyNkM5IDI2IDkgMjAgMjAgMjBTMzEgMjYgMjAgMjZaIiBmaWxsPSIjOUNBM0FGIi8+CjxjaXJjbGUgY3g9IjIwIiBjeT0iMTYiIHI9IjQiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
+                                            }}
+                                        />
                                                     </div>
                                                     <div className="ml-4">
                                                         <div className="text-sm font-medium text-gray-900">

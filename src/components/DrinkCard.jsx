@@ -14,7 +14,7 @@ const DrinkCard = ({ drink }) => {
       {/* Image Section */}
       <div className="h-48 overflow-hidden">
         <img 
-          src={drink.image_url || drink.image} 
+          src={drink.image_url ? `/${drink.image_url}` : (drink.image ? `/${drink.image}` : null)} 
           alt={drink.name}
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
           onError={(e) => {
