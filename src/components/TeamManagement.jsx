@@ -46,21 +46,46 @@ const TeamManagement = ({ onStatsUpdate, onClose }) => {
     // Charger les équipes
     const loadTeams = async () => {
         try {
-            const teams = await teamsAPI.getAll();
-            setTeams(teams || []);
+            const response = await teamsAPI.getAll();
+            // L'API retourne { success: true, data: teams }
+            const teamsData = response?.data || [];
+            setTeams(teamsData);
         } catch (error) {
             console.error("Erreur lors du chargement des équipes:", error);
             toast.error("Erreur lors du chargement des équipes");
+            setTeams([]); // S'assurer que teams est toujours un tableau
         }
     };
 
     // Charger les membres
     const loadMembers = async () => {
         try {
-            const members = await membersAPI.getAll();
-            setMembers(members || []);
+            const membersData = await membersAPI.getAll();
+            console.log("🔍 Données reçues de l'API members:", membersData);
+            console.log("🔍 Type de membersData:", typeof membersData);
+            console.log("🔍 Est-ce un tableau?", Array.isArray(membersData));
+            
+            // Vérifier si les données sont dans une propriété spécifique
+            if (membersData && typeof membersData === 'object') {
+                if (Array.isArray(membersData.data)) {
+                    console.log("✅ Utilisation de membersData.data");
+                    setMembers(membersData.data);
+                } else if (Array.isArray(membersData.members)) {
+                    console.log("✅ Utilisation de membersData.members");
+                    setMembers(membersData.members);
+                } else if (Array.isArray(membersData)) {
+                    console.log("✅ Utilisation directe de membersData");
+                    setMembers(membersData);
+                } else {
+                    console.warn("⚠️ Structure inattendue, utilisation d'un tableau vide");
+                    setMembers([]);
+                }
+            } else {
+                setMembers(membersData || []);
+            }
         } catch (error) {
             console.error("Erreur lors du chargement des membres:", error);
+            setMembers([]); // S'assurer que members est toujours un tableau
         }
     };
 

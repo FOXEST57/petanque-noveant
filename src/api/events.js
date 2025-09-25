@@ -9,7 +9,13 @@ const getAuthToken = () => {
 const apiCall = async (endpoint, options = {}) => {
   // Récupérer le paramètre club depuis l'URL
   const urlParams = new URLSearchParams(window.location.search);
-  const club = urlParams.get('club');
+  let club = urlParams.get('club');
+  
+  // Si aucun club n'est spécifié, utiliser 'noveant' par défaut pour le développement
+  if (!club && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    club = 'noveant';
+    console.log('🏛️ Utilisation du club par défaut pour le développement (events):', club);
+  }
   
   let url = `${API_BASE_URL}${endpoint}`;
   
