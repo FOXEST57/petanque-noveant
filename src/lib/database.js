@@ -536,9 +536,9 @@ export const getTeamMembers = async (teamId, clubId = 1) => {
     FROM team_members tm
     JOIN members m ON tm.member_id = m.id
     JOIN teams t ON tm.team_id = t.id
-    WHERE tm.team_id = ? AND t.club_id = ? AND m.club_id = ?
+    WHERE tm.team_id = ? AND t.club_id = ? AND m.club_id = ? AND tm.club_id = ?
     ORDER BY tm.role DESC, m.nom, m.prenom
-  `, [teamId, clubId, clubId]);
+  `, [teamId, clubId, clubId, clubId]);
 };
 
 export const addTeamMember = async (teamId, memberId, role = 'Joueur', clubId = 1) => {
@@ -551,8 +551,8 @@ export const addTeamMember = async (teamId, memberId, role = 'Joueur', clubId = 
   }
   
   return await runQuery(
-    'INSERT INTO team_members (team_id, member_id, role) VALUES (?, ?, ?)',
-    [teamId, memberId, role]
+    'INSERT INTO team_members (team_id, member_id, role, club_id) VALUES (?, ?, ?, ?)',
+    [teamId, memberId, role, clubId]
   );
 };
 
@@ -564,8 +564,8 @@ export const removeTeamMember = async (teamId, memberId, clubId = 1) => {
   }
   
   return await runQuery(
-    'DELETE FROM team_members WHERE team_id = ? AND member_id = ?',
-    [teamId, memberId]
+    'DELETE FROM team_members WHERE team_id = ? AND member_id = ? AND club_id = ?',
+    [teamId, memberId, clubId]
   );
 };
 
@@ -577,8 +577,8 @@ export const updateTeamMemberRole = async (teamId, memberId, role, clubId = 1) =
   }
   
   return await runQuery(
-    'UPDATE team_members SET role = ? WHERE team_id = ? AND member_id = ?',
-    [role, teamId, memberId]
+    'UPDATE team_members SET role = ? WHERE team_id = ? AND member_id = ? AND club_id = ?',
+    [role, teamId, memberId, clubId]
   );
 };
 

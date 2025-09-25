@@ -16,6 +16,15 @@ const CartSummary = () => {
     }
   }
 
+  const handleOrder = () => {
+    // Ici on pourrait ajouter la logique de commande (envoi au serveur, etc.)
+    // Pour l'instant, on vide simplement le panier et ferme la modal
+    clearCart()
+    setIsOpen(false)
+    // Optionnel : afficher un message de confirmation
+    alert('Commande validée ! Merci pour votre achat.')
+  }
+
   return (
     <>
       {/* Cart Button */}
@@ -58,7 +67,7 @@ const CartSummary = () => {
                     <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-900">{item.name}</h3>
-                        <p className="text-sm text-gray-600">{item.price.toFixed(2)}€</p>
+                        <p className="text-sm text-gray-600">{parseFloat(item.price || 0).toFixed(2)}€</p>
                       </div>
                       
                       <div className="flex items-center gap-2">
@@ -95,7 +104,7 @@ const CartSummary = () => {
             {items.length > 0 && (
               <div className="border-t p-4">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-lg font-bold text-gray-900">Total: {total.toFixed(2)}€</span>
+                  <span className="text-lg font-bold text-gray-900">Total: {parseFloat(total || 0).toFixed(2)}€</span>
                   <button
                     onClick={clearCart}
                     className="text-red-500 hover:text-red-700 text-sm"
@@ -104,7 +113,10 @@ const CartSummary = () => {
                   </button>
                 </div>
                 
-                <button className="w-full bg-var(--primary-color) hover:bg-var(--primary-dark) text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200">
+                <button 
+                  onClick={handleOrder}
+                  className="w-full bg-[var(--primary-color)] hover:bg-[var(--primary-dark)] text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200"
+                >
                   Commander
                 </button>
               </div>
