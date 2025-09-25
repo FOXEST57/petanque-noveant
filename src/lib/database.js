@@ -219,7 +219,7 @@ export const deleteMemberType = async (id, clubId = 1) => {
 export const getEvents = async (clubId = 1) => {
   const events = await getAllQuery('SELECT * FROM events WHERE club_id = ? ORDER BY date DESC', [clubId]);
   
-  // Parser le champ photos JSON pour chaque événement
+  // Parser le champ photos JSON et mapper les champs pour le frontend
   return events.map(event => {
     let photos = [];
     if (event.photos) {
@@ -231,9 +231,24 @@ export const getEvents = async (clubId = 1) => {
       }
     }
     
+    // Mapper les champs de la base de données vers ceux attendus par le frontend
     return {
-      ...event,
-      photos: photos
+      id: event.id,
+      titre: event.title,           // title -> titre
+      title: event.title,           // Garder aussi title pour compatibilité
+      description: event.description,
+      date_debut: event.date,       // date -> date_debut
+      date_fin: event.date,         // Utiliser la même date pour date_fin
+      date: event.date,             // Garder aussi date pour compatibilité
+      heure: event.heure,
+      lieu: event.lieu,
+      publicCible: event.publicCible,
+      statut: 'public',             // Statut par défaut
+      visibilite: 'public',         // Visibilité par défaut
+      photos: photos,
+      club_id: event.club_id,
+      created_at: event.created_at,
+      updated_at: event.updated_at
     };
   });
 };

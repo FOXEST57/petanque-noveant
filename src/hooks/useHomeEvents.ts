@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { eventsAPI } from '../api/events.js';
 import { useAuth } from './useAuth';
-import { EventUtils } from '../utils/eventUtils';
+import { EventUtils } from '../utils/eventUtils.ts';
+import { apiCall } from '../utils/apiCall.js';
 
 interface Event {
   id: string;
@@ -24,13 +25,12 @@ export const useHomeEvents = () => {
   // Fonction pour récupérer les photos d'un événement depuis la base de données
   const fetchEventPhotos = async (eventId: string): Promise<any[]> => {
     try {
-      // Récupérer les métadonnées des photos depuis la base de données
-      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3007"}/api/events/${eventId}/photos`);
-      if (response.ok) {
-        const photos = await response.json();
-        // Les photos ont déjà les bonnes URLs construites par getEventPhotos dans database.js
-        return photos || [];
-      }
+      console.log(`🔍 fetchEventPhotos - Récupération des photos pour l'événement ${eventId}`);
+      // Utiliser apiCall pour inclure automatiquement le paramètre club
+      const photos = await apiCall(`/events/${eventId}/photos`);
+      console.log(`🔍 fetchEventPhotos - Photos récupérées pour événement ${eventId}:`, photos);
+      // Les photos ont déjà les bonnes URLs construites par getEventPhotos dans database.js
+      return photos || [];
     } catch (error) {
       console.error(`Erreur lors de la récupération des photos de l'événement ${eventId}:`, error);
     }
@@ -42,6 +42,8 @@ export const useHomeEvents = () => {
       try {
         setLoading(true);
         setError(null);
+        
+        console.log('🔍 useHomeEvents - Début de la récupération des événements');
 
         // Determine user role and connection status for event filtering
         const isConnected = !!user;
@@ -55,41 +57,72 @@ export const useHomeEvents = () => {
           userRole = 'licencie';
         }
 
+        console.log('🔍 useHomeEvents - isConnected:', isConnected, 'userRole:', userRole);
+
         // Fetch events with filtering
-        const eventsData = isConnected ? await eventsAPI.getAllAuth() : await eventsAPI.getAll();
+        const eventsResponse = isConnected ? await eventsAPI.getAllAuth() : await eventsAPI.getAll();
+        
+        console.log('🔍 useHomeEvents - eventsResponse reçue:', eventsResponse);
+        console.log('🔍 useHomeEvents - Type de eventsResponse:', typeof eventsResponse);
+        
+        // Extraire les événements de la réponse API
+        let eventsData;
+        if (eventsResponse?.success && eventsResponse?.data) {
+          eventsData = eventsResponse.data;
+        } else if (Array.isArray(eventsResponse)) {
+          eventsData = eventsResponse;
+        } else {
+          eventsData = eventsResponse?.data || eventsResponse;
+        }
+        
+        console.log('🔍 useHomeEvents - eventsData extraites:', eventsData);
+        console.log('🔍 useHomeEvents - Est un array:', Array.isArray(eventsData));
         
         if (eventsData && Array.isArray(eventsData)) {
+          console.log('🔍 useHomeEvents - Nombre d\'événements:', eventsData.length);
+          
           // Sort events by date (most recent first)
           const sortedEvents = eventsData.sort((a: Event, b: Event) => {
             return new Date(b.date).getTime() - new Date(a.date).getTime();
           });
 
+          console.log('🔍 useHomeEvents - Événements triés:', sortedEvents);
           setEvents(sortedEvents);
 
           // Fetch photos for each event
+          console.log('🔍 useHomeEvents - Début de la récupération des photos pour', sortedEvents.length, 'événements');
           const photosPromises = sortedEvents.map(async (event: Event) => {
+            console.log(`🔍 useHomeEvents - Récupération des photos pour l'événement ${event.id} (${event.title})`);
             const photos = await fetchEventPhotos(event.id);
+            console.log(`🔍 useHomeEvents - Photos récupérées pour événement ${event.id}:`, photos.length, 'photos');
             return { eventId: event.id, photos };
           });
 
           const photosResults = await Promise.all(photosPromises);
+          console.log('🔍 useHomeEvents - Résultats de toutes les photos:', photosResults);
+          
           const photosMap: EventPhotos = {};
           
           photosResults.forEach(({ eventId, photos }) => {
+            console.log(`🔍 useHomeEvents - Ajout des photos pour événement ${eventId}:`, photos.length, 'photos');
             photosMap[eventId] = photos;
           });
 
+          console.log('🔍 useHomeEvents - Photos récupérées (photosMap):', photosMap);
           setEventPhotos(photosMap);
         } else {
+          console.log('🔍 useHomeEvents - Aucun événement trouvé ou données invalides');
+          console.log('🔍 useHomeEvents - eventsData:', eventsData);
           setEvents([]);
           setEventPhotos({});
         }
       } catch (error) {
-        console.error('Erreur lors de la récupération des événements:', error);
+        console.error('🔍 useHomeEvents - Erreur lors de la récupération des événements:', error);
         setError('Erreur lors du chargement des événements');
         setEvents([]);
         setEventPhotos({});
       } finally {
+        console.log('🔍 useHomeEvents - Fin du chargement');
         setLoading(false);
       }
     };

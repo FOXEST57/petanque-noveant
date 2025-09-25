@@ -8,6 +8,11 @@ import EventCarousel from '../EventCarousel';
 const EventsSection = ({ events, eventPhotos, getRelevantEvents }) => {
   const relevantEvents = getRelevantEvents(events);
 
+  // DEBUG: Log des données reçues
+  console.log('🏠 EventsSection - events:', events);
+  console.log('🏠 EventsSection - eventPhotos:', eventPhotos);
+  console.log('🏠 EventsSection - relevantEvents:', relevantEvents);
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -22,6 +27,12 @@ const EventsSection = ({ events, eventPhotos, getRelevantEvents }) => {
               const eventDate = new Date(event.date);
               const isUpcoming = eventDate >= new Date();
               const eventImages = eventPhotos[event.id] || [];
+              
+              // DEBUG: Log pour chaque événement
+              console.log(`🏠 EventsSection - Événement ${event.id} (${event.title}):`);
+              console.log(`🏠 EventsSection - eventPhotos[${event.id}]:`, eventPhotos[event.id]);
+              console.log(`🏠 EventsSection - eventImages:`, eventImages);
+              console.log(`🏠 EventsSection - eventImages.length:`, eventImages.length);
               
               return (
                 <article key={event.id || index} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">

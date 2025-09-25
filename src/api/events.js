@@ -52,8 +52,18 @@ const apiCall = async (endpoint, options = {}) => {
 
 // API pour les événements
 export const eventsAPI = {
-  getAll: () => apiCall('/api/events/public'),
-  getAllAuth: () => apiCall('/api/events'),
+  getAll: async () => {
+    console.log('🔍 eventsAPI.getAll - Appel API /events/public');
+    const result = await apiCall('/api/events/public');
+    console.log('🔍 eventsAPI.getAll - Résultat:', result);
+    return result;
+  },
+  getAllAuth: async () => {
+    console.log('🔍 eventsAPI.getAllAuth - Appel API /events');
+    const result = await apiCall('/api/events');
+    console.log('🔍 eventsAPI.getAllAuth - Résultat:', result);
+    return result;
+  },
   getById: (id) => apiCall(`/api/events/${id}`),
   getCount: () => apiCall('/api/events/count'),
   getPhotos: (id) => apiCall(`/api/events/${id}/photos`),

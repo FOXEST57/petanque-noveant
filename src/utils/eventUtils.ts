@@ -34,8 +34,8 @@ export class EventUtils {
     console.log('🔍 getRelevantEvents - eventsWithoutPhotos:', eventsWithoutPhotos);
     
     // Trier les événements par pertinence de date
-    const sortedEventsWithPhotos = this.sortEventsByRelevance(eventsWithPhotos);
-    const sortedEventsWithoutPhotos = this.sortEventsByRelevance(eventsWithoutPhotos);
+    const sortedEventsWithPhotos = EventUtils.sortEventsByRelevance(eventsWithPhotos);
+    const sortedEventsWithoutPhotos = EventUtils.sortEventsByRelevance(eventsWithoutPhotos);
     
     console.log('🔍 getRelevantEvents - sortedEventsWithPhotos:', sortedEventsWithPhotos);
     console.log('🔍 getRelevantEvents - sortedEventsWithoutPhotos:', sortedEventsWithoutPhotos);
