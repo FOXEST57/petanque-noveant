@@ -290,7 +290,9 @@ router.get("/:id/photos", async (req: Request, res: Response) => {
             return res.status(400).json({ error: "Invalid event ID" });
         }
 
-        const photos = await getEventPhotos(eventId);
+        // Utiliser le clubId du middleware de sous-domaine
+        const clubId = (req as any).clubId || 1;
+        const photos = await getEventPhotos(eventId, clubId);
         
         res.json(photos);
     } catch (error) {
