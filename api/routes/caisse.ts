@@ -40,18 +40,18 @@ router.get('/fond', authenticateToken, canManageCaisse, async (req: Request, res
     const connection = await mysql.createConnection(dbConfig);
     
     try {
-      // Récupérer le fond de caisse actuel
+      // Récupérer le fond de caisse depuis la nouvelle table fond_caisse
       const [rows] = await connection.execute(
-        'SELECT fond_caisse FROM clubs WHERE id = ?',
+        'SELECT solde FROM fond_caisse WHERE id_club = ?',
         [clubId]
       );
       
-      const club = rows as any[];
-      const fondCaisse = club.length > 0 ? (club[0].fond_caisse || 0) : 0;
+      const fondCaisse = rows as any[];
+      const solde = fondCaisse.length > 0 ? (fondCaisse[0].solde || 0) : 0;
       
       res.json({
         success: true,
-        fond: fondCaisse
+        fond: solde
       });
     } finally {
       await connection.end();
@@ -113,21 +113,9 @@ router.post('/crediter-membre', authenticateToken, canManageCaisse, caisseOperat
         [nouveauSolde, membreId]
       );
       
-      // Récupérer le fond de caisse actuel
-      const [clubRows] = await connection.execute(
-        'SELECT fond_caisse FROM clubs WHERE id = ?',
-        [clubId]
-      );
-      
-      const clubs = clubRows as any[];
-      const fondActuel = parseFloat(clubs.length > 0 ? (clubs[0].fond_caisse || 0) : 0);
-      const nouveauFondCaisse = fondActuel + montant;
-      
-      // Mettre à jour le fond de caisse (ajout d'espèces)
-      await connection.execute(
-        'UPDATE clubs SET fond_caisse = ? WHERE id = ?',
-        [nouveauFondCaisse, clubId]
-      );
+      // NOTE: Le crédit membre ne doit PAS affecter le fond de caisse
+      // Le fond de caisse ne doit être modifié que par les transferts bancaires
+      // Les crédits membres sont des recettes qui s'ajoutent au solde total
       
       // Enregistrer l'opération de crédit membre dans la table dédiée
       await connection.execute(
@@ -145,18 +133,18 @@ router.post('/crediter-membre', authenticateToken, canManageCaisse, caisseOperat
         ]
       );
       
-      // Enregistrer seulement l'ajout d'espèces dans le journal de caisse
+      // Enregistrer l'encaissement comme recette dans le journal de caisse
       await connection.execute(
         `INSERT INTO caisse_historique (club_id, user_id, membre_id, type_operation, montant_encaissement, montant_retrait, description, date_operation)
          VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
         [
           clubId,
           userId,
-          null, // Pas de membre_id pour les opérations de caisse
-          'ajout_especes',
+          membreId, // Garder la référence au membre pour traçabilité
+          'recette_credit_membre',
           montant,
           0,
-          `Ajout de ${montant}€ en espèces (crédit membre ${membre.prenom} ${membre.nom})`
+          `Recette crédit membre ${membre.prenom} ${membre.nom} - ${montant}€`
         ]
       );
       
@@ -164,9 +152,8 @@ router.post('/crediter-membre', authenticateToken, canManageCaisse, caisseOperat
       
       res.json({
         success: true,
-        message: `Compte de ${membre.prenom} ${membre.nom} crédité de ${montant}€ et caisse créditée de ${montant}€ en espèces`,
-        nouveauSolde: nouveauSolde.toFixed(2),
-        nouveauFondCaisse: nouveauFondCaisse.toFixed(2)
+        message: `Compte de ${membre.prenom} ${membre.nom} crédité de ${montant}€ (recette enregistrée)`,
+        nouveauSolde: nouveauSolde.toFixed(2)
       });
     } catch (error) {
       await connection.rollback();
@@ -217,13 +204,13 @@ router.post('/transfert', authenticateToken, canManageCaisse, caisseOperationLim
         [membreId, clubId]
       );
       
-      const [clubRows] = await connection.execute(
-        'SELECT fond_caisse FROM clubs WHERE id = ?',
+      const [fondCaisseRows] = await connection.execute(
+        'SELECT solde FROM fond_caisse WHERE id_club = ?',
         [clubId]
       );
       
       const members = memberRows as any[];
-      const clubs = clubRows as any[];
+      const fondCaisseData = fondCaisseRows as any[];
       
       if (members.length === 0) {
         await connection.rollback();
@@ -234,7 +221,7 @@ router.post('/transfert', authenticateToken, canManageCaisse, caisseOperationLim
       }
       
       const membre = members[0];
-      const fondCaisse = clubs.length > 0 ? (clubs[0].fond_caisse || 0) : 0;
+      const fondCaisse = fondCaisseData.length > 0 ? (fondCaisseData[0].solde || 0) : 0;
       
       let nouveauSoldeMembre, nouveauFondCaisse, description;
       
@@ -274,7 +261,7 @@ router.post('/transfert', authenticateToken, canManageCaisse, caisseOperationLim
       
       // Mettre à jour le fond de caisse
       await connection.execute(
-        'UPDATE clubs SET fond_caisse = ? WHERE id = ?',
+        'UPDATE fond_caisse SET solde = ? WHERE id_club = ?',
         [nouveauFondCaisse, clubId]
       );
       
@@ -376,12 +363,12 @@ router.post('/depense-especes', authenticateToken, canManageCaisse, caisseOperat
       
       // Récupérer le fond de caisse actuel
       const [rows] = await connection.execute(
-        'SELECT fond_caisse FROM clubs WHERE id = ?',
+        'SELECT solde FROM fond_caisse WHERE id_club = ?',
         [clubId]
       );
       
-      const club = rows as any[];
-      const fondActuel = club.length > 0 ? (club[0].fond_caisse || 0) : 0;
+      const fondCaisseData = rows as any[];
+      const fondActuel = fondCaisseData.length > 0 ? (fondCaisseData[0].solde || 0) : 0;
       
       // Vérifier que la caisse a suffisamment de fonds
       if (fondActuel < montant) {
@@ -396,7 +383,7 @@ router.post('/depense-especes', authenticateToken, canManageCaisse, caisseOperat
       
       // Mettre à jour le fond de caisse
       await connection.execute(
-        'UPDATE clubs SET fond_caisse = ? WHERE id = ?',
+        'UPDATE fond_caisse SET solde = ? WHERE id_club = ?',
         [nouveauFond, clubId]
       );
       
@@ -437,118 +424,91 @@ router.post('/depense-especes', authenticateToken, canManageCaisse, caisseOperat
 });
 
 /**
- * GET /api/caisse/solde - Calculer le solde de la caisse (fond + opérations)
- */
-router.get('/solde', authenticateToken, canManageCaisse, async (req: Request, res: Response) => {
-  try {
-    const clubId = req.user!.clubId;
-    const connection = await mysql.createConnection(dbConfig);
-    
-    try {
-      // Récupérer le fond de caisse
-      const [clubRows] = await connection.execute(
-        'SELECT fond_caisse FROM clubs WHERE id = ?',
-        [clubId]
-      );
-      
-      const club = clubRows as any[];
-      const fondCaisse = parseFloat(club.length > 0 ? (club[0].fond_caisse || 0) : 0);
-      
-      // Calculer le total des encaissements et retraits
-      const [operationsRows] = await connection.execute(
-        `SELECT 
-          COALESCE(SUM(montant_encaissement), 0) as total_encaissements,
-          COALESCE(SUM(montant_retrait), 0) as total_retraits
-         FROM caisse_historique 
-         WHERE club_id = ?`,
-        [clubId]
-      );
-      
-      const operations = operationsRows as any[];
-      const totalEncaissements = parseFloat(operations.length > 0 ? (operations[0].total_encaissements || 0) : 0);
-      const totalRetraits = parseFloat(operations.length > 0 ? (operations[0].total_retraits || 0) : 0);
-      
-      // Calculer le solde de la caisse
-      const soldeCaisse = fondCaisse + totalEncaissements - totalRetraits;
-      
-      // Calculer les recettes (différence entre solde et fond)
-      const recettes = soldeCaisse - fondCaisse;
-      
-      res.json({
-        success: true,
-        fondCaisse: fondCaisse,
-        soldeCaisse: soldeCaisse,
-        recettes: recettes,
-        totalEncaissements: totalEncaissements,
-        totalRetraits: totalRetraits
-      });
-    } finally {
-      await connection.end();
-    }
-  } catch (error) {
-    console.error('Erreur lors du calcul du solde de la caisse:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erreur lors du calcul du solde de la caisse'
-    });
-  }
-});
-
-/**
- * GET /api/caisse/solde - Calculer le solde de caisse et les recettes
- */
-router.get('/solde', authenticateToken, canManageCaisse, async (req: Request, res: Response) => {
-  try {
-    const clubId = req.user!.clubId;
-    const connection = await mysql.createConnection(dbConfig);
-    
-    try {
-      // Récupérer le fond de caisse (somme de départ)
-      const [clubRows] = await connection.execute(
-        'SELECT fond_caisse FROM clubs WHERE id = ?',
-        [clubId]
-      );
-      
-      const clubs = clubRows as any[];
-      const fondCaisse = clubs.length > 0 ? (clubs[0].fond_caisse || 0) : 0;
-      
-      // Calculer le total des encaissements et retraits depuis l'historique
-      const [operationsRows] = await connection.execute(
-        `SELECT 
-          COALESCE(SUM(montant_encaissement), 0) as total_encaissements,
-          COALESCE(SUM(montant_retrait), 0) as total_retraits
-         FROM caisse_historique 
-         WHERE club_id = ?`,
-        [clubId]
-      );
-      
-      const operations = operationsRows as any[];
-      const totalEncaissements = operations.length > 0 ? parseFloat(operations[0].total_encaissements) : 0;
-      const totalRetraits = operations.length > 0 ? parseFloat(operations[0].total_retraits) : 0;
-      
-      // Calculer le solde de caisse et les recettes
-      const soldeCaisse = fondCaisse + totalEncaissements - totalRetraits;
-      const recettes = soldeCaisse - fondCaisse;
-      
-      res.json({
-        success: true,
-        fondCaisse: fondCaisse,
-        soldeCaisse: soldeCaisse,
-        recettes: recettes,
-        totalEncaissements: totalEncaissements,
-        totalRetraits: totalRetraits
-      });
-    } finally {
-      await connection.end();
-    }
-  } catch (error) {
-    console.error('Erreur lors du calcul du solde de caisse:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erreur lors du calcul du solde de caisse'
-    });
-  }
-});
+  * GET /api/caisse/solde - Calculer le solde de caisse et les recettes
+  */
+ router.get('/solde', authenticateToken, canManageCaisse, async (req: Request, res: Response) => {
+   try {
+     const clubId = req.user!.clubId;
+     console.log('🔍 Calcul du solde pour le club:', clubId);
+     console.log('🔍 Utilisateur:', req.user);
+     
+     if (!clubId) {
+       console.error('❌ Club ID manquant dans la requête');
+       return res.status(400).json({
+         success: false,
+         error: 'Club non identifié. Veuillez vous reconnecter.'
+       });
+     }
+     
+     const connection = await mysql.createConnection(dbConfig);
+     
+     try {
+       // Récupérer le fond de caisse depuis la nouvelle table fond_caisse
+       const [fondCaisseRows] = await connection.execute(
+         'SELECT solde FROM fond_caisse WHERE id_club = ?',
+         [clubId]
+       );
+       
+       const fondCaisseData = fondCaisseRows as any[];
+       console.log('📊 Données fond_caisse:', fondCaisseData);
+       
+       const fondCaisseRaw = fondCaisseData.length > 0 ? fondCaisseData[0].solde : 0;
+       const fondCaisse = parseFloat(fondCaisseRaw) || 0;
+       console.log('💰 Fond de caisse:', fondCaisse);
+       
+       // Calculer le total des encaissements et retraits depuis l'historique
+       const [operationsRows] = await connection.execute(
+         `SELECT 
+           COALESCE(SUM(montant_encaissement), 0) as total_encaissements,
+           COALESCE(SUM(montant_retrait), 0) as total_retraits
+          FROM caisse_historique 
+          WHERE club_id = ?`,
+         [clubId]
+       );
+       
+       const operations = operationsRows as any[];
+       console.log('📈 Données opérations:', operations);
+       
+       const totalEncaissementsRaw = operations.length > 0 ? operations[0].total_encaissements : 0;
+       const totalRetraitsRaw = operations.length > 0 ? operations[0].total_retraits : 0;
+       
+       const totalEncaissements = parseFloat(totalEncaissementsRaw) || 0;
+       const totalRetraits = parseFloat(totalRetraitsRaw) || 0;
+       
+       console.log('💵 Total encaissements:', totalEncaissements);
+       console.log('💸 Total retraits:', totalRetraits);
+       
+       // Calculer le solde de caisse et les recettes
+       const soldeCaisse = fondCaisse + totalEncaissements - totalRetraits;
+       const recettes = soldeCaisse - fondCaisse;
+       
+       console.log('🧮 Calculs finaux:', {
+         fondCaisse,
+         soldeCaisse,
+         recettes,
+         totalEncaissements,
+         totalRetraits
+       });
+       
+       res.json({
+         success: true,
+         fondCaisse: Number(fondCaisse.toFixed(2)),
+         soldeCaisse: Number(soldeCaisse.toFixed(2)),
+         recettes: Number(recettes.toFixed(2)),
+         totalEncaissements: Number(totalEncaissements.toFixed(2)),
+         totalRetraits: Number(totalRetraits.toFixed(2))
+       });
+     } finally {
+       await connection.end();
+     }
+   } catch (error) {
+     console.error('❌ Erreur lors du calcul du solde de caisse:', error);
+     res.status(500).json({
+       success: false,
+       error: 'Erreur lors du calcul du solde de caisse'
+     });
+   }
+ });
 
 /**
  * GET /api/caisse/historique - Récupérer l'historique des opérations de caisse
@@ -647,14 +607,14 @@ router.post('/transfert-bancaire', authenticateToken, canManageCaisse, caisseOpe
       
       const nomBanque = banques[0].nom;
       
-      // Récupérer le fond de caisse actuel
-      const [rows] = await connection.execute(
-        'SELECT fond_caisse FROM clubs WHERE id = ?',
-        [clubId]
-      );
-      
-      const club = rows as any[];
-      const fondActuel = club.length > 0 ? (club[0].fond_caisse || 0) : 0;
+      // Récupérer le fond de caisse actuel depuis la nouvelle table fond_caisse
+       const [fondCaisseRows] = await connection.execute(
+         'SELECT solde FROM fond_caisse WHERE id_club = ?',
+         [clubId]
+       );
+       
+       const fondCaisseData = fondCaisseRows as any[];
+       const fondActuel = fondCaisseData.length > 0 ? (fondCaisseData[0].solde || 0) : 0;
       
       let nouveauFondCaisse: number;
       let description: string;
@@ -710,10 +670,22 @@ router.post('/transfert-bancaire', authenticateToken, canManageCaisse, caisseOpe
       }
       
       // Mettre à jour le fond de caisse
-      await connection.execute(
-        'UPDATE clubs SET fond_caisse = ? WHERE id = ?',
-        [nouveauFondCaisse, clubId]
-      );
+      if (type === 'caisse-vers-banque') {
+        // Débiter le fond de caisse
+        const montantDebit = nouveauFondCaisse < fondActuel ? fondActuel - nouveauFondCaisse : 0;
+        if (montantDebit > 0) {
+          await connection.execute(
+            'UPDATE fond_caisse SET debit = debit + ?, solde = ?, date_modification = NOW() WHERE id_club = ?',
+            [montantDebit, nouveauFondCaisse, clubId]
+          );
+        }
+      } else {
+        // Créditer le fond de caisse
+        await connection.execute(
+          'UPDATE fond_caisse SET credit = credit + ?, solde = ?, date_modification = NOW() WHERE id_club = ?',
+          [montant, nouveauFondCaisse, clubId]
+        );
+      }
       
       // Enregistrer l'opération dans l'historique SEULEMENT pour les transferts caisse vers banque
       // Les transferts banque vers caisse ne sont PAS des recettes, ils augmentent juste le fond de caisse

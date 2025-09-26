@@ -86,6 +86,7 @@ const MemberManagement = ({ onClose }) => {
         const matchesSearch =
             member.nom?.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
             member.prenom?.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
+            member.surnom?.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
             member.email?.toLowerCase().includes(memberSearchTerm.toLowerCase());
 
         const matchesType =

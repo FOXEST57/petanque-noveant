@@ -49,18 +49,43 @@ router.get('/search', authenticateToken, ensureClubAccess(), async (req: Request
     const clubId = req.user!.clubId;
     const { q } = req.query;
     
+    console.log('🔍 API Search - Club ID:', clubId);
+    console.log('🔍 API Search - Query:', q);
+    
     let members = await getMembers(clubId);
+    console.log('🔍 API Search - Total members from DB:', members.length);
     
     // Si une requête de recherche est fournie, filtrer les résultats
     if (q && typeof q === 'string' && q.length >= 2) {
       const searchTerm = q.toLowerCase();
-      members = members.filter((member: any) => 
-        member.prenom?.toLowerCase().includes(searchTerm) ||
-        member.nom?.toLowerCase().includes(searchTerm) ||
-        member.pseudo?.toLowerCase().includes(searchTerm) ||
-        member.email?.toLowerCase().includes(searchTerm)
-      );
+      console.log('🔍 API Search - Search term:', searchTerm);
+      
+      members = members.filter((member: any) => {
+        const matchPrenom = member.prenom?.toLowerCase().includes(searchTerm);
+        const matchNom = member.nom?.toLowerCase().includes(searchTerm);
+        const matchSurnom = member.surnom?.toLowerCase().includes(searchTerm);
+        const matchEmail = member.email?.toLowerCase().includes(searchTerm);
+        
+        const isMatch = matchPrenom || matchNom || matchSurnom || matchEmail;
+        
+        if (isMatch) {
+          console.log('🔍 API Search - Match found:', {
+            id: member.id,
+            prenom: member.prenom,
+            nom: member.nom,
+            surnom: member.surnom,
+            matchPrenom,
+            matchNom,
+            matchSurnom,
+            matchEmail
+          });
+        }
+        
+        return isMatch;
+      });
     }
+    
+    console.log('🔍 API Search - Filtered members count:', members.length);
     
     // Limiter les résultats pour les performances
     const limitedMembers = members.slice(0, 20);
@@ -71,9 +96,9 @@ router.get('/search', authenticateToken, ensureClubAccess(), async (req: Request
         id: member.id,
         prenom: member.prenom,
         nom: member.nom,
-        pseudo: member.pseudo,
+        surnom: member.surnom,
         email: member.email,
-        solde: member.solde || 0
+        solde: member.solde_compte || member.solde || 0
       }))
     });
   } catch (error) {

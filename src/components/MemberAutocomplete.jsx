@@ -19,22 +19,19 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
   // Filtrer les membres selon la requête
   useEffect(() => {
     if (query.length >= 2) {
-      const filtered = members.filter(member => {
-        const searchText = query.toLowerCase();
-        return (
-          member.prenom?.toLowerCase().includes(searchText) ||
-          member.nom?.toLowerCase().includes(searchText) ||
-          member.pseudo?.toLowerCase().includes(searchText) ||
-          member.email?.toLowerCase().includes(searchText)
-        );
-      });
-      setFilteredMembers(filtered);
+      // Utiliser la recherche côté serveur
+      loadMembers(query);
       setIsOpen(true);
+    } else if (query.length === 0) {
+      // Charger tous les membres si la recherche est vide
+      loadMembers();
+      setIsOpen(false);
     } else {
+      // Moins de 2 caractères, vider les résultats
       setFilteredMembers([]);
       setIsOpen(false);
     }
-  }, [query, members]);
+  }, [query]);
 
   // Fermer le dropdown quand on clique à l'extérieur
   useEffect(() => {
@@ -52,14 +49,19 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const loadMembers = async () => {
+  const loadMembers = async (searchQuery = '') => {
     try {
       setLoading(true);
-      const data = await apiCall('/api/members/search', {
+      const url = searchQuery.length >= 2 
+        ? `/api/members/search?q=${encodeURIComponent(searchQuery)}`
+        : '/api/members/search';
+      
+      const data = await apiCall(url, {
         method: 'GET'
       });
       
       setMembers(data.members || []);
+      setFilteredMembers(data.members || []);
     } catch (error) {
       console.error('Erreur lors du chargement des membres:', error);
     } finally {
@@ -72,7 +74,7 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
   };
 
   const handleMemberSelect = (member) => {
-    setQuery(`${member.prenom} ${member.nom}${member.pseudo ? ` (${member.pseudo})` : ''}`);
+    setQuery(`${member.prenom} ${member.nom}${member.surnom ? ` (${member.surnom})` : ''}`);
     setIsOpen(false);
     onSelect(member);
   };
@@ -92,25 +94,22 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
   return (
     <div className="relative">
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-gray-400" />
-        </div>
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
         <input
           ref={inputRef}
           type="text"
           value={query}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => query.length >= 2 && setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          autoComplete="off"
+          className="w-full pl-12 pr-12 py-4 text-xl border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
         />
-        {query && (
+        {selectedMember && (
           <button
             onClick={clearSelection}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+            <X className="w-6 h-6" />
           </button>
         )}
       </div>
@@ -119,10 +118,10 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-lg max-h-80 overflow-y-auto"
         >
           {loading ? (
-            <div className="px-4 py-3 text-center text-gray-500">
+            <div className="px-6 py-6 text-center text-gray-500 text-xl">
               Chargement...
             </div>
           ) : filteredMembers.length > 0 ? (
@@ -130,31 +129,31 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
               <button
                 key={member.id}
                 onClick={() => handleMemberSelect(member)}
-                className="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100 last:border-b-0"
+                className="w-full px-6 py-4 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none border-b border-gray-100 last:border-b-0"
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-4">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-blue-600" />
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <User className="w-6 h-6 text-blue-600" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-gray-900 text-xl">
                         {member.prenom} {member.nom}
                       </span>
-                      {member.pseudo && (
-                        <span className="text-sm text-gray-500">
-                          ({member.pseudo})
+                      {member.surnom && (
+                        <span className="text-lg text-gray-500">
+                          ({member.surnom})
                         </span>
                       )}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-lg text-gray-500">
                       {member.email}
                     </div>
                     {member.solde !== undefined && (
-                      <div className="text-sm text-green-600">
-                        Solde: {member.solde}€
+                      <div className="text-lg text-green-600 font-medium">
+                        Solde: {parseFloat(member.solde || 0).toFixed(2)}€
                       </div>
                     )}
                   </div>
@@ -162,7 +161,7 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
               </button>
             ))
           ) : (
-            <div className="px-4 py-3 text-center text-gray-500">
+            <div className="px-6 py-6 text-center text-gray-500 text-xl">
               Aucun membre trouvé
             </div>
           )}

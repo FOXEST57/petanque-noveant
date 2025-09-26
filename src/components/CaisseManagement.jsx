@@ -336,7 +336,7 @@ const CaisseManagement = ({ onClose }) => {
                             <MemberAutocomplete
                                 selectedMember={selectedMember}
                                 onSelect={setSelectedMember}
-                                placeholder="Rechercher par prénom, nom ou pseudo..."
+                                placeholder="Rechercher par prénom, nom ou surnom..."
                             />
                         </div>
                         

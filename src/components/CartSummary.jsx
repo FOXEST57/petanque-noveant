@@ -1,9 +1,15 @@
 import React, { useState } from 'react'
-import { ShoppingCart, X, Plus, Minus, Trash2 } from 'lucide-react'
+import { ShoppingCart, X, Plus, Minus, Trash2, User, CreditCard, Banknote } from 'lucide-react'
 import { useCart } from '../contexts/CartContext'
+import MemberAutocomplete from './MemberAutocomplete'
+import { apiCall } from '../utils/apiCall'
+import { toast } from 'sonner'
 
 const CartSummary = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [selectedMember, setSelectedMember] = useState(null)
+  const [isProcessing, setIsProcessing] = useState(false)
   const { items, total, removeItem, updateQuantity, clearCart } = useCart()
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
@@ -17,12 +23,56 @@ const CartSummary = () => {
   }
 
   const handleOrder = () => {
-    // Ici on pourrait ajouter la logique de commande (envoi au serveur, etc.)
-    // Pour l'instant, on vide simplement le panier et ferme la modal
-    clearCart()
-    setIsOpen(false)
-    // Optionnel : afficher un message de confirmation
-    alert('Commande validée ! Merci pour votre achat.')
+    setShowPaymentModal(true)
+  }
+
+  const handleMemberPayment = async () => {
+    if (!selectedMember) {
+      toast.error('Veuillez sélectionner un membre')
+      return
+    }
+
+    if (selectedMember.solde < total) {
+      toast.error('Solde insuffisant pour cette commande')
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      // Débiter le compte du membre
+      await apiCall('/api/comptes-clients/debiter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          membreId: selectedMember.id,
+          montantRaw: total.toString(),
+          description: `Commande bar - ${items.map(item => `${item.quantity}x ${item.name}`).join(', ')}`,
+          reference: `BAR-${Date.now()}`
+        })
+      })
+
+      // Vider le panier et fermer les modals
+      clearCart()
+      setShowPaymentModal(false)
+      setIsOpen(false)
+      setSelectedMember(null)
+      toast.success('Paiement effectué avec succès !')
+    } catch (error) {
+      console.error('Erreur lors du paiement:', error)
+      toast.error('Erreur lors du paiement')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleCardPayment = () => {
+    toast.info('Paiement par carte bancaire - Fonctionnalité à venir')
+  }
+
+  const handleCashPayment = () => {
+    toast.info('Paiement en espèces - Fonctionnalité à venir')
   }
 
   return (
@@ -121,6 +171,108 @@ const CartSummary = () => {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="p-8 border-b">
+              <h2 className="text-4xl font-bold text-gray-800">Choisir le mode de paiement</h2>
+              <button
+                onClick={() => {
+                  setShowPaymentModal(false)
+                  setSelectedMember(null)
+                }}
+                className="absolute top-8 right-8 text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-8 h-8" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-8 space-y-6">
+              {/* Member Account Payment */}
+              <div className="space-y-4">
+                <div className="w-full p-6 text-left border-2 rounded-lg border-blue-500 bg-blue-50">
+                  <div className="text-2xl font-medium text-gray-800 mb-2">Compte membre</div>
+                  <div className="text-lg text-gray-600">Débiter le compte d'un membre</div>
+                </div>
+
+                <div className="ml-6 space-y-4">
+                  <MemberAutocomplete
+                    onSelect={setSelectedMember}
+                    selectedMember={selectedMember}
+                    placeholder="Rechercher un membre..."
+                  />
+                  {selectedMember && (
+                    <div className="p-6 bg-gray-50 rounded border-2 text-lg">
+                      <div className="text-xl mb-2"><strong>{selectedMember.prenom} {selectedMember.nom}</strong></div>
+                      <div className="mb-2">Email: {selectedMember.email}</div>
+                      <div className={`text-xl font-medium ${selectedMember.solde >= total ? 'text-green-600' : 'text-red-600'}`}>
+                        Solde: {parseFloat(selectedMember.solde || 0).toFixed(2)}€
+                      </div>
+                      <div className="text-xl font-medium text-gray-800 mt-2">
+                        Total commande: {parseFloat(total || 0).toFixed(2)}€
+                      </div>
+                      {selectedMember.solde < total && (
+                        <div className="mt-2 text-lg text-red-600">
+                          ⚠️ Solde insuffisant
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Card Payment */}
+              <div className="w-full p-6 text-left border-2 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                <div className="text-2xl font-medium text-gray-500 mb-2">Carte bancaire</div>
+                <div className="text-lg text-gray-400">Bientôt disponible</div>
+              </div>
+
+              {/* Cash Payment */}
+              <div className="w-full p-6 text-left border-2 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                <div className="text-2xl font-medium text-gray-500 mb-2">Espèces</div>
+                <div className="text-lg text-gray-400">Bientôt disponible</div>
+              </div>
+
+              {/* Total */}
+              <div className="pt-6 border-t-2">
+                <div className="flex justify-between items-center text-3xl font-bold">
+                  <span>Total:</span>
+                  <span>{parseFloat(total || 0).toFixed(2)}€</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-8 border-t-2 bg-gray-50 flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  setShowPaymentModal(false)
+                  setSelectedMember(null)
+                }}
+                className="px-8 py-4 text-xl text-gray-600 border-2 border-gray-300 rounded hover:bg-gray-100"
+                disabled={isProcessing}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleMemberPayment}
+                disabled={!selectedMember || selectedMember.solde < total || isProcessing}
+                className={`px-10 py-4 text-xl rounded font-medium ${
+                  selectedMember && selectedMember.solde >= total && !isProcessing
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {isProcessing ? 'Traitement...' : 'Confirmer le paiement'}
+              </button>
+            </div>
           </div>
         </div>
       )}

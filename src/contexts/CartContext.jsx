@@ -6,6 +6,7 @@ const cartReducer = (state, action) => {
   switch (action.type) {
     case 'ADD_ITEM':
       const existingItem = state.items.find(item => item.id === action.payload.id)
+      const itemPrice = parseFloat(action.payload.price || 0)
       if (existingItem) {
         return {
           ...state,
@@ -14,24 +15,26 @@ const cartReducer = (state, action) => {
               ? { ...item, quantity: item.quantity + 1 }
               : item
           ),
-          total: state.total + action.payload.price
+          total: state.total + itemPrice
         }
       } else {
         return {
           ...state,
           items: [...state.items, { ...action.payload, quantity: 1 }],
-          total: state.total + action.payload.price
+          total: state.total + itemPrice
         }
       }
     case 'REMOVE_ITEM':
       const itemToRemove = state.items.find(item => item.id === action.payload)
+      const removePrice = parseFloat(itemToRemove.price || 0)
       return {
         ...state,
         items: state.items.filter(item => item.id !== action.payload),
-        total: state.total - (itemToRemove.price * itemToRemove.quantity)
+        total: state.total - (removePrice * itemToRemove.quantity)
       }
     case 'UPDATE_QUANTITY':
       const item = state.items.find(item => item.id === action.payload.id)
+      const updatePrice = parseFloat(item.price || 0)
       const quantityDiff = action.payload.quantity - item.quantity
       return {
         ...state,
@@ -40,7 +43,7 @@ const cartReducer = (state, action) => {
             ? { ...item, quantity: action.payload.quantity }
             : item
         ),
-        total: state.total + (item.price * quantityDiff)
+        total: state.total + (updatePrice * quantityDiff)
       }
     case 'CLEAR_CART':
       return {

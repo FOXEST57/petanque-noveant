@@ -295,7 +295,7 @@ const MembershipRequest = () => {
                     value={formData.surnom}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#425e9b] focus:border-transparent transition-colors"
-                    placeholder="Votre surnom ou pseudonyme"
+                    placeholder="Votre surnom"
                   />
                 </div>
 

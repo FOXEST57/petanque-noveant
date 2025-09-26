@@ -240,7 +240,7 @@ const Caisse = () => {
                                 <MemberAutocomplete
                                     selectedMember={selectedMember}
                                     onMemberSelect={setSelectedMember}
-                                    placeholder="Rechercher par prénom, nom ou pseudo..."
+                                    placeholder="Rechercher par prénom, nom ou surnom..."
                                 />
                             </div>
                             
@@ -287,7 +287,7 @@ const Caisse = () => {
                                 <MemberAutocomplete
                                     selectedMember={selectedMember}
                                     onMemberSelect={setSelectedMember}
-                                    placeholder="Rechercher par prénom, nom ou pseudo..."
+                                    placeholder="Rechercher par prénom, nom ou surnom..."
                                 />
                             </div>
                             
