@@ -6,6 +6,7 @@ import {
     ChevronDown,
     ChevronUp,
     CreditCard,
+    DollarSign,
     Edit,
     Euro,
     Gift,
@@ -16,6 +17,7 @@ import {
     Phone,
     Plus,
     Save,
+    Scale,
     Search,
     Settings,
     Shield,
@@ -994,6 +996,22 @@ const Admin = () => {
                         description="Configuration et paramètres du site web"
                         modalKey="gestionSite"
                     />
+
+                    <ManagementCard
+                        title="Gestion Financière"
+                        icon={DollarSign}
+                        count={0}
+                        description="Relevés bancaires, bilans et statistiques"
+                        modalKey="gestionFinanciere"
+                    />
+
+                    <ManagementCard
+                        title="Juridique"
+                        icon={Scale}
+                        count={0}
+                        description="Convocations et rédaction d'actes assistée par IA"
+                        modalKey="juridique"
+                    />
                 </div>
             </div>
 
@@ -1522,6 +1540,134 @@ const Admin = () => {
                                     isOpen={true}
                                     onClose={() => setActiveModal(null)} 
                                 />
+                            )}
+
+                            {/* Modal Gestion Financière */}
+                            {activeModal === "gestionFinanciere" && (
+                                <div className="space-y-6">
+                                    {/* Header du modal */}
+                                    <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="p-2 bg-green-100 rounded-lg">
+                                                <DollarSign className="w-6 h-6 text-green-600" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl font-semibold text-gray-900">
+                                                    Gestion Financière
+                                                </h2>
+                                                <p className="text-sm text-gray-600">
+                                                    Fonctionnalité à venir
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setActiveModal(null)}
+                                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
+
+                                    {/* Contenu du modal */}
+                                    <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="flex items-center space-x-3 mb-4">
+                                            <div className="p-2 bg-blue-100 rounded-lg">
+                                                <DollarSign className="w-5 h-5 text-blue-600" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-blue-900">
+                                                Fonctionnalités prévues
+                                            </h3>
+                                        </div>
+                                        <ul className="space-y-3 text-blue-800">
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                                <span>Relevés bancaires automatisés</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                                <span>Balance dépenses/recettes en temps réel</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                                <span>Génération de bilans annuels</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                                <span>Gestion des justificatifs de dépenses</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                                <span>Statistiques financières avancées</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                                <span>Tableaux de bord financiers</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Modal Juridique */}
+                            {activeModal === "juridique" && (
+                                <div className="space-y-6">
+                                    {/* Header du modal */}
+                                    <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="p-2 bg-purple-100 rounded-lg">
+                                                <Scale className="w-6 h-6 text-purple-600" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl font-semibold text-gray-900">
+                                                    Juridique
+                                                </h2>
+                                                <p className="text-sm text-gray-600">
+                                                    Fonctionnalité à venir
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setActiveModal(null)}
+                                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
+
+                                    {/* Contenu du modal */}
+                                    <div className="p-6 bg-purple-50 rounded-lg border border-purple-200">
+                                        <div className="flex items-center space-x-3 mb-4">
+                                            <div className="p-2 bg-purple-100 rounded-lg">
+                                                <Scale className="w-5 h-5 text-purple-600" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-purple-900">
+                                                Fonctionnalités prévues
+                                            </h3>
+                                        </div>
+                                        <ul className="space-y-3 text-purple-800">
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                                                <span>Gestion des convocations automatisées</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                                                <span>Rédaction d'actes assistée par IA</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                                                <span>Templates de documents juridiques</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                                                <span>Suivi des obligations légales</span>
+                                            </li>
+                                            <li className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                                                <span>Archivage numérique sécurisé</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             )}
 
                             {activeModal === "droits" && (

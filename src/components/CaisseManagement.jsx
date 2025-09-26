@@ -13,26 +13,34 @@ import {
     CheckCircle,
     AlertCircle,
     X,
+    Building2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth.jsx";
 import { apiCall } from "../utils/apiCall.js";
 import MemberAutocomplete from './MemberAutocomplete';
+import { banqueAPI } from '../api/banque.js';
 
 const CaisseManagement = ({ onClose }) => {
     const { user } = useAuth();
     
     const [loading, setLoading] = useState(true);
     const [fondCaisse, setFondCaisse] = useState(0);
+    const [soldeCaisse, setSoldeCaisse] = useState(0);
+    const [recettes, setRecettes] = useState(0);
     const [typeOperation, setTypeOperation] = useState("");
     const [historique, setHistorique] = useState([]);
     const [showHistorique, setShowHistorique] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
+    const [selectedBanque, setSelectedBanque] = useState(null);
+    const [banques, setBanques] = useState([]);
     const [creditAmount, setCreditAmount] = useState('');
     const [transferAmount, setTransferAmount] = useState('');
     const [transferType, setTransferType] = useState('caisse_vers_membre');
-    const [caisseAmount, setCaisseAmount] = useState('');
-    const [caisseOperation, setCaisseOperation] = useState('ajouter');
+    const [depenseDescription, setDepenseDescription] = useState('');
+    const [depenseAmount, setDepenseAmount] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
     useEffect(() => {
         if (!user) {
@@ -45,7 +53,8 @@ const CaisseManagement = ({ onClose }) => {
             return;
         }
 
-        loadFondCaisse();
+        loadSoldeCaisse();
+        loadBanques();
         setLoading(false);
     }, [user, onClose]);
 
@@ -58,6 +67,37 @@ const CaisseManagement = ({ onClose }) => {
             console.error('Erreur:', error);
             alert('Erreur lors du chargement du fond de caisse');
             setFondCaisse(0); // Valeur par défaut en cas d'erreur
+        }
+    };
+
+    const loadSoldeCaisse = async () => {
+        try {
+            const data = await apiCall('/api/caisse/solde');
+            if (data.success) {
+                setFondCaisse(parseFloat(data.fondCaisse) || 0);
+                setSoldeCaisse(parseFloat(data.soldeCaisse) || 0);
+                setRecettes(parseFloat(data.recettes) || 0);
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Erreur lors du chargement du solde de caisse');
+            setSoldeCaisse(0);
+            setRecettes(0);
+        }
+    };
+
+    const loadBanques = async () => {
+        try {
+            const data = await banqueAPI.getBanques();
+            setBanques(data);
+            // Sélectionner automatiquement la banque principale
+            const banquePrincipale = data.find(b => b.nom === 'Banque Principale');
+            if (banquePrincipale) {
+                setSelectedBanque(banquePrincipale);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des banques:', error);
+            setBanques([]);
         }
     };
 
@@ -89,10 +129,15 @@ const CaisseManagement = ({ onClose }) => {
             });
 
             if (data.success) {
-                alert(data.message);
+                setSuccessMessage(data.message);
+                setShowSuccessMessage(true);
+                // Masquer le message après 5 secondes
+                setTimeout(() => {
+                    setShowSuccessMessage(false);
+                }, 5000);
                 setCreditAmount('');
                 setSelectedMember(null);
-                loadFondCaisse();
+                loadSoldeCaisse();
                 loadHistorique();
             } else {
                 alert(data.error || 'Erreur lors du crédit');
@@ -106,30 +151,34 @@ const CaisseManagement = ({ onClose }) => {
     };
 
     const handleTransfert = async (type) => {
-        if (!selectedMember || !transferAmount || parseFloat(transferAmount) <= 0) {
-            alert('Veuillez sélectionner un membre et saisir un montant valide');
+        if (!selectedBanque || !transferAmount || parseFloat(transferAmount) <= 0) {
+            alert('Veuillez sélectionner une banque et saisir un montant valide');
             return;
         }
 
         try {
             setLoading(true);
-            await apiCall('/caisse/transfert-bancaire', {
+            await apiCall('/api/caisse/transfert-bancaire', {
                 method: 'POST',
                 body: {
-                    membreId: selectedMember.id,
+                    banqueId: selectedBanque.id,
                     montant: parseFloat(transferAmount),
                     type: type // 'caisse-vers-banque' ou 'banque-vers-caisse'
                 }
             });
 
             const message = type === 'caisse-vers-banque'
-                ? 'Transfert de la caisse vers le compte bancaire du club effectué !'
-                : 'Transfert du compte bancaire vers la caisse effectué !';
+                ? `Transfert de la caisse vers ${selectedBanque.nom} effectué !`
+                : `Transfert de ${selectedBanque.nom} vers la caisse effectué !`;
             
-            alert(message);
+            setSuccessMessage(message);
+            setShowSuccessMessage(true);
+            // Masquer le message après 5 secondes
+            setTimeout(() => {
+                setShowSuccessMessage(false);
+            }, 5000);
             setTransferAmount('');
-            setSelectedMember(null);
-            loadFondCaisse();
+            loadSoldeCaisse();
             loadHistorique();
         } catch (error) {
             console.error('Erreur:', error);
@@ -139,32 +188,39 @@ const CaisseManagement = ({ onClose }) => {
         }
     };
 
-    const handleGestionFondCaisse = async (operation, montantFond) => {
-        if (!montantFond || parseFloat(montantFond) <= 0) {
+    const handleDepenseEspeces = async () => {
+        if (!depenseAmount || parseFloat(depenseAmount) <= 0) {
             alert('Veuillez saisir un montant valide');
+            return;
+        }
+
+        if (!depenseDescription.trim()) {
+            alert('Veuillez saisir une description pour la dépense');
             return;
         }
 
         try {
             setLoading(true);
-            await apiCall('/caisse/fond', {
-                method: 'PUT',
+            const data = await apiCall('/api/caisse/depense-especes', {
+                method: 'POST',
                 body: {
-                    operation: operation, // 'ajouter' ou 'retirer'
-                    montant: parseFloat(montantFond)
+                    montant: parseFloat(depenseAmount),
+                    description: depenseDescription.trim()
                 }
             });
 
-            const message = operation === 'ajouter' 
-                ? 'Montant ajouté au fond de caisse !'
-                : 'Montant retiré du fond de caisse !';
-            
-            alert(message);
-            loadFondCaisse();
-            loadHistorique();
+            if (data.success) {
+                alert('Dépense en espèces enregistrée avec succès !');
+                setDepenseAmount('');
+                setDepenseDescription('');
+                loadSoldeCaisse();
+                loadHistorique();
+            } else {
+                alert(data.error || 'Erreur lors de l\'enregistrement de la dépense');
+            }
         } catch (error) {
             console.error('Erreur:', error);
-            alert('Erreur lors de la gestion du fond de caisse');
+            alert('Erreur lors de l\'enregistrement de la dépense en espèces');
         } finally {
             setLoading(false);
         }
@@ -183,6 +239,20 @@ const CaisseManagement = ({ onClose }) => {
 
     return (
         <div className="max-w-6xl mx-auto">
+            {/* Message de succès */}
+            {showSuccessMessage && (
+                <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-fade-in">
+                    <CheckCircle className="h-5 w-5" />
+                    <span className="font-medium">{successMessage}</span>
+                    <button
+                        onClick={() => setShowSuccessMessage(false)}
+                        className="ml-2 text-white hover:text-gray-200"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+            )}
+
             {/* En-tête avec bouton fermer */}
             <div className="flex justify-between items-center mb-6">
                 <div>
@@ -201,17 +271,39 @@ const CaisseManagement = ({ onClose }) => {
                 </button>
             </div>
 
-            {/* Fond de caisse - Vue d'ensemble */}
+            {/* Vue d'ensemble de la caisse */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center">
+                    <div className="flex items-center space-x-8">
                         <Wallet className="h-8 w-8 text-green-600 mr-3" />
+                        
+                        {/* Fond de caisse */}
                         <div>
-                            <h2 className="text-xl font-semibold text-gray-900">
+                            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
                                 Fond de Caisse
-                            </h2>
-                            <p className="text-2xl font-bold text-green-600">
+                            </h3>
+                            <p className="text-xl font-bold text-blue-600">
                                 {typeof fondCaisse === 'number' ? fondCaisse.toFixed(2) : '0.00'} €
+                            </p>
+                        </div>
+                        
+                        {/* Solde de caisse */}
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                Solde de Caisse
+                            </h3>
+                            <p className="text-xl font-bold text-green-600">
+                                {typeof soldeCaisse === 'number' ? soldeCaisse.toFixed(2) : '0.00'} €
+                            </p>
+                        </div>
+                        
+                        {/* Recettes */}
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                Recettes
+                            </h3>
+                            <p className={`text-xl font-bold ${recettes >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {typeof recettes === 'number' ? (recettes >= 0 ? '+' : '') + recettes.toFixed(2) : '0.00'} €
                             </p>
                         </div>
                     </div>
@@ -274,25 +366,93 @@ const CaisseManagement = ({ onClose }) => {
                     </div>
                 </div>
 
-                {/* Carte 2: Transferts */}
+                {/* Carte 2: Dépenses en Espèces */}
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <div className="flex items-center mb-4">
-                        <ArrowRightLeft className="h-6 w-6 text-purple-600 mr-3" />
+                        <Minus className="h-6 w-6 text-red-600 mr-3" />
                         <h3 className="text-lg font-semibold text-gray-900">
-                            Transferts
+                            Dépenses en Espèces
                         </h3>
                     </div>
                     
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Sélectionner un membre
+                                Description de la dépense
                             </label>
-                            <MemberAutocomplete
-                                selectedMember={selectedMember}
-                                onSelect={setSelectedMember}
-                                placeholder="Rechercher par prénom, nom ou pseudo..."
+                            <input
+                                type="text"
+                                value={depenseDescription}
+                                onChange={(e) => setDepenseDescription(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                placeholder="Ex: Achat matériel, frais déplacement..."
                             />
+                        </div>
+                        
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Montant (€)
+                            </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={depenseAmount}
+                                onChange={(e) => setDepenseAmount(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                placeholder="0.00"
+                            />
+                        </div>
+                        
+                        <button
+                            onClick={handleDepenseEspeces}
+                            disabled={!depenseAmount || !depenseDescription.trim()}
+                            className="w-full flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <Minus className="h-4 w-4 mr-2" />
+                            Enregistrer la Dépense
+                        </button>
+                    </div>
+                </div>
+
+                {/* Carte 3: Transferts */}
+                <div className="bg-white rounded-lg shadow-md p-6">
+                    <div className="flex items-center mb-4">
+                        <ArrowRightLeft className="h-6 w-6 text-purple-600 mr-3" />
+                        <h3 className="text-lg font-semibold text-gray-900">
+                            Transferts Bancaires
+                        </h3>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Banque par défaut
+                            </label>
+                            <div className="relative">
+                                <select
+                                    value={selectedBanque?.id || ''}
+                                    onChange={(e) => {
+                                        const banque = banques.find(b => b.id === parseInt(e.target.value));
+                                        setSelectedBanque(banque);
+                                    }}
+                                    className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none bg-white"
+                                >
+                                    <option value="">Sélectionner une banque</option>
+                                    {banques.map((banque) => (
+                                        <option key={banque.id} value={banque.id}>
+                                            {banque.nom}
+                                        </option>
+                                    ))}
+                                </select>
+                                <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            </div>
+                            {selectedBanque && (
+                                <div className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-600">
+                                    <p><strong>Adresse:</strong> {selectedBanque.adresse}</p>
+                                    <p><strong>IBAN:</strong> {selectedBanque.iban}</p>
+                                </div>
+                            )}
                         </div>
                         
                         <div>
@@ -312,99 +472,27 @@ const CaisseManagement = ({ onClose }) => {
                         
                         <div className="grid grid-cols-1 gap-2">
                             <button
-                                onClick={() => handleTransfert('caisse-vers-compte')}
-                                disabled={!selectedMember || !transferAmount}
+                                onClick={() => handleTransfert('caisse-vers-banque')}
+                                disabled={!selectedBanque || !transferAmount}
                                 className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                             >
                                 <TrendingUp className="h-4 w-4 mr-2" />
-                                Caisse → Compte
+                                Caisse → Banque
                             </button>
                             <button
-                                onClick={() => handleTransfert('compte-vers-caisse')}
-                                disabled={!selectedMember || !transferAmount}
+                                onClick={() => handleTransfert('banque-vers-caisse')}
+                                disabled={!selectedBanque || !transferAmount}
                                 className="flex items-center justify-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                             >
                                 <TrendingDown className="h-4 w-4 mr-2" />
-                                Compte → Caisse
+                                Banque → Caisse
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Carte 3: Gestion du fond de caisse */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <div className="flex items-center mb-4">
-                    <Euro className="h-6 w-6 text-green-600 mr-3" />
-                    <h3 className="text-lg font-semibold text-gray-900">
-                        Gestion du Fond de Caisse
-                    </h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Ajouter au fond */}
-                    <div className="space-y-4">
-                        <h4 className="font-medium text-gray-900">Ajouter au fond</h4>
-                        <div>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="Montant à ajouter"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                        handleGestionFondCaisse('ajouter', e.target.value);
-                                        e.target.value = '';
-                                    }
-                                }}
-                            />
-                        </div>
-                        <button
-                            onClick={(e) => {
-                                const montantInput = e.target.parentElement.querySelector('input');
-                                handleGestionFondCaisse('ajouter', montantInput.value);
-                                montantInput.value = '';
-                            }}
-                            className="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Ajouter
-                        </button>
-                    </div>
 
-                    {/* Retirer du fond */}
-                    <div className="space-y-4">
-                        <h4 className="font-medium text-gray-900">Retirer du fond</h4>
-                        <div>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                placeholder="Montant à retirer"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                        handleGestionFondCaisse('retirer', e.target.value);
-                                        e.target.value = '';
-                                    }
-                                }}
-                            />
-                        </div>
-                        <button
-                            onClick={(e) => {
-                                const montantInput = e.target.parentElement.querySelector('input');
-                                handleGestionFondCaisse('retirer', montantInput.value);
-                                montantInput.value = '';
-                            }}
-                            className="w-full flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                            <Minus className="h-4 w-4 mr-2" />
-                            Retirer
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             {/* Historique */}
             {showHistorique && (
@@ -435,7 +523,10 @@ const CaisseManagement = ({ onClose }) => {
                                         Description
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Montant
+                                        Encaissement
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Retrait
                                     </th>
                                 </tr>
                             </thead>
@@ -443,18 +534,19 @@ const CaisseManagement = ({ onClose }) => {
                                 {historique.map((operation, index) => (
                                     <tr key={index}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {new Date(operation.date_operation).toLocaleDateString('fr-FR')}
+                                            {new Date(operation.date).toLocaleDateString('fr-FR')}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {operation.type_operation}
+                                            {operation.type}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-900">
                                             {operation.description}
                                         </td>
-                                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                                            operation.montant >= 0 ? 'text-green-600' : 'text-red-600'
-                                        }`}>
-                                            {operation.montant >= 0 ? '+' : ''}{operation.montant.toFixed(2)} €
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                                            {parseFloat(operation.montant_encaissement) > 0 ? `+${parseFloat(operation.montant_encaissement).toFixed(2)} €` : ''}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">
+                                            {parseFloat(operation.montant_retrait) > 0 ? `-${parseFloat(operation.montant_retrait).toFixed(2)} €` : ''}
                                         </td>
                                     </tr>
                                 ))}

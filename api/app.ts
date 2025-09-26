@@ -11,19 +11,21 @@ import express, {
 } from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import authRoutes from "./routes/auth.ts";
-import caisseRoutes from "./routes/caisse.ts";
-import carouselRoutes from "./routes/carousel.ts";
-import clubsRoutes from "./routes/clubs.ts";
-import contactRoutes from "./routes/contact.ts";
-import drinksRoutes from "./routes/drinks.ts";
-import eventsRoutes from "./routes/events.ts";
-import homeContentRoutes from "./routes/home-content.ts";
-import membersRoutes from "./routes/members.ts";
+import authRoutes from "./routes/auth.js";
+import banqueRoutes from "./routes/banque.js";
+import caisseRoutes from "./routes/caisse.js";
+import carouselRoutes from "./routes/carousel.js";
+import clubsRoutes from "./routes/clubs.js";
+import comptesClientsRoutes from "./routes/comptes-clients.js";
+import contactRoutes from "./routes/contact.js";
+import drinksRoutes from "./routes/drinks.js";
+import eventsRoutes from "./routes/events.js";
+import homeContentRoutes from "./routes/home-content.js";
+import membersRoutes from "./routes/members.js";
 import membershipRoutes from "./routes/membership.js";
-import siteSettingsRoutes from "./routes/site-settings.ts";
-import teamsRoutes from "./routes/teams.ts";
-import { detectSubdomain, enforceClubIsolation } from "./middleware/subdomain.ts";
+import siteSettingsRoutes from "./routes/site-settings.js";
+import teamsRoutes from "./routes/teams.js";
+import { detectSubdomain, enforceClubIsolation } from "./middleware/subdomain.js";
 
 // for esm mode
 const __filename = fileURLToPath(import.meta.url);
@@ -59,8 +61,10 @@ apiRouter.use(detectSubdomain);
 
 // Mount routes on API router
 apiRouter.use("/auth", authRoutes);
+apiRouter.use("/banque", banqueRoutes);
 apiRouter.use("/caisse", caisseRoutes);
 apiRouter.use("/clubs", clubsRoutes);
+apiRouter.use("/comptes-clients", comptesClientsRoutes);
 apiRouter.use("/events", eventsRoutes);
 apiRouter.use("/members", membersRoutes);
 apiRouter.use("/membership", membershipRoutes);

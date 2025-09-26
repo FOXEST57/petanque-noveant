@@ -377,6 +377,9 @@ const MemberManagement = ({ onClose }) => {
                                 <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Licence
                                 </th>
+                                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                    Solde du compte
+                                </th>
                                 <th className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">
                                     Actions
                                 </th>
@@ -452,6 +455,11 @@ const MemberManagement = ({ onClose }) => {
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                                             {member.numero_licence || "N/A"}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
+                                            <span className={`font-semibold ${(parseFloat(member.solde_compte) || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {(parseFloat(member.solde_compte) || 0).toFixed(2)} €
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                                             <div className="flex justify-end items-center space-x-2">

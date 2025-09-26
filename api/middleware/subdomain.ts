@@ -30,10 +30,17 @@ export const detectSubdomain = async (req: Request, res: Response, next: NextFun
     // Extraire le sous-domaine
     let subdomain = null;
     
-    // Vérifier d'abord s'il y a un paramètre club dans l'URL (pour le développement)
+    // Vérifier d'abord s'il y a un header X-Club-Subdomain (pour les tests et API)
+    const headerSubdomain = req.get('X-Club-Subdomain') as string;
+    
+    // Vérifier ensuite s'il y a un paramètre club dans l'URL (pour le développement)
     const clubParam = req.query.club as string;
     
-    if (clubParam) {
+    if (headerSubdomain) {
+      // Mode test/API avec header X-Club-Subdomain
+      subdomain = headerSubdomain;
+      console.log('🎯 Sous-domaine détecté via header X-Club-Subdomain:', headerSubdomain);
+    } else if (clubParam) {
       // Mode développement avec paramètre club
       subdomain = clubParam;
     } else if (hostname && hostname.includes('localhost')) {

@@ -328,69 +328,7 @@ const Caisse = () => {
                     </div>
                 </div>
 
-                {/* Carte 3: Gestion du fond de caisse */}
-                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-                    <div className="flex items-center mb-4">
-                        <Euro className="h-6 w-6 text-green-600 mr-3" />
-                        <h3 className="text-lg font-semibold text-gray-900">
-                            Gestion du Fond de Caisse
-                        </h3>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Ajouter au fond */}
-                        <div className="space-y-4">
-                            <h4 className="font-medium text-gray-900">Ajouter au fond</h4>
-                            <div>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    id="montant-ajouter"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    placeholder="Montant à ajouter"
-                                />
-                            </div>
-                            <button
-                                onClick={() => {
-                                    const montantInput = document.getElementById('montant-ajouter');
-                                    handleGestionFondCaisse('ajouter', montantInput.value);
-                                    montantInput.value = '';
-                                }}
-                                className="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Ajouter au Fond
-                            </button>
-                        </div>
 
-                        {/* Retirer du fond */}
-                        <div className="space-y-4">
-                            <h4 className="font-medium text-gray-900">Retirer du fond</h4>
-                            <div>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    id="montant-retirer"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                    placeholder="Montant à retirer"
-                                />
-                            </div>
-                            <button
-                                onClick={() => {
-                                    const montantInput = document.getElementById('montant-retirer');
-                                    handleGestionFondCaisse('retirer', montantInput.value);
-                                    montantInput.value = '';
-                                }}
-                                className="w-full flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                                <Minus className="h-4 w-4 mr-2" />
-                                Retirer du Fond
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Modal Historique */}
                 {showHistorique && (

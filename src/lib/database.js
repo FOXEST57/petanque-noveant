@@ -157,7 +157,8 @@ const getQuery = async (sql, params = []) => {
 export const getMembers = async (clubId = 1) => {
   return await getAllQuery(`
     SELECT m.*, mt.nom as type_nom,
-           CASE WHEN u.id IS NOT NULL THEN 1 ELSE 0 END as has_user_account
+           CASE WHEN u.id IS NOT NULL THEN 1 ELSE 0 END as has_user_account,
+           COALESCE(m.solde, 0) as solde_compte
     FROM members m 
     LEFT JOIN member_types mt ON m.type_membre_id = mt.id 
     LEFT JOIN users u ON m.email = u.email AND u.statut = 'actif'

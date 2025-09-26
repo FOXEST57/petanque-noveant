@@ -6,7 +6,7 @@ import { Router } from 'express';
 import mysql from 'mysql2/promise';
 import rateLimit from 'express-rate-limit';
 import nodemailer from 'nodemailer';
-import { authenticateToken, canApproveMembership } from '../middleware/auth.ts';
+import { authenticateToken, canApproveMembership } from '../middleware/auth.js';
 
 const router = Router();
 

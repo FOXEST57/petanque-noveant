@@ -8,7 +8,7 @@ import path from "path";
 // Charger les variables d'environnement depuis le répertoire racine du projet
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
-import app from "./app.ts";
+import app from "./app.js";
 
 /**
  * start server with port

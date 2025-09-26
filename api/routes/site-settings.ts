@@ -3,7 +3,7 @@ import fs from "fs";
 import multer from "multer";
 import mysql from "mysql2/promise";
 import path from "path";
-import { authenticateToken, ensureClubAccess } from "../middleware/auth";
+import { authenticateToken, ensureClubAccess } from "../middleware/auth.js";
 
 const router = express.Router();
 
