@@ -244,13 +244,11 @@ const SiteManagement = ({ isOpen, onClose }) => {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            const response = await apiCall("/site-settings", {
+            const result = await apiCall("/site-settings", {
                 method: "PUT",
                 headers,
                 body: formData, // Utiliser FormData au lieu de JSON
             });
-
-            const result = await response.json();
 
             if (result.success) {
                 // Mettre à jour le contexte global avec les nouvelles valeurs
