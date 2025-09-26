@@ -360,7 +360,12 @@ router.get('/profile', authenticateToken, async (req: Request, res: Response): P
         statut: user.statut,
         photoUrl: user.photo_url,
         dateCreationCompte: user.date_creation_compte,
-        derniereConnexion: user.derniere_connexion
+        derniereConnexion: user.derniere_connexion,
+        numeroRue: user.numero_rue,
+        rue: user.rue,
+        codePostal: user.code_postal,
+        ville: user.ville,
+        solde: parseFloat(user.solde) || 0
       }
     });
 
@@ -383,7 +388,7 @@ router.put('/profile', authenticateToken, async (req: Request, res: Response): P
   const connection = await mysql.createConnection(dbConfig);
   
   try {
-    const { nom, prenom, surnom, telephone, numeroLicence, photoUrl } = req.body;
+    const { nom, prenom, surnom, telephone, numeroLicence, photoUrl, numeroRue, rue, codePostal, ville } = req.body;
     const userId = req.user!.id;
 
     // Validation des champs obligatoires
@@ -398,9 +403,11 @@ router.put('/profile', authenticateToken, async (req: Request, res: Response): P
     // Mettre à jour le profil
     await connection.execute(
       `UPDATE users 
-       SET nom = ?, prenom = ?, surnom = ?, telephone = ?, numero_licence = ?, photo_url = ?, updated_at = NOW()
+       SET nom = ?, prenom = ?, surnom = ?, telephone = ?, numero_licence = ?, photo_url = ?, 
+           numero_rue = ?, rue = ?, code_postal = ?, ville = ?, updated_at = NOW()
        WHERE id = ?`,
-      [nom, prenom, surnom || null, telephone, numeroLicence || null, photoUrl || null, userId]
+      [nom, prenom, surnom || null, telephone, numeroLicence || null, photoUrl || null, 
+       numeroRue || null, rue || null, codePostal || null, ville || null, userId]
     );
 
     res.json({
@@ -692,6 +699,57 @@ router.post('/super-admin-login', authenticateToken, async (req: Request, res: R
 
   } catch (error) {
     console.error('Erreur lors de la connexion super admin:', error);
+    res.status(500).json({
+      error: 'Erreur interne du serveur',
+      code: 'INTERNAL_ERROR'
+    });
+  } finally {
+    await connection.end();
+  }
+});
+
+/**
+ * Ajouter de l'argent au solde (simulation pour l'interface)
+ * POST /api/auth/add-money
+ */
+router.post('/add-money', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+  const connection = await mysql.createConnection(dbConfig);
+  
+  try {
+    const { amount } = req.body;
+    const userId = req.user!.id;
+
+    // Validation du montant
+    if (!amount || isNaN(amount) || amount <= 0) {
+      res.status(400).json({
+        error: 'Montant invalide',
+        code: 'INVALID_AMOUNT'
+      });
+      return;
+    }
+
+    // Pour le moment, on simule juste l'ajout d'argent
+    // Dans une vraie implémentation, il faudrait intégrer un système de paiement
+    await connection.execute(
+      'UPDATE users SET solde = solde + ?, updated_at = NOW() WHERE id = ?',
+      [amount, userId]
+    );
+
+    // Récupérer le nouveau solde
+    const [users] = await connection.execute(
+      'SELECT solde FROM users WHERE id = ?',
+      [userId]
+    );
+
+    const user = (users as any[])[0];
+    
+    res.json({
+      message: 'Argent ajouté avec succès',
+      nouveauSolde: parseFloat(user.solde)
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout d\'argent:', error);
     res.status(500).json({
       error: 'Erreur interne du serveur',
       code: 'INTERNAL_ERROR'

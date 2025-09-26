@@ -39,6 +39,7 @@ const MemberManagement = ({ onClose }) => {
     const [memberFormData, setMemberFormData] = useState({
         nom: "",
         prenom: "",
+        surnom: "",
         adresse: "",
         telephone: "",
         email: "",
@@ -155,6 +156,7 @@ const MemberManagement = ({ onClose }) => {
         setMemberFormData({
             nom: member.nom || "",
             prenom: member.prenom || "",
+            surnom: member.surnom || "",
             adresse: member.adresse || "",
             telephone: member.telephone || "",
             email: member.email || "",
@@ -241,6 +243,7 @@ const MemberManagement = ({ onClose }) => {
             const formData = new FormData();
             formData.append("nom", memberFormData.nom);
             formData.append("prenom", memberFormData.prenom);
+            formData.append("surnom", memberFormData.surnom);
             formData.append("adresse", memberFormData.adresse);
             formData.append("telephone", memberFormData.telephone);
             formData.append("email", memberFormData.email);
@@ -363,6 +366,9 @@ const MemberManagement = ({ onClose }) => {
                                     Membre
                                 </th>
                                 <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                    Surnom
+                                </th>
+                                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                     Contact
                                 </th>
                                 <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
@@ -424,6 +430,11 @@ const MemberManagement = ({ onClose }) => {
                                                             : 'Date non renseignée'}
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">
+                                                {member.surnom || '-'}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -532,6 +543,19 @@ const MemberManagement = ({ onClose }) => {
                                         value={memberFormData.prenom}
                                         onChange={(e) => setMemberFormData({...memberFormData, prenom: e.target.value})}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Surnom
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={memberFormData.surnom}
+                                        onChange={(e) => setMemberFormData({...memberFormData, surnom: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
+                                        placeholder="Surnom optionnel"
                                     />
                                 </div>
 

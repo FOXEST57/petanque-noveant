@@ -40,6 +40,7 @@ import TeamManagement from "../components/TeamManagement";
 import HomeContentManagement from "../components/HomeContentManagement";
 import SiteManagement from "../components/SiteManagement";
 import MembershipRequestManagement from "../components/MembershipRequestManagement";
+import CaisseManagement from "../components/CaisseManagement";
 
 import { formatDateToFrench, formatDateToISO, validateFrenchDate } from "../utils/dateUtils";
 import { generateAvatar } from "../utils/avatarUtils";
@@ -828,6 +829,8 @@ const Admin = () => {
         modalKey,
     }) => {
         const handleCardClick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             setActiveModal(modalKey);
         };
 
@@ -835,6 +838,7 @@ const Admin = () => {
             <div
                 className="admin-stats-card"
                 onClick={handleCardClick}
+                style={{ cursor: 'pointer', pointerEvents: 'auto' }}
             >
                 <div className="admin-stats-card-header">
                     <div className="admin-stats-card-info">
@@ -976,6 +980,14 @@ const Admin = () => {
                     />
 
                     <ManagementCard
+                        title="Caisse"
+                        icon={CreditCard}
+                        count={1}
+                        description="Gestion de la caisse et des transactions"
+                        modalKey="caisse"
+                    />
+
+                    <ManagementCard
                         title="Gestion du site"
                         icon={Settings}
                         count={1}
@@ -1023,7 +1035,15 @@ const Admin = () => {
 
                             {/* Gestion des Demandes d'adhésion */}
                             {activeModal === "membershipRequests" && (
-                                <MembershipRequestManagement onClose={() => setActiveModal(null)} />
+                                <MembershipRequestManagement 
+                                    onClose={() => setActiveModal(null)} 
+                                    onRequestUpdated={() => updateMemberStats(members)}
+                                />
+                            )}
+
+                            {/* Gestion de la Caisse */}
+                            {activeModal === "caisse" && (
+                                <CaisseManagement onClose={() => setActiveModal(null)} />
                             )}
 
                             {/* Modal Gestion des Concours et Lotos */}

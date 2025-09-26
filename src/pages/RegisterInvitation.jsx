@@ -1,16 +1,28 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { Eye, EyeOff, Lock, AlertCircle, CheckCircle, Loader } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth.jsx'
 
 const RegisterInvitation = () => {
   const { token } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { signUp } = useAuth()
+  
+  // Fonction pour préserver les paramètres d'URL (notamment le paramètre club)
+  const preserveUrlParams = (path) => {
+    const searchParams = new URLSearchParams(location.search)
+    const clubParam = searchParams.get('club')
+    if (clubParam) {
+      return `${path}?club=${clubParam}`
+    }
+    return path
+  }
   
   const [invitation, setInvitation] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -24,7 +36,21 @@ const RegisterInvitation = () => {
   useEffect(() => {
     const verifyInvitation = async () => {
       try {
-        const response = await fetch(`/api/membership/verify-invitation/${token}`)
+        // Décoder le token pour obtenir le clubId
+        let clubId = null;
+        try {
+          const decodedToken = JSON.parse(atob(token));
+          clubId = decodedToken.clubId;
+        } catch (decodeError) {
+          console.error('Erreur lors du décodage du token:', decodeError);
+        }
+
+        // Construire l'URL avec le paramètre club si disponible
+        const url = clubId 
+          ? `/api/membership/verify-invitation/${token}?club=${clubId === 2 ? 'noveant' : 'demo'}`
+          : `/api/membership/verify-invitation/${token}`;
+        
+        const response = await fetch(url)
         const data = await response.json()
         
         if (response.ok && data.valid) {
@@ -86,8 +112,13 @@ const RegisterInvitation = () => {
         numeroLicence: invitation.numeroLicence
       })
       
-      // Redirection vers le tableau de bord après inscription réussie
-      navigate('/dashboard', { replace: true })
+      // Afficher le message de succès
+      setSuccess(true)
+      
+      // Redirection vers le profil après un délai pour laisser voir le message
+      setTimeout(() => {
+        navigate(preserveUrlParams('/profile'), { replace: true })
+      }, 2000)
       
     } catch (err) {
       console.error('Erreur lors de l\'inscription:', err)
@@ -131,6 +162,30 @@ const RegisterInvitation = () => {
               >
                 Retour à la connexion
               </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Affichage du message de succès
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+              Bienvenue !
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Votre compte a été créé avec succès. Vous allez être redirigé vers votre tableau de bord...
+            </p>
+            <div className="mt-4">
+              <Loader className="mx-auto h-6 w-6 text-blue-600 animate-spin" />
             </div>
           </div>
         </div>

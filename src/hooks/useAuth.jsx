@@ -25,13 +25,19 @@ export const AuthProvider = ({ children }) => {
         if (token) {
             // Vérifier la validité du token en récupérant le profil
             fetchUserProfile();
+        } else {
+            // Pas de token, arrêter le loading
+            setLoading(false);
         }
     }, []);
 
     const fetchUserProfile = async () => {
         try {
             const token = localStorage.getItem("auth_token");
-            if (!token) return;
+            if (!token) {
+                setLoading(false);
+                return;
+            }
 
             const userData = await apiCall("/auth/profile");
             setUser(userData.user);
@@ -41,6 +47,8 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem("auth_token");
             setUser(null);
             setUserProfile(null);
+        } finally {
+            setLoading(false);
         }
     };
 

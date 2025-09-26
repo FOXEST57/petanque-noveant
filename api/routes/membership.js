@@ -136,7 +136,7 @@ initializeClubsTable();
 // Rate limiting pour les demandes d'adhésion
 const membershipRequestLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000, // 24 heures
-  max: 10, // 10 demandes par IP par jour (augmenté à 10)
+  max: 20, // 20 demandes par IP par jour (augmenté à 20)
   message: {
     error: 'Trop de demandes d\'adhésion. Réessayez demain.',
     code: 'TOO_MANY_MEMBERSHIP_REQUESTS'
@@ -376,9 +376,11 @@ router.post('/submit-request', membershipRequestLimiter, async (req, res) => {
 
   } catch (error) {
     console.error('Erreur lors de la soumission de la demande:', error);
+    console.error('Stack trace:', error.stack);
     res.status(500).json({
       error: 'Erreur interne du serveur',
-      code: 'INTERNAL_ERROR'
+      code: 'INTERNAL_ERROR',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   } finally {
     await connection.end();
@@ -519,14 +521,16 @@ router.post('/approve/:requestId', authenticateToken, canApproveMembership, asyn
     // Ajouter automatiquement le membre approuvé à la table des membres
     try {
       await connection.execute(
-        'INSERT INTO members (nom, prenom, adresse, telephone, email, numero_licence, date_entree, type_membre_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, CURDATE(), 1, NOW(), NOW())',
+        'INSERT INTO members (nom, prenom, surnom, adresse, telephone, email, numero_licence, date_entree, type_membre_id, club_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, CURDATE(), 1, ?, NOW(), NOW())',
         [
           request.nom,
           request.prenom,
+          request.surnom, // Ajouter le surnom depuis la demande d'adhésion
           null, // adresse - pas disponible dans membership_requests
           request.telephone,
           request.email,
-          request.numero_licence
+          request.numero_licence,
+          clubId // Ajouter le club_id obligatoire
         ]
       );
       console.log(`Membre ${request.prenom} ${request.nom} ajouté automatiquement à la liste des membres`);

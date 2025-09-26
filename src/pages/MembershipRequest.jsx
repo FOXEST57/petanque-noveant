@@ -29,11 +29,12 @@ const MembershipRequest = () => {
         // Si un clubId est fourni dans l'URL
         const urlClubId = searchParams.get('club');
         if (urlClubId) {
-          setClubId(urlClubId);
-          // Récupérer les infos du club depuis l'API
+          // Récupérer les infos du club depuis l'API en utilisant le subdomain
           try {
-            const club = await apiCall(`/api/clubs/${urlClubId}`);
-            setClubInfo(club);
+            const response = await apiCall(`/api/clubs/by-subdomain/${urlClubId}`);
+            setClubInfo(response.club);
+            // Utiliser l'ID numérique du club pour la soumission
+            setClubId(response.club.id);
           } catch (error) {
             console.error('Erreur lors du chargement du club:', error);
           }
@@ -108,7 +109,7 @@ const MembershipRequest = () => {
     setIsLoading(true);
     
     try {
-      const result = await apiCall('/membership/submit-request', {
+      const result = await apiCall('/api/membership/submit-request', {
         method: 'POST',
         body: {
           ...formData,

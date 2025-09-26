@@ -43,6 +43,48 @@ const init = async () => {
 // Initialize database on module load
 init();
 
+// GET /api/members/search - Search members for autocomplete (requires authentication and club isolation)
+router.get('/search', authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
+  try {
+    const clubId = req.user!.clubId;
+    const { q } = req.query;
+    
+    let members = await getMembers(clubId);
+    
+    // Si une requête de recherche est fournie, filtrer les résultats
+    if (q && typeof q === 'string' && q.length >= 2) {
+      const searchTerm = q.toLowerCase();
+      members = members.filter((member: any) => 
+        member.prenom?.toLowerCase().includes(searchTerm) ||
+        member.nom?.toLowerCase().includes(searchTerm) ||
+        member.pseudo?.toLowerCase().includes(searchTerm) ||
+        member.email?.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    // Limiter les résultats pour les performances
+    const limitedMembers = members.slice(0, 20);
+    
+    res.json({ 
+      success: true, 
+      members: limitedMembers.map((member: any) => ({
+        id: member.id,
+        prenom: member.prenom,
+        nom: member.nom,
+        pseudo: member.pseudo,
+        email: member.email,
+        solde: member.solde || 0
+      }))
+    });
+  } catch (error) {
+    console.error('Error searching members:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Erreur lors de la recherche des membres' 
+    });
+  }
+});
+
 // GET /api/members - Get all members (requires authentication and club isolation)
 router.get('/', authenticateToken, ensureClubAccess(), async (req: Request, res: Response) => {
   try {

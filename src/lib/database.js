@@ -171,18 +171,18 @@ export const getMemberById = async (id, clubId = 1) => {
 };
 
 export const createMember = async (memberData, clubId = 1) => {
-  const { nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url } = memberData;
+  const { nom, prenom, surnom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url } = memberData;
   return await runQuery(
-    'INSERT INTO members (nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url, club_id, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
-    [nom || null, prenom || null, adresse || null, telephone || null, email || null, numero_licence || null, date_entree || null, date_naissance || null, type_membre_id || null, photo_url || null, clubId]
+    'INSERT INTO members (nom, prenom, surnom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url, club_id, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+    [nom || null, prenom || null, surnom || null, adresse || null, telephone || null, email || null, numero_licence || null, date_entree || null, date_naissance || null, type_membre_id || null, photo_url || null, clubId]
   );
 };
 
 export const updateMember = async (id, memberData, clubId = 1) => {
-  const { nom, prenom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url } = memberData;
+  const { nom, prenom, surnom, adresse, telephone, email, numero_licence, date_entree, date_naissance, type_membre_id, photo_url } = memberData;
   return await runQuery(
-    'UPDATE members SET nom = ?, prenom = ?, adresse = ?, telephone = ?, email = ?, numero_licence = ?, date_entree = ?, date_naissance = ?, type_membre_id = ?, photo_url = ?, updated_at = NOW() WHERE id = ? AND club_id = ?',
-    [nom || null, prenom || null, adresse || null, telephone || null, email || null, numero_licence || null, date_entree || null, date_naissance || null, type_membre_id || null, photo_url || null, id, clubId]
+    'UPDATE members SET nom = ?, prenom = ?, surnom = ?, adresse = ?, telephone = ?, email = ?, numero_licence = ?, date_entree = ?, date_naissance = ?, type_membre_id = ?, photo_url = ?, updated_at = NOW() WHERE id = ? AND club_id = ?',
+    [nom || null, prenom || null, surnom || null, adresse || null, telephone || null, email || null, numero_licence || null, date_entree || null, date_naissance || null, type_membre_id || null, photo_url || null, id, clubId]
   );
 };
 

@@ -12,6 +12,7 @@ import express, {
 import path from "path";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.ts";
+import caisseRoutes from "./routes/caisse.ts";
 import carouselRoutes from "./routes/carousel.ts";
 import clubsRoutes from "./routes/clubs.ts";
 import contactRoutes from "./routes/contact.ts";
@@ -58,6 +59,7 @@ apiRouter.use(detectSubdomain);
 
 // Mount routes on API router
 apiRouter.use("/auth", authRoutes);
+apiRouter.use("/caisse", caisseRoutes);
 apiRouter.use("/clubs", clubsRoutes);
 apiRouter.use("/events", eventsRoutes);
 apiRouter.use("/members", membersRoutes);

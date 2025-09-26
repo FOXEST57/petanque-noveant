@@ -15,8 +15,8 @@ export const apiCall = async (endpoint, options = {}) => {
   let url = endpoint.startsWith('/api') ? `${API_BASE_URL}${endpoint}` : `${API_BASE_URL}/api${endpoint}`;
   
   // Ajouter le paramètre club si présent et si l'endpoint ne l'a pas déjà
-  if (club && !endpoint.includes('club=')) {
-    const separator = endpoint.includes('?') ? '&' : '?';
+  if (club && !url.includes('club=')) {
+    const separator = url.includes('?') ? '&' : '?';
     url = `${url}${separator}club=${encodeURIComponent(club)}`;
   }
   
@@ -37,6 +37,13 @@ export const apiCall = async (endpoint, options = {}) => {
     defaultOptions.headers['Content-Type'] = 'application/json';
   }
 
+  // Préparer le body pour l'envoi
+  if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
+    defaultOptions.body = JSON.stringify(options.body);
+  } else if (options.body) {
+    defaultOptions.body = options.body;
+  }
+
   // Ajouter le token d'authentification si disponible
   if (token) {
     defaultOptions.headers['Authorization'] = `Bearer ${token}`;
@@ -46,7 +53,20 @@ export const apiCall = async (endpoint, options = {}) => {
     const response = await fetch(url, defaultOptions);
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Essayer de récupérer le message d'erreur du serveur
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (parseError) {
+        // Si on ne peut pas parser la réponse, utiliser un message générique
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      // Créer une erreur avec les détails du serveur
+      const error = new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      error.code = errorData.code;
+      error.status = errorData.status;
+      throw error;
     }
     
     return await response.json();

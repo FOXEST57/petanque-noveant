@@ -19,7 +19,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { apiCall } from '../utils/apiCall.js';
 
-const MembershipRequestManagement = ({ onClose }) => {
+const MembershipRequestManagement = ({ onClose, onRequestUpdated }) => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -83,7 +83,7 @@ const MembershipRequestManagement = ({ onClose }) => {
             setActionLoading(true);
             const token = localStorage.getItem('auth_token');
             
-            await apiCall(`/membership/approve/${requestId}`, {
+            const response = await apiCall(`/membership/approve/${requestId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -93,6 +93,16 @@ const MembershipRequestManagement = ({ onClose }) => {
             toast.success('Demande approuvée avec succès');
             loadRequests(); // Recharger la liste
             setSelectedRequest(null); // Fermer la modal
+            
+            // Notifier le parent pour mettre à jour les statistiques
+            if (onRequestUpdated) {
+                onRequestUpdated();
+            }
+
+            // Vérifier si l'email a été envoyé
+            if (response.invitationSent === false) {
+                toast.warning('Demande approuvée mais l\'email d\'invitation n\'a pas pu être envoyé');
+            }
         } catch (error) {
             console.error('Erreur:', error);
             toast.error('Erreur lors de l\'approbation');
@@ -116,9 +126,14 @@ const MembershipRequestManagement = ({ onClose }) => {
                 })
             });
 
-            toast.success('Demande rejetée');
-            loadRequests();
+            toast.success('Demande rejetée avec succès');
+            loadRequests(); // Recharger la liste
             setShowModal(false);
+            
+            // Notifier le parent pour mettre à jour les statistiques
+            if (onRequestUpdated) {
+                onRequestUpdated();
+            }
         } catch (error) {
             console.error('Erreur:', error);
             toast.error(error.message);

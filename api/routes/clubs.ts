@@ -55,6 +55,62 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Route pour récupérer un club par subdomain
+router.get('/by-subdomain/:subdomain', async (req, res) => {
+  let connection;
+  const subdomain = req.params.subdomain;
+  
+  if (!subdomain || subdomain.trim() === '') {
+    return res.status(400).json({
+      success: false,
+      message: 'Subdomain invalide'
+    });
+  }
+  
+  try {
+    connection = await mysql.createConnection(dbConfig);
+    
+    const [clubs] = await connection.execute(
+      `SELECT 
+        id, 
+        nom, 
+        ville, 
+        numero_ffpjp, 
+        subdomain,
+        adresse,
+        telephone,
+        email,
+        created_at
+      FROM clubs 
+      WHERE subdomain = ?`,
+      [subdomain]
+    );
+    
+    if (clubs.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Club non trouvé'
+      });
+    }
+    
+    res.json({
+      success: true,
+      club: clubs[0]
+    });
+  } catch (error) {
+    console.error('Erreur lors de la récupération du club:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération du club',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Erreur interne du serveur'
+    });
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+});
+
 // Route pour récupérer un club spécifique par ID
 router.get('/:id', async (req, res) => {
   let connection;
