@@ -51,35 +51,42 @@ const SiteManagement = ({ isOpen, onClose }) => {
     // Charger les paramètres du site au montage du composant
     useEffect(() => {
         if (isOpen) {
-            // Utiliser les paramètres globaux comme base
-            setSiteSettings({
-                primaryColor: globalSiteSettings.primaryColor || "#425e9b",
-                siteName: globalSiteSettings.siteName || "Club de Pétanque",
-                siteSubtitle:
-                    globalSiteSettings.siteSubtitle ||
-                    "Bienvenue dans notre club",
-                clubName:
-                    globalSiteSettings.clubName ||
-                    "Club de Pétanque de Noveant",
-                ffpjpId: globalSiteSettings.ffpjpId || "",
-                address: globalSiteSettings.address || "",
-                phone: globalSiteSettings.phone || "",
-                phoneVisible:
-                    globalSiteSettings.phoneVisible !== undefined
-                        ? globalSiteSettings.phoneVisible
-                        : true,
-                email: globalSiteSettings.email || "",
-                facebookUrl: globalSiteSettings.facebookUrl || "",
-                instagramUrl: globalSiteSettings.instagramUrl || "",
-                whatsappUrl: globalSiteSettings.whatsappUrl || "",
-                tiktokUrl: globalSiteSettings.tiktokUrl || "",
-                logoUrl: globalSiteSettings.logoUrl || "",
-                faviconUrl: globalSiteSettings.faviconUrl || "",
-                clubDescription: globalSiteSettings.clubDescription || "",
+            console.log('🔧 SiteManagement ouvert, paramètres globaux:', globalSiteSettings);
+            
+            // Forcer le rechargement des paramètres depuis la base de données
+            loadSiteSettings().then(() => {
+                console.log('🔄 Paramètres rechargés, nouveaux paramètres globaux:', globalSiteSettings);
+                
+                // Utiliser les paramètres globaux comme base
+                setSiteSettings({
+                    primaryColor: globalSiteSettings.primaryColor || "#425e9b",
+                    siteName: globalSiteSettings.siteName || "Club de Pétanque",
+                    siteSubtitle:
+                        globalSiteSettings.siteSubtitle ||
+                        "Bienvenue dans notre club",
+                    clubName:
+                        globalSiteSettings.clubName ||
+                        "Club de Pétanque de Noveant",
+                    ffpjpId: globalSiteSettings.ffpjpId || "",
+                    address: globalSiteSettings.address || "",
+                    phone: globalSiteSettings.phone || "",
+                    phoneVisible:
+                        globalSiteSettings.phoneVisible !== undefined
+                            ? globalSiteSettings.phoneVisible
+                            : true,
+                    email: globalSiteSettings.email || "",
+                    facebookUrl: globalSiteSettings.facebookUrl || "",
+                    instagramUrl: globalSiteSettings.instagramUrl || "",
+                    whatsappUrl: globalSiteSettings.whatsappUrl || "",
+                    tiktokUrl: globalSiteSettings.tiktokUrl || "",
+                    logoUrl: globalSiteSettings.logoUrl || "",
+                    faviconUrl: globalSiteSettings.faviconUrl || "",
+                    clubDescription: globalSiteSettings.clubDescription || "",
+                });
+                setLoadingSettings(false);
             });
-            setLoadingSettings(false);
         }
-    }, [isOpen, globalSiteSettings]);
+    }, [isOpen]);
 
     const handleColorChange = (color) => {
         setSiteSettings((prev) => ({ ...prev, primaryColor: color }));
