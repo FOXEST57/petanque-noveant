@@ -443,20 +443,25 @@ router.post('/depense-especes', authenticateToken, canManageCaisse, caisseOperat
      const connection = await mysql.createConnection(dbConfig);
      
      try {
-       // Récupérer le fond de caisse depuis la nouvelle table fond_caisse
-       const [fondCaisseRows] = await connection.execute(
-         'SELECT solde FROM fond_caisse WHERE id_club = ?',
+       // Récupérer le solde du fond de caisse depuis fond_caisse_operations
+       const [operationsFondRows] = await connection.execute(
+         `SELECT 
+           COALESCE(SUM(CASE WHEN type_operation = 'credit' THEN montant ELSE 0 END), 0) as total_credits,
+           COALESCE(SUM(CASE WHEN type_operation = 'debit' THEN montant ELSE 0 END), 0) as total_debits
+          FROM fond_caisse_operations 
+          WHERE id_club = ?`,
          [clubId]
        );
        
-       const fondCaisseData = fondCaisseRows as any[];
-       console.log('📊 Données fond_caisse:', fondCaisseData);
+       const operationsFond = operationsFondRows as any[];
+       const totalCredits = operationsFond.length > 0 ? parseFloat(operationsFond[0].total_credits) : 0;
+       const totalDebits = operationsFond.length > 0 ? parseFloat(operationsFond[0].total_debits) : 0;
        
-       const fondCaisseRaw = fondCaisseData.length > 0 ? fondCaisseData[0].solde : 0;
-       const fondCaisse = parseFloat(fondCaisseRaw) || 0;
-       console.log('💰 Fond de caisse:', fondCaisse);
+       // Le fond de caisse = total crédits - total débits des opérations de fond
+       const fondCaisse = totalCredits - totalDebits;
+       console.log('💰 Fond de caisse (calculé depuis fond_caisse_operations):', fondCaisse);
        
-       // Calculer le total des encaissements et retraits depuis l'historique
+       // Calculer le total des recettes depuis caisse_historique (encaissements - retraits)
        const [operationsRows] = await connection.execute(
          `SELECT 
            COALESCE(SUM(montant_encaissement), 0) as total_encaissements,
@@ -467,7 +472,7 @@ router.post('/depense-especes', authenticateToken, canManageCaisse, caisseOperat
        );
        
        const operations = operationsRows as any[];
-       console.log('📈 Données opérations:', operations);
+       console.log('📈 Données opérations caisse_historique:', operations);
        
        const totalEncaissementsRaw = operations.length > 0 ? operations[0].total_encaissements : 0;
        const totalRetraitsRaw = operations.length > 0 ? operations[0].total_retraits : 0;
@@ -475,12 +480,13 @@ router.post('/depense-especes', authenticateToken, canManageCaisse, caisseOperat
        const totalEncaissements = parseFloat(totalEncaissementsRaw) || 0;
        const totalRetraits = parseFloat(totalRetraitsRaw) || 0;
        
-       console.log('💵 Total encaissements:', totalEncaissements);
-       console.log('💸 Total retraits:', totalRetraits);
+       console.log('💵 Total encaissements (recettes):', totalEncaissements);
+       console.log('💸 Total retraits (recettes):', totalRetraits);
        
        // Calculer le solde de caisse et les recettes
-       const soldeCaisse = fondCaisse + totalEncaissements - totalRetraits;
-       const recettes = soldeCaisse - fondCaisse;
+       // Solde de caisse = fond de caisse + recettes nettes
+       const recettes = totalEncaissements - totalRetraits;
+       const soldeCaisse = fondCaisse + recettes;
        
        console.log('🧮 Calculs finaux:', {
          fondCaisse,
@@ -568,7 +574,8 @@ router.get('/historique', authenticateToken, canManageCaisse, async (req: Reques
  */
 router.post('/transfert-bancaire', authenticateToken, canManageCaisse, caisseOperationLimiter, async (req: Request, res: Response) => {
   try {
-    const { banqueId, montant, type } = req.body;
+    const { banqueId, type } = req.body;
+    const montant = parseFloat(req.body.montant);
     const clubId = req.user!.clubId;
     const userId = req.user!.id;
     
@@ -614,7 +621,7 @@ router.post('/transfert-bancaire', authenticateToken, canManageCaisse, caisseOpe
        );
        
        const fondCaisseData = fondCaisseRows as any[];
-       const fondActuel = fondCaisseData.length > 0 ? (fondCaisseData[0].solde || 0) : 0;
+       const fondActuel = fondCaisseData.length > 0 ? parseFloat(fondCaisseData[0].solde || 0) : 0;
       
       let nouveauFondCaisse: number;
       let description: string;
@@ -650,14 +657,41 @@ router.post('/transfert-bancaire', authenticateToken, canManageCaisse, caisseOpe
           // On peut retirer entièrement des recettes, le fond de caisse ne change pas
           nouveauFondCaisse = fondActuel;
           description = `Transfert vers ${nomBanque} (sur recettes)`;
+          
+          // Enregistrer l'opération dans caisse_historique (retrait de recettes)
+          await connection.execute(
+            'INSERT INTO caisse_historique (club_id, type_operation, montant_retrait, description, banque_id, user_id, date_operation) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+            [clubId, 'retrait', montant, description, banqueId, userId]
+          );
+          
         } else {
           // On retire toutes les recettes et le reste du fond de caisse
           const montantSurFond = montant - recettes;
           nouveauFondCaisse = fondActuel - montantSurFond;
+          
           if (recettes > 0) {
             description = `Transfert vers ${nomBanque} (${recettes.toFixed(2)}€ sur recettes, ${montantSurFond.toFixed(2)}€ sur fond)`;
+            
+            // Enregistrer l'opération sur les recettes dans caisse_historique
+            await connection.execute(
+              'INSERT INTO caisse_historique (club_id, type_operation, montant_retrait, description, banque_id, user_id, date_operation) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+              [clubId, 'retrait', recettes, `Transfert vers ${nomBanque} (sur recettes)`, banqueId, userId]
+            );
+            
+            // Enregistrer l'opération sur le fond de caisse dans fond_caisse_operations
+            await connection.execute(
+              'INSERT INTO fond_caisse_operations (id_club, type_operation, montant, description, banque_id, user_id) VALUES (?, ?, ?, ?, ?, ?)',
+              [clubId, 'debit', montantSurFond, `Transfert vers ${nomBanque} (sur fond de caisse)`, banqueId, userId]
+            );
+            
           } else {
             description = `Transfert vers ${nomBanque} (sur fond de caisse)`;
+            
+            // Enregistrer uniquement l'opération sur le fond de caisse
+            await connection.execute(
+              'INSERT INTO fond_caisse_operations (id_club, type_operation, montant, description, banque_id, user_id) VALUES (?, ?, ?, ?, ?, ?)',
+              [clubId, 'debit', montant, description, banqueId, userId]
+            );
           }
         }
         
@@ -667,46 +701,43 @@ router.post('/transfert-bancaire', authenticateToken, canManageCaisse, caisseOpe
         nouveauFondCaisse = fondActuel + montant;
         description = `Transfert depuis ${nomBanque}`;
         typeOperation = 'credit';
-      }
-      
-      // Mettre à jour le fond de caisse
-      if (type === 'caisse-vers-banque') {
-        // Débiter le fond de caisse
-        const montantDebit = nouveauFondCaisse < fondActuel ? fondActuel - nouveauFondCaisse : 0;
-        if (montantDebit > 0) {
-          await connection.execute(
-            'UPDATE fond_caisse SET debit = debit + ?, solde = ?, date_modification = NOW() WHERE id_club = ?',
-            [montantDebit, nouveauFondCaisse, clubId]
-          );
-        }
-      } else {
-        // Créditer le fond de caisse
-        await connection.execute(
-          'UPDATE fond_caisse SET credit = credit + ?, solde = ?, date_modification = NOW() WHERE id_club = ?',
-          [montant, nouveauFondCaisse, clubId]
-        );
-      }
-      
-      // Enregistrer l'opération dans l'historique SEULEMENT pour les transferts caisse vers banque
-      // Les transferts banque vers caisse ne sont PAS des recettes, ils augmentent juste le fond de caisse
-      if (type === 'caisse-vers-banque') {
-        const montantEncaissement = 0;
-        const montantRetrait = montant;
         
+        // Enregistrer l'opération dans fond_caisse_operations
         await connection.execute(
-          'INSERT INTO caisse_historique (club_id, user_id, type_operation, montant_encaissement, montant_retrait, description, date_operation, banque_id) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)',
-          [clubId, userId, typeOperation, montantEncaissement, montantRetrait, description, banqueId]
+          'INSERT INTO fond_caisse_operations (id_club, type_operation, montant, description, banque_id, user_id) VALUES (?, ?, ?, ?, ?, ?)',
+          [clubId, 'credit', montant, description, banqueId, userId]
         );
       }
-      // Pour les transferts banque vers caisse, on ne fait RIEN dans l'historique
-      // car ce ne sont pas des recettes, juste une augmentation du fond de caisse
+      
+      // Recalculer le solde du fond de caisse à partir de toutes les opérations
+      const [operationsFondRows] = await connection.execute(
+        `SELECT 
+          COALESCE(SUM(CASE WHEN type_operation = 'credit' THEN montant ELSE 0 END), 0) as total_credits,
+          COALESCE(SUM(CASE WHEN type_operation = 'debit' THEN montant ELSE 0 END), 0) as total_debits
+         FROM fond_caisse_operations 
+         WHERE id_club = ?`,
+        [clubId]
+      );
+      
+      const operationsFond = operationsFondRows as any[];
+      const totalCredits = operationsFond.length > 0 ? parseFloat(operationsFond[0].total_credits) : 0;
+      const totalDebits = operationsFond.length > 0 ? parseFloat(operationsFond[0].total_debits) : 0;
+      
+      // Le nouveau solde du fond = total crédits - total débits
+      nouveauFondCaisse = totalCredits - totalDebits;
+      
+      // Mettre à jour le solde dans la table fond_caisse (pour compatibilité)
+      await connection.execute(
+        'UPDATE fond_caisse SET solde = ?, date_modification = NOW() WHERE id_club = ?',
+        [nouveauFondCaisse, clubId]
+      );
       
       await connection.commit();
       
       res.json({
         success: true,
         message: description,
-        nouveauFondCaisse: nouveauFondCaisse
+        nouveauFondCaisse: nouveauFondCaisse.toFixed(2)
       });
     } catch (error) {
       await connection.rollback();
