@@ -1,6 +1,6 @@
 import { ExternalLink, MapPin, Search, X, Mail, Building, MapPin as MapPinIcon, Phone, AlertTriangle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { apiCall } from "../utils/apiCall.js";
 
 const ClubFinder = () => {
@@ -12,13 +12,16 @@ const ClubFinder = () => {
     const [showAccountRequestModal, setShowAccountRequestModal] = useState(false);
     const [showWarningModal, setShowWarningModal] = useState(false);
     const [showFFPJPWarningModal, setShowFFPJPWarningModal] = useState(false);
+    const [accountCreated, setAccountCreated] = useState(false);
     const [requestForm, setRequestForm] = useState({
         clubName: "",
         contactName: "",
         email: "",
         phone: "",
         city: "",
-        address: "",
+        streetNumber: "",
+        streetName: "",
+        postalCode: "",
         ffpjpNumber: "",
         message: ""
     });
@@ -87,102 +90,63 @@ const ClubFinder = () => {
             toast.error("L'email est obligatoire");
             return;
         }
-        
-        // Vérifications d'unicité avant de procéder
-        try {
-            // Vérifier l'unicité de l'email
-            const emailCheck = await checkEmailUniqueness(requestForm.email);
-            if (!emailCheck.isUnique) {
-                toast.error(emailCheck.message);
-                return;
-            }
-            
-            // Vérifier si le club existe déjà
-            const clubCheck = await checkClubExistence(requestForm.clubName, requestForm.city);
-            if (clubCheck.exists) {
-                toast.error(clubCheck.message);
-                return;
-            }
-            
-            // Vérifier l'unicité du numéro FFPJP s'il est fourni
-            if (requestForm.ffpjpNumber.trim()) {
-                const ffpjpCheck = await checkFFPJPUniqueness(requestForm.ffpjpNumber);
-                if (!ffpjpCheck.isUnique) {
-                    toast.error(ffpjpCheck.message);
-                    return;
-                }
-            }
-            
-            // Si toutes les vérifications passent, continuer avec le processus
-            // Vérifier si le numéro FFPJP est manquant
-            if (!requestForm.ffpjpNumber.trim()) {
-                setShowFFPJPWarningModal(true);
-                return;
-            }
-            
-            // Si le numéro FFPJP est présent, procéder directement à la création
-            await processAccountCreation();
-            
-        } catch (error) {
-            console.error("Erreur lors des vérifications:", error);
-            toast.error("Erreur lors de la vérification des données");
+
+        // Validation de l'email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(requestForm.email)) {
+            toast.error("Format d'email invalide");
+            return;
         }
+        
+        // Vérifier si le numéro FFPJP est manquant
+        if (!requestForm.ffpjpNumber.trim()) {
+            // Si un compte a déjà été créé, procéder directement à la création sans modal
+            if (accountCreated) {
+                await processAccountCreation();
+                return;
+            }
+            setShowFFPJPWarningModal(true);
+            return;
+        }
+        
+        // Si le numéro FFPJP est présent, procéder directement à la création
+        await processAccountCreation();
     };
 
     // Fonction pour traiter la création du compte
     const processAccountCreation = async () => {
         try {
-            // Préparer les données du club
+            // Préparer les données du club pour l'API
             const clubData = {
-                name: requestForm.clubName,
-                city: requestForm.city,
-                address: requestForm.address,
-                ffpjpNumber: requestForm.ffpjpNumber || null,
-                status: requestForm.ffpjpNumber ? 'active' : 'provisional', // Statut selon la présence du numéro FFPJP
-                provisionalExpiryDate: requestForm.ffpjpNumber ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours si pas de FFPJP
-                createdAt: new Date()
+                nom: requestForm.clubName,
+                ville: requestForm.city,
+                numero_rue: requestForm.streetNumber,
+                nom_rue: requestForm.streetName,
+                code_postal: requestForm.postalCode,
+                contactName: requestForm.contactName,
+                email: requestForm.email,
+                telephone: requestForm.phone
             };
             
-            // Préparer les données de l'administrateur
-            const adminData = {
-                name: requestForm.contactName,
-                email: requestForm.email,
-                phone: requestForm.phone,
-                role: 'admin',
-                clubId: null, // Sera défini après la création du club
-                isVerified: false,
-                verificationToken: 'verify_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
-            };
+            // Ajouter le numéro FFPJP seulement s'il est fourni
+            if (requestForm.ffpjpNumber && requestForm.ffpjpNumber.trim() !== '') {
+                clubData.numero_ffpjp = formatFFPJPNumberForSubmit(requestForm.ffpjpNumber);
+            }
             
             console.log("Données du club à créer:", clubData);
-            console.log("Données de l'administrateur à créer:", adminData);
             
-            // Simuler l'envoi au backend pour créer le club et l'administrateur
-            // Dans un vrai backend, cela créerait :
-            // 1. Le club dans la table clubs
-            // 2. L'utilisateur administrateur dans la table users
-            // 3. L'association club-admin
-            // 4. L'envoi de l'email de vérification
+            // Appel à l'API pour créer le club
+            const response = await apiCall('/api/clubs', {
+                method: 'POST',
+                body: clubData
+            });
             
-            // Simuler l'envoi d'un email de vérification
-            const emailData = {
-                to: requestForm.email,
-                subject: `Vérification de votre compte administrateur - ${requestForm.clubName}`,
-                clubName: requestForm.clubName,
-                contactName: requestForm.contactName,
-                city: requestForm.city,
-                hasFFPJP: !!requestForm.ffpjpNumber.trim(),
-                verificationToken: adminData.verificationToken,
-                verificationLink: `${window.location.origin}/verify-account?token=${adminData.verificationToken}`,
-                provisionalWarning: !requestForm.ffpjpNumber
-            };
-            
-            console.log("Envoi de l'email de vérification:", emailData);
+            console.log("Réponse de l'API:", response);
             
             // Message de succès avec instructions détaillées
             const successMessage = requestForm.ffpjpNumber 
-                ? "Votre club a été créé avec succès ! Un email de vérification a été envoyé à votre adresse. Veuillez cliquer sur le lien dans l'email pour créer votre mot de passe et accéder à votre espace d'administration."
-                : "Votre club a été créé avec un accès provisoire de 30 jours. Un email de vérification a été envoyé à votre adresse. Veuillez cliquer sur le lien pour créer votre mot de passe. N'oubliez pas de renseigner votre numéro FFPJP dans les 30 jours.";
+                ? "Votre club a été créé avec succès ! Un email de vérification sera envoyé à votre adresse. Veuillez cliquer sur le lien dans l'email pour créer votre mot de passe et accéder à votre espace d'administration."
+                : "Votre club a été créé avec un accès provisoire de 30 jours. Un email de vérification sera envoyé à votre adresse. Veuillez cliquer sur le lien pour créer votre mot de passe. N'oubliez pas de renseigner votre numéro FFPJP dans les 30 jours.";
             
             toast.success(successMessage, { duration: 10000 });
             
@@ -193,137 +157,71 @@ const ClubFinder = () => {
                 email: '',
                 phone: '',
                 city: '',
-                address: '',
+                streetNumber: '',
+                streetName: '',
+                postalCode: '',
                 ffpjpNumber: '',
                 message: ''
             });
             setShowAccountRequestModal(false);
             setShowFFPJPWarningModal(false);
+            setAccountCreated(true);
         } catch (error) {
             console.error("Erreur lors de la création du compte:", error);
-            toast.error("Erreur lors de la création du compte");
+            
+            // Gestion spécifique des erreurs de doublon FFPJP
+            if (error.message && error.message.includes('Ce numéro FFPJP est déjà utilisé')) {
+                toast.error("Ce numéro FFPJP est déjà utilisé par un autre club. Veuillez vérifier votre numéro ou contacter l'administration.");
+                // Fermer la modale d'avertissement FFPJP si elle est ouverte
+                setShowFFPJPWarningModal(false);
+                return;
+            }
+            
+            // Autres erreurs de doublon
+            if (error.message && error.message.includes('Cette information est déjà utilisée')) {
+                toast.error("Ces informations sont déjà utilisées par un autre club. Veuillez vérifier vos données.");
+                setShowFFPJPWarningModal(false);
+                return;
+            }
+            
+            // Erreur générique
+            toast.error(error.message || "Erreur lors de la création du compte");
+            setShowFFPJPWarningModal(false);
         }
     };
 
-    // Fonction pour formater le numéro FFPJP (compléter avec des zéros devant pour avoir 4 chiffres)
-    const formatFFPJPNumber = (number) => {
+    // Fonction pour nettoyer le numéro FFPJP pendant la saisie (sans ajouter de zéros)
+    const cleanFFPJPNumber = (number) => {
         if (!number || number.trim() === '') return '';
         
         // Supprimer tous les caractères non numériques
         const cleanNumber = number.replace(/\D/g, '');
         
-        // Si le numéro est vide après nettoyage, retourner vide
+        // Limiter à 4 chiffres maximum
+        return cleanNumber.slice(0, 4);
+    };
+
+    // Fonction pour formater le numéro FFPJP final (compléter avec des zéros devant pour avoir 4 chiffres)
+    const formatFFPJPNumberForSubmit = (number) => {
+        if (!number || number.trim() === '') return '';
+        
+        const cleanNumber = cleanFFPJPNumber(number);
         if (cleanNumber === '') return '';
         
-        // Limiter à 4 chiffres maximum
-        const limitedNumber = cleanNumber.slice(0, 4);
-        
         // Compléter avec des zéros devant pour avoir 4 chiffres
-        return limitedNumber.padStart(4, '0');
+        return cleanNumber.padStart(4, '0');
     };
 
-    // Fonction pour vérifier l'unicité du numéro FFPJP
-    const checkFFPJPUniqueness = async (ffpjpNumber) => {
-        try {
-            if (!ffpjpNumber || ffpjpNumber.trim() === '') {
-                return { isUnique: true }; // Pas de vérification si le numéro est vide
-            }
-            
-            // Formater le numéro avant vérification
-            const formattedNumber = formatFFPJPNumber(ffpjpNumber);
-            
-            console.log("Vérification de l'unicité du numéro FFPJP:", formattedNumber);
-            
-            // Simuler quelques numéros FFPJP déjà utilisés pour la démo
-            const existingFFPJPNumbers = [
-                '0001',
-                '0005', 
-                '0123',
-                '1234',
-                '0015'
-            ];
-            
-            if (existingFFPJPNumbers.includes(formattedNumber)) {
-                return { 
-                    isUnique: false, 
-                    message: `Le numéro FFPJP ${formattedNumber} est déjà utilisé par un autre club.` 
-                };
-            }
-            
-            return { isUnique: true };
-        } catch (error) {
-            console.error("Erreur lors de la vérification du numéro FFPJP:", error);
-            return { isUnique: false, message: "Erreur lors de la vérification du numéro FFPJP." };
-        }
-    };
-    const checkEmailUniqueness = async (email) => {
-        try {
-            // Simuler une vérification dans la base de données
-            // Dans un vrai backend, cela ferait une requête à l'API
-            console.log("Vérification de l'unicité de l'email:", email);
-            
-            // Simuler quelques emails déjà utilisés pour la démo
-            const existingEmails = [
-                'admin@club-demo.fr',
-                'president@petanque-noveant.fr',
-                'contact@club-test.fr'
-            ];
-            
-            if (existingEmails.includes(email.toLowerCase())) {
-                return { isUnique: false, message: "Cette adresse email est déjà utilisée par un autre compte." };
-            }
-            
-            return { isUnique: true };
-        } catch (error) {
-            console.error("Erreur lors de la vérification de l'email:", error);
-            return { isUnique: false, message: "Erreur lors de la vérification de l'email." };
-        }
-    };
 
-    // Fonction pour vérifier si le club existe déjà
-    const checkClubExistence = async (clubName, city) => {
-        try {
-            // Simuler une vérification dans la base de données
-            console.log("Vérification de l'existence du club:", clubName, city);
-            
-            // Simuler quelques clubs déjà existants pour la démo
-            // Note: Plusieurs clubs peuvent exister dans la même ville avec des noms différents
-            const existingClubs = [
-                { name: 'Club de Pétanque de Noveant', city: 'Noveant-sur-Moselle' },
-                { name: 'Pétanque Club Demo', city: 'Metz' },
-                { name: 'Les Boules de Fer', city: 'Nancy' },
-                { name: 'Amicale Pétanque Metz', city: 'Metz' }, // Autre club à Metz
-                { name: 'Pétanque Club Nancy Centre', city: 'Nancy' } // Autre club à Nancy
-            ];
-            
-            // Vérifier uniquement si un club avec EXACTEMENT le même nom existe déjà
-            // (peu importe la ville, car un nom de club doit être unique)
-            const clubExists = existingClubs.some(club => 
-                club.name.toLowerCase().trim() === clubName.toLowerCase().trim()
-            );
-            
-            if (clubExists) {
-                return { 
-                    exists: true, 
-                    message: `Un club avec le nom "${clubName}" existe déjà. Veuillez choisir un autre nom.` 
-                };
-            }
-            
-            return { exists: false };
-        } catch (error) {
-            console.error("Erreur lors de la vérification du club:", error);
-            return { exists: true, message: "Erreur lors de la vérification du club." };
-        }
-    };
 
     // Gérer les changements dans le formulaire de demande
     const handleRequestFormChange = (field, value) => {
         if (field === 'ffpjpNumber') {
-            // Appliquer le formatage automatique pour le numéro FFPJP
-            const formattedValue = formatFFPJPNumber(value);
+            // Nettoyer la saisie sans ajouter de zéros automatiquement
+            const cleanedValue = cleanFFPJPNumber(value);
             setRequestForm(prev => ({
                 ...prev,
-                [field]: formattedValue
+                [field]: cleanedValue
             }));
         } else {
             setRequestForm(prev => ({
@@ -542,7 +440,10 @@ const ClubFinder = () => {
                             Si votre club n'apparaît pas dans les résultats ou s'il est listé mais sans espace membre, vous pouvez ouvrir un compte directement.
                         </p>
                         <button
-                            onClick={() => setShowWarningModal(true)}
+                            onClick={() => {
+                                setAccountCreated(false);
+                                setShowWarningModal(true);
+                            }}
                             className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                         >
                             Ouvrir un compte club
@@ -553,7 +454,7 @@ const ClubFinder = () => {
 
             {/* Modale d'avertissement FFPJP manquant */}
             {showFFPJPWarningModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
                     <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-xl font-bold text-gray-900 flex items-center">
@@ -598,6 +499,9 @@ const ClubFinder = () => {
                             </button>
                             <button
                                 onClick={async () => {
+                                    setShowFFPJPWarningModal(false);
+                                    setShowAccountRequestModal(false); // Fermer le modal principal immédiatement
+                                    setAccountCreated(true); // Marquer le compte comme créé pour éviter la boucle
                                     await processAccountCreation();
                                 }}
                                 className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
@@ -763,17 +667,46 @@ const ClubFinder = () => {
                                         </div>
                                     </div>
 
-                                    {/* Adresse */}
-                                    <div className="md:col-span-2">
+                                    {/* Adresse - Numéro et Rue */}
+                                    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Numéro
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={requestForm.streetNumber}
+                                                onChange={(e) => handleRequestFormChange('streetNumber', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                placeholder="Ex: 15"
+                                            />
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Rue
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={requestForm.streetName}
+                                                onChange={(e) => handleRequestFormChange('streetName', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                placeholder="Ex: Rue de la République"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Code Postal */}
+                                    <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Adresse complète
+                                            Code Postal
                                         </label>
                                         <input
                                             type="text"
-                                            value={requestForm.address}
-                                            onChange={(e) => handleRequestFormChange('address', e.target.value)}
+                                            value={requestForm.postalCode}
+                                            onChange={(e) => handleRequestFormChange('postalCode', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            placeholder="Adresse du club"
+                                            placeholder="Ex: 57680"
+                                            maxLength="5"
                                         />
                                     </div>
 
@@ -795,19 +728,7 @@ const ClubFinder = () => {
                                         </p>
                                     </div>
 
-                                    {/* Message */}
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Message complémentaire
-                                        </label>
-                                        <textarea
-                                            value={requestForm.message}
-                                            onChange={(e) => handleRequestFormChange('message', e.target.value)}
-                                            rows={4}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            placeholder="Informations complémentaires sur votre club ou votre demande..."
-                                        />
-                                    </div>
+
                                 </div>
 
                                 <div className="flex items-center justify-end space-x-4 pt-6 border-t">

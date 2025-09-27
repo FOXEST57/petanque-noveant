@@ -24,6 +24,7 @@ import Contact from './pages/Contact';
 import ClubFinder from './pages/ClubFinder';
 import MembershipRequest from './pages/MembershipRequest';
 import RegisterInvitation from './pages/RegisterInvitation';
+import RegisterAdminInvitation from './pages/RegisterAdminInvitation';
 import TestTeamManagement from './pages/TestTeamManagement';
 import Profile from './pages/Profile';
 
@@ -40,19 +41,22 @@ export default function App() {
   // Si c'est le domaine principal, afficher la page de recherche de clubs
   if (isMainDomain) {
     return (
-      <Router future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true
-      }}>
-        <div className="min-h-screen">
-          <Routes>
-            <Route path="/" element={<ClubFinder />} />
-            <Route path="/club-finder" element={<ClubFinder />} />
-            <Route path="/login" element={<Login />} />
-          </Routes>
-          <Toaster position="top-right" richColors />
-        </div>
-      </Router>
+      <AuthProvider>
+        <Router future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}>
+          <div className="min-h-screen">
+            <Routes>
+              <Route path="/" element={<ClubFinder />} />
+              <Route path="/club-finder" element={<ClubFinder />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register-admin/:token" element={<RegisterAdminInvitation />} />
+            </Routes>
+            <Toaster position="top-right" richColors />
+          </div>
+        </Router>
+      </AuthProvider>
     );
   }
 
@@ -117,6 +121,7 @@ function AppContent({ clubSubdomain, isMainDomain }) {
                 <Route path="/test-team-management" element={<TestTeamManagement />} />
                 <Route path="/membership-request" element={<MembershipRequest />} />
                 <Route path="/register/:token" element={<RegisterInvitation />} />
+                <Route path="/register-admin/:token" element={<RegisterAdminInvitation />} />
                 <Route path="/club-finder" element={<ClubFinder />} />
               </Routes>
             </main>

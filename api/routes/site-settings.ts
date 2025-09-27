@@ -93,10 +93,14 @@ router.get("/public", async (req, res) => {
 
         res.json({ success: true, data: settings });
     } catch (error) {
-        console.error("Erreur lors de la récupération des paramètres publics:", error);
+        console.error(
+            "Erreur lors de la récupération des paramètres publics:",
+            error
+        );
         res.status(500).json({
             success: false,
-            message: "Erreur lors de la récupération des paramètres publics du site",
+            message:
+                "Erreur lors de la récupération des paramètres publics du site",
         });
     }
 });
