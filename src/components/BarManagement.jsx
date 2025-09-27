@@ -20,6 +20,7 @@ const BarManagement = ({ onClose }) => {
         name: '',
         price: '',
         description: '',
+        volume: '',
         image: '',
         stock: 50
     });
@@ -33,6 +34,7 @@ const BarManagement = ({ onClose }) => {
             name: '',
             price: '',
             description: '',
+            volume: '',
             image: '',
             stock: 50
         });
@@ -48,6 +50,7 @@ const BarManagement = ({ onClose }) => {
             name: drink.name,
             price: (parseFloat(drink.price) || 0).toString(),
             description: drink.description,
+            volume: drink.volume || '',
             image: drink.image_url,
             stock: drink.stock
         });
@@ -115,6 +118,7 @@ const BarManagement = ({ onClose }) => {
                     name: formData.name,
                     price: parseFloat(formData.price),
                     description: formData.description || '',
+                    volume: formData.volume || '',
                     image_url: imageUrl,
                     stock: parseInt(formData.stock) || 50
                 });
@@ -138,6 +142,7 @@ const BarManagement = ({ onClose }) => {
                     name: formData.name,
                     price: parseFloat(formData.price),
                     description: formData.description || '',
+                    volume: formData.volume || '',
                     image_url: imageUrl,
                     stock: parseInt(formData.stock) || 50
                 });
@@ -203,8 +208,8 @@ const BarManagement = ({ onClose }) => {
                 </div>
 
                 {/* Tableau des boissons */}
-                <div className="bg-white rounded-lg shadow overflow-hidden max-h-[60vh]">
-                    <div className="overflow-x-auto overflow-y-auto max-h-[60vh]">
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
@@ -362,6 +367,19 @@ const BarManagement = ({ onClose }) => {
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
                                         rows="3"
                                         placeholder="Description de la boisson"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Volume
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.volume}
+                                        onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent"
+                                        placeholder="ex: 25 cl, 33 cl, 75 cl..."
                                     />
                                 </div>
 

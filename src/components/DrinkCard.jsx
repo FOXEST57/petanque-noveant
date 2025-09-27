@@ -31,7 +31,14 @@ const DrinkCard = ({ drink }) => {
       
       {/* Content Section */}
       <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-lg font-bold text-gray-900 mb-2">{drink.name}</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-bold text-gray-900">{drink.name}</h3>
+          {drink.volume && (
+            <span className="text-sm text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded">
+              {drink.volume}
+            </span>
+          )}
+        </div>
         <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-grow">{drink.description}</p>
         
         {/* Price and Counter - Aligned at bottom */}
