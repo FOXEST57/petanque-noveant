@@ -178,7 +178,7 @@ const CartSummary = () => {
       {/* Payment Modal */}
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="p-8 border-b">
               <h2 className="text-4xl font-bold text-gray-800">Choisir le mode de paiement</h2>
@@ -194,50 +194,69 @@ const CartSummary = () => {
             </div>
 
             {/* Content */}
-            <div className="p-8 space-y-6">
-              {/* Member Account Payment */}
-              <div className="space-y-4">
-                <div className="w-full p-6 text-left border-2 rounded-lg border-blue-500 bg-blue-50">
-                  <div className="text-2xl font-medium text-gray-800 mb-2">Compte membre</div>
-                  <div className="text-lg text-gray-600">Débiter le compte d'un membre</div>
-                </div>
+            <div className="p-8">
+              {/* Payment Layout: Member Account on Left, Other Options on Right */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                
+                {/* Left Column: Member Account Payment */}
+                <div className="space-y-4">
+                  <div className="w-full p-6 text-left border-2 rounded-lg border-blue-500 bg-blue-50 cursor-pointer hover:bg-blue-100 transition-colors">
+                    <div className="text-2xl font-medium text-gray-800 mb-2">💳 Compte membre</div>
+                    <div className="text-lg text-gray-600">Débiter le compte d'un membre</div>
+                  </div>
 
-                <div className="ml-6 space-y-4">
-                  <MemberAutocomplete
-                    onSelect={setSelectedMember}
-                    selectedMember={selectedMember}
-                    placeholder="Rechercher un membre..."
-                  />
-                  {selectedMember && (
-                    <div className="p-6 bg-gray-50 rounded border-2 text-lg">
-                      <div className="text-xl mb-2"><strong>{selectedMember.prenom} {selectedMember.nom}</strong></div>
-                      <div className="mb-2">Email: {selectedMember.email}</div>
-                      <div className={`text-xl font-medium ${selectedMember.solde >= total ? 'text-green-600' : 'text-red-600'}`}>
-                        Solde: {parseFloat(selectedMember.solde || 0).toFixed(2)}€
-                      </div>
-                      <div className="text-xl font-medium text-gray-800 mt-2">
-                        Total commande: {parseFloat(total || 0).toFixed(2)}€
-                      </div>
-                      {selectedMember.solde < total && (
-                        <div className="mt-2 text-lg text-red-600">
-                          ⚠️ Solde insuffisant
+                  <div className="space-y-4">
+                    <MemberAutocomplete
+                      onSelect={setSelectedMember}
+                      selectedMember={selectedMember}
+                      placeholder="Rechercher un membre..."
+                    />
+                    {selectedMember && (
+                      <div className="p-6 bg-gray-50 rounded border-2 text-lg">
+                        <div className="text-xl mb-2"><strong>{selectedMember.prenom} {selectedMember.nom}</strong></div>
+                        <div className="mb-2">Email: {selectedMember.email}</div>
+                        <div className={`text-xl font-medium ${selectedMember.solde >= total ? 'text-green-600' : 'text-red-600'}`}>
+                          Solde: {parseFloat(selectedMember.solde || 0).toFixed(2)}€
                         </div>
-                      )}
-                    </div>
-                  )}
+                        <div className="text-xl font-medium text-gray-800 mt-2">
+                          Total commande: {parseFloat(total || 0).toFixed(2)}€
+                        </div>
+                        {selectedMember.solde < total && (
+                          <div className="mt-2 text-lg text-red-600">
+                            ⚠️ Solde insuffisant
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Card Payment */}
-              <div className="w-full p-6 text-left border-2 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
-                <div className="text-2xl font-medium text-gray-500 mb-2">Carte bancaire</div>
-                <div className="text-lg text-gray-400">Bientôt disponible</div>
-              </div>
+                {/* Right Column: Other Payment Options */}
+                <div className="space-y-4">
+                  {/* Card Payment */}
+                  <div className="w-full p-6 text-left border-2 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                    <div className="text-2xl font-medium text-gray-500 mb-2">💳 Carte bancaire</div>
+                    <div className="text-lg text-gray-400">Bientôt disponible</div>
+                  </div>
 
-              {/* Cash Payment */}
-              <div className="w-full p-6 text-left border-2 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
-                <div className="text-2xl font-medium text-gray-500 mb-2">Espèces</div>
-                <div className="text-lg text-gray-400">Bientôt disponible</div>
+                  {/* Cash Payment */}
+                  <div className="w-full p-6 text-left border-2 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                    <div className="text-2xl font-medium text-gray-500 mb-2">💵 Espèces</div>
+                    <div className="text-lg text-gray-400">Bientôt disponible</div>
+                  </div>
+
+                  {/* Bank Transfer Payment */}
+                  <div className="w-full p-6 text-left border-2 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                    <div className="text-2xl font-medium text-gray-500 mb-2">🏦 Virement</div>
+                    <div className="text-lg text-gray-400">Bientôt disponible</div>
+                  </div>
+
+                  {/* Check Payment */}
+                  <div className="w-full p-6 text-left border-2 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                    <div className="text-2xl font-medium text-gray-500 mb-2">📝 Chèque</div>
+                    <div className="text-lg text-gray-400">Bientôt disponible</div>
+                  </div>
+                </div>
               </div>
 
               {/* Total */}

@@ -8,6 +8,7 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [memberSelected, setMemberSelected] = useState(false);
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
 
@@ -18,6 +19,11 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
 
   // Filtrer les membres selon la requête
   useEffect(() => {
+    // Si un membre a été sélectionné, ne pas faire de recherche
+    if (memberSelected) {
+      return;
+    }
+    
     if (query.length >= 2) {
       // Utiliser la recherche côté serveur
       loadMembers(query);
@@ -31,7 +37,7 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
       setFilteredMembers([]);
       setIsOpen(false);
     }
-  }, [query]);
+  }, [query, memberSelected]);
 
   // Fermer le dropdown quand on clique à l'extérieur
   useEffect(() => {
@@ -75,12 +81,14 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
 
   const handleMemberSelect = (member) => {
     setQuery(`${member.prenom} ${member.nom}${member.surnom ? ` (${member.surnom})` : ''}`);
+    setMemberSelected(true);
     setIsOpen(false);
     onSelect(member);
   };
 
   const clearSelection = () => {
     setQuery('');
+    setMemberSelected(false);
     setIsOpen(false);
     onSelect(null);
   };
@@ -99,8 +107,14 @@ const MemberAutocomplete = ({ onSelect, selectedMember, placeholder = "Recherche
           ref={inputRef}
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => query.length >= 2 && setIsOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            // Si l'utilisateur tape après avoir sélectionné un membre, réinitialiser l'état
+            if (memberSelected) {
+              setMemberSelected(false);
+            }
+          }}
+          onFocus={() => query.length >= 2 && !memberSelected && setIsOpen(true)}
           placeholder={placeholder}
           className="w-full pl-12 pr-12 py-4 text-xl border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
         />
